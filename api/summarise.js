@@ -1,7 +1,6 @@
 import { IncomingForm } from 'formidable';
 import { readFileSync } from 'fs';
 import Anthropic from '@anthropic-ai/sdk';
-import pdfParse from 'pdf-parse/lib/pdf-parse.js';
 import { saveNote } from '../lib/store.js';
 
 export const config = { api: { bodyParser: false } };
@@ -57,20 +56,24 @@ export default async function handler(req, res) {
     if (!uploaded.length) return res.status(400).json({ error: 'No files uploaded' });
 
     const contentBlocks = [];
-    const textChunks = [];
     const fileNames = uploaded.map(f => f.originalFilename || f.newFilename);
 
     for (const file of uploaded) {
       const mime = file.mimetype || '';
       const buffer = readFileSync(file.filepath);
+      const base64 = buffer.toString('base64');
 
       if (mime === 'application/pdf') {
-        const data = await pdfParse(buffer);
-        textChunks.push(`--- FILE: ${file.originalFilename} ---\n${data.text}`);
+        // Send PDF directly to Claude — works for both text-based and scanned PDFs
+        contentBlocks.push({
+          type: 'document',
+          source: { type: 'base64', media_type: 'application/pdf', data: base64 }
+        });
+        contentBlocks.push({ type: 'text', text: `(Above document: ${file.originalFilename})` });
       } else if (mime.startsWith('image/')) {
         contentBlocks.push({
           type: 'image',
-          source: { type: 'base64', media_type: mime, data: buffer.toString('base64') }
+          source: { type: 'base64', media_type: mime, data: base64 }
         });
         contentBlocks.push({ type: 'text', text: `(Above image: ${file.originalFilename})` });
       } else {
@@ -78,9 +81,6 @@ export default async function handler(req, res) {
       }
     }
 
-    if (textChunks.length > 0) {
-      contentBlocks.unshift({ type: 'text', text: textChunks.join('\n\n') });
-    }
     contentBlocks.push({
       type: 'text',
       text: 'Please summarise the above study material into structured notes as instructed.'
