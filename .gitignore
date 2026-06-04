@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+frontend/node_modules/
+backend/node_modules/
+
+# Environment variables — NEVER commit these
+backend/.env
+.env
+
+# Data (local notes storage)
+backend/data/
+
+# Build output
+frontend/dist/
+frontend/.vite/
+
+# Logs
+*.log
+/tmp/
+
+# macOS
+.DS_Store
