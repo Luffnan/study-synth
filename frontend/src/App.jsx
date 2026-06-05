@@ -31,7 +31,7 @@ function Header({ onLogoClick, onUploadClick, view }) {
         {/* Logo */}
         <button onClick={onLogoClick} className="flex items-center gap-2.5 group flex-shrink-0">
           <div className="w-8 h-8 rounded-xl bg-ink-900 flex items-center justify-center group-hover:bg-brand-600 transition-colors duration-200">
-            <BrainLogo className="w-3.5 h-3.5 text-white" />
+            <BrainLogo className="w-[18px] h-[18px] text-white" />
           </div>
           <span className="text-[15px] font-700 tracking-tight text-ink-900 group-hover:text-brand-600 transition-colors hidden sm:block">
             StudySynth
