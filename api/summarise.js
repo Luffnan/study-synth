@@ -7,14 +7,31 @@ export const config = { api: { bodyParser: false } };
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-const SUMMARISE_PROMPT = `You are an expert study note generator. You have been given study material from a student.
+const SUMMARISE_PROMPT = `You are an expert study note generator. You have been given curriculum material from a student.
 
-Your task:
-1. Identify the main topics and subtopics in the material
-2. Create concise, accurate study notes that capture approximately 20% of the source content — keeping only what matters most for learning and revision
-3. Structure the notes hierarchically: Topic → Subtopics → Key points
+Your task is to extract ONLY the actual subject-matter knowledge a student needs to learn and remember.
+
+INCLUDE:
+- Facts, events, dates, people, places
+- Concepts, theories, definitions, formulas, processes
+- Cause and effect relationships
+- Subject-specific terminology and what it means
+
+EXCLUDE — do not summarise or include:
+- Exam technique advice (e.g. "how to answer source questions", "structure your essay like...")
+- Study tips or learning strategies
+- Instructions about how to use the material
+- Question types or marking criteria
+- Anything that is about studying/exams rather than the actual subject content
+
+If a section is purely exam technique or methodology with no subject content, skip it entirely.
+
+Rules:
+1. Identify the main topics and subtopics of the SUBJECT CONTENT only
+2. Capture approximately 20% of the source — the most important facts and concepts
+3. Structure hierarchically: Topic → Subtopics → Key points
 4. Use clear, student-friendly language
-5. Preserve important definitions, formulas, dates, names, and concepts exactly as they appear
+5. Preserve definitions, formulas, dates, and named concepts exactly as they appear
 6. Do NOT add information that isn't in the source material
 
 Return your response as valid JSON in this exact format:
