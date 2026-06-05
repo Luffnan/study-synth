@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { FileText, Image, Trash2, ChevronRight, BookOpen, Hash, Clock, AlertCircle } from 'lucide-react';
+import { FileText, Image, Trash2, ChevronRight, BookOpen, Hash, Clock, AlertCircle, Zap } from 'lucide-react';
 import BrainLogo from '../components/BrainLogo.jsx';
 
-export default function DashboardPage({ onUpload, onOpenNote }) {
+export default function DashboardPage({ onUpload, onOpenNote, onQuiz }) {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -69,6 +69,7 @@ export default function DashboardPage({ onUpload, onOpenNote }) {
             <NoteCard key={r.id} record={r}
               onClick={() => handleOpen(r)}
               onDelete={e => handleDelete(e, r.id)}
+              onQuiz={onQuiz ? e => { e.stopPropagation(); onQuiz(r.id, r.title); } : null}
               deleting={deleting === r.id}
             />
           ))}
@@ -78,7 +79,7 @@ export default function DashboardPage({ onUpload, onOpenNote }) {
   );
 }
 
-function NoteCard({ record, onClick, onDelete, deleting }) {
+function NoteCard({ record, onClick, onDelete, onQuiz, deleting }) {
   const date = new Date(record.created_at || record.createdAt);
   const dateStr = date.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
   const timeStr = date.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
@@ -119,10 +120,18 @@ function NoteCard({ record, onClick, onDelete, deleting }) {
         <span className="flex items-center gap-1 text-xs text-ink-400">
           <Clock className="w-3 h-3" />{dateStr} · {timeStr}
         </span>
+        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
+          {onQuiz && (
+            <button onClick={onQuiz}
+              className="flex items-center gap-1 px-2 py-1 rounded-lg bg-brand-50 hover:bg-brand-100 text-brand-600 text-xs font-medium transition-colors">
+              <Zap className="w-3 h-3" /> Quiz
+            </button>
+          )}
         <button onClick={onDelete} disabled={deleting}
-          className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-red-50 hover:text-red-500 text-ink-400 transition-all">
+          className="p-1.5 rounded-lg hover:bg-red-50 hover:text-red-500 text-ink-400 transition-all">
           <Trash2 className="w-3.5 h-3.5" />
         </button>
+        </div>
       </div>
     </button>
   );

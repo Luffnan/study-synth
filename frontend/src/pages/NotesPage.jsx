@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { ArrowLeft, ChevronDown, ChevronRight, Download, BookOpen, Hash, FileText } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronRight, Download, BookOpen, Hash, FileText, Zap } from 'lucide-react';
 import { generateDocx } from '../utils/generateDocx.js';
 
-export default function NotesPage({ notes, onBack }) {
+export default function NotesPage({ notes, noteId, onBack, onQuiz }) {
   const [openTopics, setOpenTopics] = useState(() =>
     Object.fromEntries((notes?.topics || []).map((_, i) => [i, true]))
   );
@@ -53,10 +53,16 @@ export default function NotesPage({ notes, onBack }) {
             <Download className="w-3.5 h-3.5" /> .md
           </button>
           <button onClick={handleDownloadDocx} disabled={docxLoading}
-            className="flex items-center gap-1.5 bg-ink-900 hover:bg-brand-600 text-white px-3 py-2 rounded-xl text-sm font-medium transition-colors shadow-sm disabled:opacity-60">
+            className="flex items-center gap-1.5 bg-ink-100 hover:bg-ink-200 text-ink-700 px-3 py-2 rounded-xl text-sm font-medium transition-colors disabled:opacity-60">
             <FileText className="w-3.5 h-3.5" />
             {docxLoading ? 'Building…' : '.docx'}
           </button>
+          {noteId && onQuiz && (
+            <button onClick={onQuiz}
+              className="flex items-center gap-1.5 bg-ink-900 hover:bg-brand-600 text-white px-3 py-2 rounded-xl text-sm font-medium transition-colors shadow-sm">
+              <Zap className="w-3.5 h-3.5" /> Quiz
+            </button>
+          )}
         </div>
       </div>
 
