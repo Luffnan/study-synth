@@ -6,7 +6,7 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
       "cwd": "${workspaceRoot}/frontend",
-      "port": 5173
+      "port": 5174
     }
   ]
 }
