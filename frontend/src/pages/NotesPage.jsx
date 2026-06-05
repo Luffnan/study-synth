@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { ArrowLeft, ChevronDown, ChevronRight, Download, BookOpen, Hash } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronRight, Download, BookOpen, Hash, FileText } from 'lucide-react';
+import { generateDocx } from '../utils/generateDocx.js';
 
 export default function NotesPage({ notes, onBack }) {
   const [openTopics, setOpenTopics] = useState(() =>
@@ -7,17 +8,32 @@ export default function NotesPage({ notes, onBack }) {
   );
   const [openSubtopics, setOpenSubtopics] = useState({});
   const [showTerms, setShowTerms] = useState(true);
+  const [docxLoading, setDocxLoading] = useState(false);
 
   function toggleTopic(i) { setOpenTopics(p => ({ ...p, [i]: !p[i] })); }
   function toggleSub(key) { setOpenSubtopics(p => ({ ...p, [key]: p[key] === false ? true : false })); }
 
-  function handleDownload() {
+  function handleDownloadMd() {
     const blob = new Blob([buildMarkdown(notes)], { type: 'text/markdown' });
     const a = Object.assign(document.createElement('a'), {
       href: URL.createObjectURL(blob),
       download: `${notes.title || 'study-notes'}.md`
     });
     a.click(); URL.revokeObjectURL(a.href);
+  }
+
+  async function handleDownloadDocx() {
+    setDocxLoading(true);
+    try {
+      const blob = await generateDocx(notes);
+      const a = Object.assign(document.createElement('a'), {
+        href: URL.createObjectURL(blob),
+        download: `${notes.title || 'study-notes'}.docx`
+      });
+      a.click(); URL.revokeObjectURL(a.href);
+    } finally {
+      setDocxLoading(false);
+    }
   }
 
   if (!notes) return null;
@@ -31,10 +47,17 @@ export default function NotesPage({ notes, onBack }) {
           className="flex items-center gap-1.5 text-ink-400 hover:text-ink-800 text-sm font-medium transition-colors">
           <ArrowLeft className="w-4 h-4" /> Dashboard
         </button>
-        <button onClick={handleDownload}
-          className="flex items-center gap-2 bg-ink-900 hover:bg-brand-600 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors shadow-sm">
-          <Download className="w-3.5 h-3.5" /> Download .md
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={handleDownloadMd}
+            className="flex items-center gap-1.5 bg-ink-100 hover:bg-ink-200 text-ink-700 px-3 py-2 rounded-xl text-sm font-medium transition-colors">
+            <Download className="w-3.5 h-3.5" /> .md
+          </button>
+          <button onClick={handleDownloadDocx} disabled={docxLoading}
+            className="flex items-center gap-1.5 bg-ink-900 hover:bg-brand-600 text-white px-3 py-2 rounded-xl text-sm font-medium transition-colors shadow-sm disabled:opacity-60">
+            <FileText className="w-3.5 h-3.5" />
+            {docxLoading ? 'Building…' : '.docx'}
+          </button>
+        </div>
       </div>
 
       {/* Title */}
