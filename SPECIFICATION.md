@@ -159,6 +159,57 @@ study-synth/
 - Generate shareable read-only link for a notes session
 - Export to PDF
 
+### Diagram Extraction & Embedding
+Detect, extract, and reinsert diagrams from source documents into the generated notes at the correct topic location.
+
+#### Approach: Two-Pass Pipeline
+
+**Pass 1 — Diagram detection (alongside existing summarisation)**
+Extend the Claude prompt to return diagram metadata alongside the notes JSON:
+```json
+"diagrams": [
+  {
+    "description": "Labelled diagram of the carbon cycle showing...",
+    "topic": "Carbon Cycle",
+    "subtopic": "Biogeochemical Processes",
+    "pageHint": 3,
+    "boundingBox": { "top": 0.10, "left": 0.05, "width": 0.90, "height": 0.40 }
+  }
+]
+```
+Claude identifies what diagrams exist, which topic/subtopic they belong to, the page they appear on, and an estimated bounding box as fractions of the page (0–1). No extra API call — this is returned in the same response as the notes.
+
+**Pass 2 — Precise bounding box (optional, higher quality)**
+Render the relevant page as an image and send it back to Claude asking for exact coordinates. More accurate than estimation. Costs one additional API call per diagram. Recommended for v2.
+
+#### Extraction (client-side, no new backend needed)
+- Use **`pdf.js`** (browser-native, no install) to render each relevant PDF page to a `<canvas>`
+- Crop the canvas to the bounding box coordinates → produces a PNG blob
+- For image uploads, apply the same crop directly to the source image
+
+#### Storage
+- Upload cropped diagram blobs to **Supabase Storage** (new `diagrams` bucket)
+- Store the public URL alongside the diagram metadata in the `notes` JSONB column
+- Link each diagram to its topic/subtopic so it renders in the right place
+
+#### Display
+- Render diagram images inline in the notes viewer, nested under their subtopic
+- Include in `.docx` export via `ImageRun` (already supported by docx.js in the project)
+- Include in `.md` export as a relative image reference
+
+#### Known Limitations
+- Bounding box estimation from Claude is approximate — diagrams may be slightly over/under-cropped in v1
+- Multi-page diagrams (e.g. a diagram that spans a fold) are not handled in v1
+- Handwritten diagrams in photos will have less reliable bounding boxes than clean PDFs
+
+#### Implementation Order
+1. Extend prompt to return `diagrams` array (no UI change needed yet)
+2. Implement pdf.js page render + canvas crop
+3. Wire up Supabase Storage upload
+4. Render images in notes viewer
+5. Embed in `.docx` export
+6. (v2) Add second-pass precise bounding box via Claude vision
+
 ---
 
 ## Environment Variables
@@ -190,4 +241,4 @@ npx vercel dev
 
 ---
 
-*Last updated: June 2026*
+*Last updated: June 2026 — added diagram extraction spec*
