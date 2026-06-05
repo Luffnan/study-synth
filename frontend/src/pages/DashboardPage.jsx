@@ -132,7 +132,7 @@ function EmptyState({ onUpload }) {
   return (
     <div className="text-center py-20 animate-slide-up">
       <div className="w-16 h-16 bg-ink-900 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-        <BrainLogo className="w-8 h-8 text-white" />
+        <BrainLogo className="w-6 h-6 text-white" />
       </div>
       <h2 className="text-lg font-600 text-ink-700 mb-2">No notes yet</h2>
       <p className="text-ink-400 text-sm mb-6">Upload your first set of notes to get started</p>

@@ -60,7 +60,7 @@ export default function UploadPage({ onNotes, onBack }) {
       {/* Hero */}
       <div className="text-center mb-10">
         <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-ink-900 mb-5 shadow-lg">
-          <BrainLogo className="w-7 h-7 text-white" />
+          <BrainLogo className="w-[21px] h-[21px] text-white" />
         </div>
         <h1 className="text-3xl sm:text-4xl font-800 text-ink-900 leading-tight mb-3">
           Upload your notes
