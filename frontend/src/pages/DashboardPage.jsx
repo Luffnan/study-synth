@@ -89,10 +89,15 @@ function NoteCard({ record, onClick, onDelete, onQuiz, deleting }) {
       className="group text-left bg-white border border-ink-200 rounded-2xl p-5 shadow-sm hover:shadow-md hover:border-brand-300 transition-all duration-200 relative"
     >
       <div className="flex items-start justify-between gap-2 mb-3">
-        <h2 className="font-600 text-ink-800 text-[15px] leading-snug group-hover:text-brand-600 transition-colors pr-4 line-clamp-2">
+        <h2 className="font-600 text-ink-800 text-[15px] leading-snug group-hover:text-brand-600 transition-colors line-clamp-2 flex-1">
           {record.title || 'Untitled Notes'}
         </h2>
-        <ChevronRight className="w-4 h-4 text-ink-300 group-hover:text-brand-400 flex-shrink-0 mt-0.5 transition-colors" />
+        <div className="flex items-center gap-1.5 flex-shrink-0">
+          {record.latest_quiz_pct != null && (
+            <ScoreBadge pct={record.latest_quiz_pct} />
+          )}
+          <ChevronRight className="w-4 h-4 text-ink-300 group-hover:text-brand-400 transition-colors" />
+        </div>
       </div>
 
       <div className="flex items-center gap-3 text-xs text-ink-400 mb-3">
@@ -150,5 +155,16 @@ function EmptyState({ onUpload }) {
         <BrainLogo className="w-4 h-4" /> Generate your first notes
       </button>
     </div>
+  );
+}
+
+function ScoreBadge({ pct }) {
+  const colour = pct >= 80 ? 'bg-green-100 text-green-700'
+    : pct >= 60 ? 'bg-amber-100 text-amber-700'
+    : 'bg-red-100 text-red-600';
+  return (
+    <span className={`text-xs font-700 px-2 py-0.5 rounded-full ${colour}`}>
+      {pct}%
+    </span>
   );
 }

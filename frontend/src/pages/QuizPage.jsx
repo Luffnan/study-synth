@@ -7,6 +7,7 @@ export default function QuizPage({ noteId, noteTitle, onBack }) {
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState({}); // { index: { value, score, feedback, correct } }
   const [error, setError] = useState(null);
+  const [scoreSaved, setScoreSaved] = useState(false);
 
   useEffect(() => { generateQuiz(); }, []);
 
@@ -35,9 +36,24 @@ export default function QuizPage({ noteId, noteTitle, onBack }) {
     setAnswers(prev => ({ ...prev, [index]: result }));
   }
 
+  async function saveScore(pct) {
+    if (scoreSaved || !noteId) return;
+    setScoreSaved(true);
+    try {
+      await fetch('/api/quiz/score', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ noteId, pct }),
+      });
+    } catch { /* silent — score saving is non-critical */ }
+  }
+
   function next() {
-    if (current < questions.length - 1) setCurrent(c => c + 1);
-    else setState('results');
+    if (current < questions.length - 1) {
+      setCurrent(c => c + 1);
+    } else {
+      setState('results');
+    }
   }
 
   function prev() { if (current > 0) setCurrent(c => c - 1); }
@@ -62,18 +78,21 @@ export default function QuizPage({ noteId, noteTitle, onBack }) {
     </div>
   );
 
-  if (state === 'results') return (
-    <ResultsScreen
-      questions={questions}
-      answers={answers}
-      earnedMarks={earnedMarks}
-      totalMarks={totalMarks}
-      pct={pct}
-      onRetry={generateQuiz}
-      onBack={onBack}
-      noteTitle={noteTitle}
-    />
-  );
+  if (state === 'results') {
+    saveScore(pct);
+    return (
+      <ResultsScreen
+        questions={questions}
+        answers={answers}
+        earnedMarks={earnedMarks}
+        totalMarks={totalMarks}
+        pct={pct}
+        onRetry={generateQuiz}
+        onBack={onBack}
+        noteTitle={noteTitle}
+      />
+    );
+  }
 
   const q = questions[current];
   const thisAnswer = answers[current];
