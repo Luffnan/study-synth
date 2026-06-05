@@ -22,7 +22,11 @@ export default function QuizPage({ noteId, noteTitle, onBack }) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      setQuestions(data.quiz.questions);
+      setQuestions(data.quiz.questions.map(q =>
+        q.type === 'mcq'
+          ? { ...q, options: q.options.slice().sort(() => Math.random() - 0.5) }
+          : q
+      ));
       setAnswers({});
       setCurrent(0);
       setState('quiz');
