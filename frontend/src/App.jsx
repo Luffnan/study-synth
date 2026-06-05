@@ -2,43 +2,23 @@ import { useState } from 'react';
 import UploadPage from './pages/UploadPage.jsx';
 import NotesPage from './pages/NotesPage.jsx';
 import DashboardPage from './pages/DashboardPage.jsx';
+import BrainLogo from './components/BrainLogo.jsx';
 
 export default function App() {
   const [notes, setNotes] = useState(null);
-  const [view, setView] = useState('dashboard'); // 'dashboard' | 'upload' | 'notes'
+  const [view, setView] = useState('dashboard');
 
-  function handleNotes(data) {
-    setNotes(data);
-    setView('notes');
-  }
-
-  function handleOpenNote(record) {
-    setNotes(record.notes);
-    setView('notes');
-  }
-
-  function handleReset() {
-    setNotes(null);
-    setView('dashboard');
-  }
+  function handleNotes(data) { setNotes(data); setView('notes'); }
+  function handleOpenNote(record) { setNotes(record.notes); setView('notes'); }
+  function handleReset() { setNotes(null); setView('dashboard'); }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header
-        onLogoClick={handleReset}
-        onUploadClick={() => setView('upload')}
-        view={view}
-      />
+    <div className="min-h-screen flex flex-col bg-ink-50">
+      <Header onLogoClick={handleReset} onUploadClick={() => setView('upload')} view={view} />
       <main className="flex-1">
-        {view === 'dashboard' && (
-          <DashboardPage onUpload={() => setView('upload')} onOpenNote={handleOpenNote} />
-        )}
-        {view === 'upload' && (
-          <UploadPage onNotes={handleNotes} onBack={handleReset} />
-        )}
-        {view === 'notes' && (
-          <NotesPage notes={notes} onBack={handleReset} />
-        )}
+        {view === 'dashboard' && <DashboardPage onUpload={() => setView('upload')} onOpenNote={handleOpenNote} />}
+        {view === 'upload'    && <UploadPage onNotes={handleNotes} onBack={handleReset} />}
+        {view === 'notes'     && <NotesPage notes={notes} onBack={handleReset} />}
       </main>
     </div>
   );
@@ -46,43 +26,43 @@ export default function App() {
 
 function Header({ onLogoClick, onUploadClick, view }) {
   return (
-    <header className="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-10">
-      <div className="max-w-5xl mx-auto px-4 py-3 flex items-center gap-3">
-        <button onClick={onLogoClick} className="flex items-center gap-2 group">
-          <div className="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center">
-            <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5 text-white" stroke="currentColor" strokeWidth="2">
-              <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-              <path d="M2 17l10 5 10-5"/>
-              <path d="M2 12l10 5 10-5"/>
-            </svg>
+    <header className="bg-white/80 backdrop-blur-md border-b border-ink-200/60 sticky top-0 z-20">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-3">
+        {/* Logo */}
+        <button onClick={onLogoClick} className="flex items-center gap-2.5 group flex-shrink-0">
+          <div className="w-8 h-8 rounded-xl bg-ink-900 flex items-center justify-center group-hover:bg-brand-600 transition-colors duration-200">
+            <BrainLogo className="w-4.5 h-4.5 text-white" />
           </div>
-          <span className="text-lg font-bold text-slate-800 group-hover:text-brand-600 transition-colors">
+          <span className="text-[15px] font-700 tracking-tight text-ink-900 group-hover:text-brand-600 transition-colors hidden sm:block">
             StudySynth
           </span>
         </button>
 
-        <nav className="flex items-center gap-1 ml-4">
+        {/* Nav */}
+        <nav className="flex items-center gap-0.5 ml-2">
           <button
             onClick={onLogoClick}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-              view === 'dashboard' ? 'bg-brand-50 text-brand-700' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100'
+              view === 'dashboard'
+                ? 'bg-ink-100 text-ink-800'
+                : 'text-ink-500 hover:text-ink-800 hover:bg-ink-100'
             }`}
           >
             Dashboard
           </button>
         </nav>
 
-        <div className="ml-auto">
-          <button
-            onClick={onUploadClick}
-            className="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors shadow-sm"
-          >
-            <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4" stroke="currentColor" strokeWidth="2.5">
-              <path d="M12 5v14M5 12l7-7 7 7"/>
-            </svg>
-            New Notes
-          </button>
-        </div>
+        {/* CTA */}
+        <button
+          onClick={onUploadClick}
+          className="ml-auto flex items-center gap-1.5 bg-ink-900 hover:bg-brand-600 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors duration-200 shadow-sm"
+        >
+          <svg viewBox="0 0 16 16" fill="none" className="w-3.5 h-3.5" stroke="currentColor" strokeWidth="2.2">
+            <path d="M8 3v10M3 8l5-5 5 5"/>
+          </svg>
+          <span className="hidden sm:inline">New Notes</span>
+          <span className="sm:hidden">New</span>
+        </button>
       </div>
     </header>
   );
