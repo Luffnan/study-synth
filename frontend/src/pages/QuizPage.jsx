@@ -295,7 +295,7 @@ export default function QuizPage({ noteId, noteTitle, notes, onBack }) {
 
 function CheckRow({ checked, onChange, icon, label }) {
   return (
-    <label className="flex items-center gap-3 px-2 py-2.5 rounded-xl hover:bg-ink-50 cursor-pointer transition-colors group">
+    <label onClick={onChange} className="flex items-center gap-3 px-2 py-2.5 rounded-xl hover:bg-ink-50 cursor-pointer transition-colors group">
       <div className={`w-4 h-4 rounded flex items-center justify-center flex-shrink-0 border transition-colors ${
         checked ? 'bg-ink-900 border-ink-900' : 'border-ink-300 bg-white group-hover:border-ink-400'
       }`}>
