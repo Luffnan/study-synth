@@ -12,8 +12,8 @@ export default async function handler(req, res) {
     }
   } else if (req.method === 'PATCH') {
     try {
-      const { title, description } = req.body;
-      const record = await updateNote(id, { title, description });
+      const { title, description, subject_id } = req.body;
+      const record = await updateNote(id, { title, description, subject_id });
       res.status(200).json(record);
     } catch (err) {
       res.status(500).json({ error: err.message });
