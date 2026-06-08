@@ -155,8 +155,8 @@ export default function NotesPage({ notes: initialNotes, noteId, onBack, onQuiz 
                  item.type === 'video' ? selected.videoId === item.videoId : true);
               return (
                 <button key={i} onClick={() => setSelected(item)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-600 whitespace-nowrap flex-shrink-0 transition-colors ${
-                    isSelected ? 'bg-ink-900 text-white' : 'bg-white border border-ink-200 text-ink-600 hover:border-brand-300'
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-500 whitespace-nowrap flex-shrink-0 transition-colors ${
+                    isSelected ? 'bg-ink-900 text-white' : 'bg-white border border-ink-100 text-ink-500 hover:text-ink-700'
                   }`}
                 >
                   {item.type === 'video' && <Youtube className="w-3 h-3" />}
@@ -169,49 +169,53 @@ export default function NotesPage({ notes: initialNotes, noteId, onBack, onQuiz 
           </div>
         </div>
 
-        <div className="flex gap-5 items-start">
+        <div className="flex gap-6 items-start">
 
           {/* ── Sidebar ── */}
-          <aside className="hidden sm:flex flex-col w-56 flex-shrink-0 sticky top-20">
-            <nav className="bg-white border border-ink-200 rounded-2xl shadow-sm overflow-hidden">
+          <aside className="hidden sm:flex flex-col w-48 flex-shrink-0 sticky top-20">
+            <nav className="flex flex-col gap-0.5">
               {currentSidebarItems.map((item, i) => {
                 const isSelected = selected?.type === item.type &&
                   (item.type === 'topic' ? selected.index === item.index :
                    item.type === 'video' ? selected.videoId === item.videoId : true);
                 const isMergedVideo = item.type === 'video' && videoSources.find(v => v.videoId === item.videoId)?.merged;
 
+                // Divider before Key Terms and before first video
+                const prevItem = currentSidebarItems[i - 1];
+                const showDivider = i > 0 && item.type !== prevItem?.type;
+
                 return (
-                  <button key={i} onClick={() => setSelected(item)}
-                    className={`w-full flex items-center gap-2.5 px-4 py-3 text-left transition-colors border-b border-ink-100 last:border-0 ${
-                      isSelected ? 'bg-ink-900 text-white' : 'hover:bg-ink-50 text-ink-600'
-                    }`}
-                  >
-                    {item.type === 'topic' && (
-                      <span className={`w-5 h-5 rounded-md text-[10px] font-700 flex items-center justify-center flex-shrink-0 ${isSelected ? 'bg-white/20 text-white' : 'bg-ink-900 text-white'}`}>
-                        {item.index + 1}
-                      </span>
-                    )}
-                    {item.type === 'terms' && (
-                      <span className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 ${isSelected ? 'bg-white/20' : 'bg-amber-400'}`}>
-                        <Hash className="w-3 h-3 text-white" />
-                      </span>
-                    )}
-                    {item.type === 'video' && (
-                      <span className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 ${isSelected ? 'bg-white/20' : 'bg-red-500'}`}>
-                        <Youtube className="w-3 h-3 text-white" />
-                      </span>
-                    )}
-                    <span className="text-xs font-600 line-clamp-2 flex-1">{item.label}</span>
-                    {isMergedVideo && (
-                      <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isSelected ? 'bg-green-400' : 'bg-green-500'}`} title="Included in notes" />
-                    )}
-                  </button>
+                  <div key={i}>
+                    {showDivider && <div className="my-1.5 border-t border-ink-100" />}
+                    <button onClick={() => setSelected(item)}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left transition-all duration-150 group ${
+                        isSelected
+                          ? 'bg-ink-900 text-white'
+                          : 'text-ink-500 hover:text-ink-800 hover:bg-ink-100'
+                      }`}
+                    >
+                      {item.type === 'topic' && (
+                        <span className={`w-4 h-4 rounded text-[9px] font-700 flex items-center justify-center flex-shrink-0 tabular-nums ${
+                          isSelected ? 'bg-white/15 text-white' : 'text-ink-400'
+                        }`}>
+                          {item.index + 1}
+                        </span>
+                      )}
+                      {item.type === 'terms' && (
+                        <Hash className={`w-3.5 h-3.5 flex-shrink-0 ${isSelected ? 'text-amber-300' : 'text-amber-400'}`} />
+                      )}
+                      {item.type === 'video' && (
+                        <Youtube className={`w-3.5 h-3.5 flex-shrink-0 ${isSelected ? 'text-red-300' : 'text-red-400'}`} />
+                      )}
+                      <span className="text-xs font-500 line-clamp-2 flex-1 leading-snug">{item.label}</span>
+                      {isMergedVideo && (
+                        <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isSelected ? 'bg-green-400' : 'bg-green-400'}`} title="Included in notes" />
+                      )}
+                    </button>
+                  </div>
                 );
               })}
             </nav>
-            <p className="text-center text-ink-300 text-[10px] mt-6">
-              StudySynth · verify against originals
-            </p>
           </aside>
 
           {/* ── Content pane ── */}
