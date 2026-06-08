@@ -144,7 +144,7 @@ export default function QuizPage({ noteId, noteTitle, onBack }) {
           <FillBlankInput question={q} answered={isAnswered} thisAnswer={thisAnswer} onAnswer={r => recordAnswer(current, r)} />
         )}
         {q.type === 'short_answer' && (
-          <ShortAnswerInput question={q} answered={isAnswered} thisAnswer={thisAnswer} onAnswer={r => recordAnswer(current, r)} />
+          <ShortAnswerInput question={q} onAnswer={r => recordAnswer(current, r)} />
         )}
 
         {/* Feedback */}
@@ -266,12 +266,18 @@ function FillBlankInput({ question, answered, thisAnswer, onAnswer }) {
   );
 }
 
-function ShortAnswerInput({ question, answered, thisAnswer, onAnswer }) {
+function ShortAnswerInput({ question, onAnswer }) {
+  // attempts: [{ value, score, feedback }]
+  const [attempts, setAttempts] = useState([]);
   const [val, setVal] = useState('');
   const [marking, setMarking] = useState(false);
 
+  const latestAttempt = attempts[attempts.length - 1] ?? null;
+  const bestScore = attempts.length > 0 ? Math.max(...attempts.map(a => a.score)) : 0;
+  const achieved2 = bestScore === 2;
+
   async function submit() {
-    if (!val.trim()) return;
+    if (!val.trim() || marking) return;
     setMarking(true);
     try {
       const res = await fetch('/api/quiz/mark', {
@@ -280,57 +286,89 @@ function ShortAnswerInput({ question, answered, thisAnswer, onAnswer }) {
         body: JSON.stringify({ question: question.question, modelAnswer: question.modelAnswer, studentAnswer: val.trim() }),
       });
       const data = await res.json();
-      onAnswer({ value: val.trim(), score: data.score, feedback: data.feedback, modelAnswer: question.modelAnswer });
+      const attempt = { value: val.trim(), score: data.score, feedback: data.feedback };
+      const newAttempts = [...attempts, attempt];
+      setAttempts(newAttempts);
+      setVal('');
+      // Record best score so parent enables Next button
+      const newBest = Math.max(...newAttempts.map(a => a.score));
+      onAnswer({ value: attempt.value, score: newBest, feedback: attempt.feedback, modelAnswer: question.modelAnswer });
     } catch {
-      onAnswer({ value: val.trim(), score: 0, feedback: 'Could not mark automatically — check the model answer below.', modelAnswer: question.modelAnswer });
+      const attempt = { value: val.trim(), score: 0, feedback: 'Could not mark automatically — check the model answer below.' };
+      const newAttempts = [...attempts, attempt];
+      setAttempts(newAttempts);
+      setVal('');
+      onAnswer({ value: attempt.value, score: 0, feedback: attempt.feedback, modelAnswer: question.modelAnswer });
     } finally {
       setMarking(false);
     }
   }
 
-  if (answered) {
-    const score = thisAnswer.score;
-    const colour = score === 2 ? 'green' : score === 1 ? 'amber' : 'red';
-    const colourMap = {
-      green: 'bg-green-50 border-green-200 text-green-800',
-      amber: 'bg-amber-50 border-amber-200 text-amber-800',
-      red: 'bg-red-50 border-red-200 text-red-800',
-    };
-    return (
-      <div className="space-y-3">
-        <div className="px-4 py-3 bg-ink-50 rounded-xl text-sm text-ink-700 italic">"{thisAnswer.value}"</div>
-        <div className={`rounded-xl border px-4 py-3 text-sm ${colourMap[colour]}`}>
-          <div className="flex items-center gap-2 font-semibold mb-1">
-            {score === 2 ? <CheckCircle className="w-4 h-4" /> : score === 1 ? '~' : <XCircle className="w-4 h-4" />}
-            {score} / 2 marks
+  const colourMap = {
+    2: 'bg-green-50 border-green-200 text-green-800',
+    1: 'bg-amber-50 border-amber-200 text-amber-800',
+    0: 'bg-red-50 border-red-200 text-red-800',
+  };
+
+  return (
+    <div className="space-y-3">
+      {/* Previous attempts */}
+      {attempts.map((attempt, i) => {
+        const isLatest = i === attempts.length - 1;
+        const colour = colourMap[attempt.score];
+        return (
+          <div key={i} className="space-y-2">
+            {/* The answer they gave */}
+            <div className={`px-4 py-3 rounded-xl text-sm italic ${isLatest ? 'bg-ink-50 text-ink-700' : 'bg-ink-50/50 text-ink-400'}`}>
+              {attempts.length > 1 && (
+                <span className="not-italic text-xs font-medium text-ink-400 mr-2">Attempt {i + 1}:</span>
+              )}
+              "{attempt.value}"
+            </div>
+            {/* Score + feedback */}
+            <div className={`rounded-xl border px-4 py-3 text-sm ${colour}`}>
+              <div className="flex items-center gap-2 font-semibold mb-1">
+                {attempt.score === 2 ? <CheckCircle className="w-4 h-4" /> : attempt.score === 1 ? '~' : <XCircle className="w-4 h-4" />}
+                {attempt.score} / 2 marks
+              </div>
+              <p>{attempt.feedback}</p>
+            </div>
           </div>
-          <p>{thisAnswer.feedback}</p>
-        </div>
+        );
+      })}
+
+      {/* Model answer (collapsible) — only show after at least one attempt */}
+      {attempts.length > 0 && (
         <details className="rounded-xl border border-ink-200 overflow-hidden">
           <summary className="px-4 py-2.5 text-sm font-medium text-ink-600 cursor-pointer hover:bg-ink-50 list-none flex items-center justify-between">
             Model answer <ChevronDown className="w-4 h-4" />
           </summary>
           <div className="px-4 py-3 text-sm text-ink-600 bg-ink-50 border-t border-ink-200">
-            {thisAnswer.modelAnswer}
+            {question.modelAnswer}
           </div>
         </details>
-      </div>
-    );
-  }
+      )}
 
-  return (
-    <div className="space-y-3">
-      <textarea
-        value={val}
-        onChange={e => setVal(e.target.value)}
-        placeholder="Write your answer here…"
-        rows={4}
-        className="w-full px-4 py-3 rounded-xl border-2 border-ink-200 focus:border-brand-500 focus:outline-none text-sm resize-none transition-colors"
-      />
-      <button onClick={submit} disabled={!val.trim() || marking}
-        className="flex items-center gap-2 px-5 py-2 bg-ink-900 hover:bg-brand-600 text-white rounded-xl text-sm font-medium disabled:opacity-40 transition-colors">
-        {marking ? <><Loader2 className="w-4 h-4 animate-spin" /> Marking…</> : 'Submit answer'}
-      </button>
+      {/* Retry input — shown until they hit 2/2 */}
+      {!achieved2 && (
+        <div className="space-y-2">
+          {attempts.length > 0 && (
+            <p className="text-xs text-ink-400 font-medium">Try again ↓</p>
+          )}
+          <textarea
+            value={val}
+            onChange={e => setVal(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && e.metaKey && submit()}
+            placeholder={attempts.length === 0 ? 'Write your answer here…' : 'Write an improved answer…'}
+            rows={attempts.length === 0 ? 4 : 3}
+            className="w-full px-4 py-3 rounded-xl border-2 border-ink-200 focus:border-brand-500 focus:outline-none text-sm resize-none transition-colors"
+          />
+          <button onClick={submit} disabled={!val.trim() || marking}
+            className="flex items-center gap-2 px-5 py-2 bg-ink-900 hover:bg-brand-600 text-white rounded-xl text-sm font-medium disabled:opacity-40 transition-colors">
+            {marking ? <><Loader2 className="w-4 h-4 animate-spin" /> Marking…</> : attempts.length === 0 ? 'Submit answer' : 'Submit improved answer'}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

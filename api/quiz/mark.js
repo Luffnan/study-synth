@@ -9,7 +9,7 @@ You will be given:
 - A model answer showing the key points expected
 - The student's response
 
-Your job is to award 0, 1, or 2 marks and give brief feedback.
+Your job is to award 0, 1, or 2 marks and write feedback.
 
 Marking guidelines:
 - 2 marks: Student demonstrates clear understanding of the key concepts. Doesn't need to match the model answer word-for-word — credit the MEANING and understanding shown.
@@ -20,10 +20,16 @@ Be FAIR and GENEROUS — if the student clearly understands the concept but expr
 Do NOT penalise for spelling, grammar, or informal language.
 DO penalise for factually wrong information.
 
+FEEDBACK RULES — very important:
+- If score is 2: write a brief, positive confirmation (1 sentence). Example: "Correct — you've identified both the cause and the outcome clearly."
+- If score is 0 or 1: Do NOT say things like "Your answer is too vague" or "This is incomplete". Instead, write 3–5 Socratic guiding questions drawn from what was missing in the model answer, followed by a one-line prompt to expand. Format exactly like this example:
+  "Think about: How did soldiers move through the countryside? What formations did they use? What equipment helped them stay hidden? Please expand your answer with specific details."
+  The guiding questions should be specific to the subject content that was missing — not generic study advice.
+
 Return ONLY valid JSON (no markdown):
 {
   "score": 2,
-  "feedback": "Great answer — you correctly identified X and Y. [Only add what was missing if score < 2]"
+  "feedback": "..."
 }`;
 
 export default async function handler(req, res) {
