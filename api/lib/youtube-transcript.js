@@ -1,56 +1,61 @@
 /**
- * Fetch a YouTube transcript without the youtube-transcript npm package.
- * Makes direct requests with browser-like headers to avoid bot detection.
+ * Fetch a YouTube transcript via the InnerTube API.
+ * YouTube's internal API used by their Android app — returns full player
+ * data including captions and is not subject to the same bot-detection
+ * that blocks page-scraping from server IPs.
  */
 
-const BROWSER_HEADERS = {
-  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-  'Accept-Language': 'en-US,en;q=0.9',
-  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-  'Accept-Encoding': 'gzip, deflate, br',
-  'Connection': 'keep-alive',
-  'Upgrade-Insecure-Requests': '1',
+const INNERTUBE_API_KEY = 'AIzaSyA8eiZmM1FaDVjRy-df2KTyQ_vz_yYM39w';
+const ANDROID_CLIENT = {
+  clientName: 'ANDROID',
+  clientVersion: '19.09.37',
+  androidSdkVersion: 30,
+  userAgent: 'com.google.android.youtube/19.09.37 (Linux; U; Android 11) gzip',
+  hl: 'en',
+  gl: 'US',
 };
 
 export async function fetchTranscript(videoId) {
-  // Fetch the YouTube watch page
-  const pageRes = await fetch(`https://www.youtube.com/watch?v=${videoId}&hl=en`, {
-    headers: BROWSER_HEADERS,
-  });
-
-  if (!pageRes.ok) throw new Error(`YouTube returned ${pageRes.status}`);
-
-  const html = await pageRes.text();
-
-  // Extract ytInitialPlayerResponse JSON blob
-  const playerMatch = html.match(/ytInitialPlayerResponse\s*=\s*(\{.+?\})\s*;[\s\n]*(?:var|const|let|window|<\/script>)/s);
-  if (!playerMatch) {
-    // Fallback: broader match
-    const fallback = html.match(/ytInitialPlayerResponse\s*=\s*(\{[\s\S]+?\});/);
-    if (!fallback) throw new Error('Could not parse YouTube player data — the video may be age-restricted or unavailable.');
-    playerMatch && (playerMatch[1] = fallback[1]);
-    if (!playerMatch) {
-      const m2 = fallback;
-      return await fetchFromPlayerData(m2[1], videoId);
+  // 1. Call InnerTube /player to get caption track URLs
+  const playerRes = await fetch(
+    `https://www.youtube.com/youtubei/v1/player?key=${INNERTUBE_API_KEY}`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': ANDROID_CLIENT.userAgent,
+        'X-Youtube-Client-Name': '3',
+        'X-Youtube-Client-Version': ANDROID_CLIENT.clientVersion,
+        'Accept-Language': 'en-US,en;q=0.9',
+        Origin: 'https://www.youtube.com',
+        Referer: 'https://www.youtube.com/',
+      },
+      body: JSON.stringify({
+        context: { client: ANDROID_CLIENT },
+        videoId,
+        params: 'CgIQBg==', // request captions
+      }),
     }
-  }
+  );
 
-  return await fetchFromPlayerData(playerMatch[1], videoId);
-}
+  if (!playerRes.ok) throw new Error(`InnerTube player API returned ${playerRes.status}`);
 
-async function fetchFromPlayerData(jsonStr, videoId) {
-  let playerResponse;
-  try {
-    playerResponse = JSON.parse(jsonStr);
-  } catch {
-    throw new Error('Could not parse YouTube player data.');
+  const player = await playerRes.json();
+
+  // Check for playability issues (private, age-restricted, etc.)
+  const status = player?.playabilityStatus?.status;
+  if (status && status !== 'OK') {
+    const reason = player?.playabilityStatus?.reason || status;
+    throw new Error(`Video unavailable: ${reason}`);
   }
 
   const captionTracks =
-    playerResponse?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
+    player?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
 
   if (!captionTracks?.length) {
-    throw new Error('No captions found for this video. Make sure it has auto-generated or manual captions enabled.');
+    throw new Error(
+      'No captions found for this video. It may not have auto-generated or manual captions enabled — try a different video.'
+    );
   }
 
   // Prefer English; fall back to first available
@@ -59,9 +64,9 @@ async function fetchFromPlayerData(jsonStr, videoId) {
     captionTracks.find(t => t.languageCode?.startsWith('en')) ||
     captionTracks[0];
 
+  // 2. Fetch the actual caption data (json3 format)
   const captionUrl = `${track.baseUrl}&fmt=json3`;
-
-  const captionRes = await fetch(captionUrl, { headers: BROWSER_HEADERS });
+  const captionRes = await fetch(captionUrl);
   if (!captionRes.ok) throw new Error(`Failed to fetch captions: ${captionRes.status}`);
 
   const captionData = await captionRes.json();
@@ -71,7 +76,7 @@ async function fetchFromPlayerData(jsonStr, videoId) {
     .filter(e => e.segs?.length)
     .map(e => ({
       text: e.segs.map(s => s.utf8 ?? '').join('').replace(/\n/g, ' ').trim(),
-      offset: e.tStartMs ?? 0,       // milliseconds
+      offset: e.tStartMs ?? 0,    // milliseconds
       duration: e.dDurationMs ?? 0,
     }))
     .filter(s => s.text);
