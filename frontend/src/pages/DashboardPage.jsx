@@ -85,6 +85,7 @@ export default function DashboardPage({ onUpload, onOpenNote, onQuiz }) {
 }
 
 function NoteCard({ record, onClick, onDelete, onQuiz, onSaveEdit, deleting }) {
+  const [sourcesOpen, setSourcesOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(record.title || '');
   const [description, setDescription] = useState(record.description || '');
@@ -226,15 +227,23 @@ function NoteCard({ record, onClick, onDelete, onQuiz, onSaveEdit, deleting }) {
       </div>
 
       {(record.file_names ?? record.fileNames)?.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mb-3">
-          {(record.file_names ?? record.fileNames).slice(0, 3).map((name, i) => (
-            <span key={i} className="inline-flex items-center gap-1 bg-ink-100 text-ink-500 text-xs px-2 py-0.5 rounded-md">
-              {name.endsWith('.pdf') ? <FileText className="w-3 h-3" /> : <Image className="w-3 h-3" />}
-              <span className="max-w-[100px] truncate">{name}</span>
-            </span>
-          ))}
-          {(record.file_names ?? record.fileNames).length > 3 && (
-            <span className="text-xs text-ink-400">+{(record.file_names ?? record.fileNames).length - 3} more</span>
+        <div className="mb-3">
+          <button
+            onClick={e => { e.stopPropagation(); setSourcesOpen(v => !v); }}
+            className="flex items-center gap-1 text-xs text-ink-400 hover:text-ink-600 transition-colors"
+          >
+            <ChevronRight className={`w-3 h-3 transition-transform duration-150 ${sourcesOpen ? 'rotate-90' : ''}`} />
+            Sources ({(record.file_names ?? record.fileNames).length})
+          </button>
+          {sourcesOpen && (
+            <ul className="mt-2 space-y-1 pl-1">
+              {(record.file_names ?? record.fileNames).map((name, i) => (
+                <li key={i} className="flex items-center gap-1.5 text-xs text-ink-500">
+                  {name.endsWith('.pdf') ? <FileText className="w-3 h-3 flex-shrink-0 text-ink-400" /> : <Image className="w-3 h-3 flex-shrink-0 text-ink-400" />}
+                  <span className="break-all">{name}</span>
+                </li>
+              ))}
+            </ul>
           )}
         </div>
       )}
