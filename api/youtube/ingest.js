@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { YoutubeTranscript } from 'youtube-transcript';
+import { fetchTranscript } from '../lib/youtube-transcript.js';
 import { getNoteById, addVideoSource } from '../../lib/store.js';
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -84,11 +84,11 @@ export default async function handler(req, res) {
     let segments, videoTitle;
     try {
       [segments, videoTitle] = await Promise.all([
-        YoutubeTranscript.fetchTranscript(videoId),
+        fetchTranscript(videoId),
         getVideoTitle(videoId),
       ]);
-    } catch {
-      return res.status(422).json({ error: 'Could not fetch transcript — make sure the video has captions enabled.' });
+    } catch (err) {
+      return res.status(422).json({ error: err.message || 'Could not fetch transcript.' });
     }
 
     if (!segments?.length) {
