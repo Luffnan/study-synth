@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { FileText, Image, Trash2, ChevronRight, BookOpen, Hash, Clock, AlertCircle, Zap } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { FileText, Image, Trash2, ChevronRight, BookOpen, Hash, Clock, AlertCircle, Zap, Pencil, Check, X } from 'lucide-react';
 import BrainLogo from '../components/BrainLogo.jsx';
 
 export default function DashboardPage({ onUpload, onOpenNote, onQuiz }) {
@@ -36,6 +36,10 @@ export default function DashboardPage({ onUpload, onOpenNote, onQuiz }) {
     } catch { setError('Failed to load note'); }
   }
 
+  function handleSaveEdit(id, updates) {
+    setRecords(p => p.map(r => r.id === id ? { ...r, ...updates } : r));
+  }
+
   if (loading) return (
     <div className="flex items-center justify-center py-32">
       <div className="w-6 h-6 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
@@ -70,6 +74,7 @@ export default function DashboardPage({ onUpload, onOpenNote, onQuiz }) {
               onClick={() => handleOpen(r)}
               onDelete={e => handleDelete(e, r.id)}
               onQuiz={onQuiz ? e => { e.stopPropagation(); onQuiz(r.id, r.title); } : null}
+              onSaveEdit={updates => handleSaveEdit(r.id, updates)}
               deleting={deleting === r.id}
             />
           ))}
@@ -79,16 +84,122 @@ export default function DashboardPage({ onUpload, onOpenNote, onQuiz }) {
   );
 }
 
-function NoteCard({ record, onClick, onDelete, onQuiz, deleting }) {
+function NoteCard({ record, onClick, onDelete, onQuiz, onSaveEdit, deleting }) {
+  const [editing, setEditing] = useState(false);
+  const [title, setTitle] = useState(record.title || '');
+  const [description, setDescription] = useState(record.description || '');
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState(null);
+  const titleRef = useRef(null);
+
+  // Keep local state in sync if parent record changes
+  useEffect(() => {
+    if (!editing) {
+      setTitle(record.title || '');
+      setDescription(record.description || '');
+    }
+  }, [record.title, record.description]);
+
+  function handleEditClick(e) {
+    e.stopPropagation();
+    setEditing(true);
+    setSaveError(null);
+    setTimeout(() => titleRef.current?.focus(), 0);
+  }
+
+  function handleCancel(e) {
+    e?.stopPropagation();
+    setTitle(record.title || '');
+    setDescription(record.description || '');
+    setSaveError(null);
+    setEditing(false);
+  }
+
+  async function handleSave(e) {
+    e?.stopPropagation();
+    if (!title.trim()) return;
+    setSaving(true);
+    setSaveError(null);
+    try {
+      const res = await fetch(`/api/notes/${record.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: title.trim(), description: description.trim() }),
+      });
+      if (!res.ok) throw new Error('Failed to save');
+      onSaveEdit({ title: title.trim(), description: description.trim() });
+      setEditing(false);
+    } catch {
+      setSaveError('Could not save — try again');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function handleKeyDown(e) {
+    if (e.key === 'Enter' && !e.shiftKey && e.target.tagName !== 'TEXTAREA') {
+      e.preventDefault();
+      handleSave();
+    }
+    if (e.key === 'Escape') handleCancel();
+  }
+
   const date = new Date(record.created_at || record.createdAt);
   const dateStr = date.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
   const timeStr = date.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
+
+  if (editing) {
+    return (
+      <div
+        className="text-left bg-white border-2 border-brand-400 rounded-2xl p-5 shadow-md"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Title input */}
+        <input
+          ref={titleRef}
+          value={title}
+          onChange={e => setTitle(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="Subject name"
+          className="w-full text-[15px] font-600 text-ink-800 bg-ink-50 border border-ink-200 rounded-lg px-3 py-2 mb-2 focus:outline-none focus:border-brand-400 focus:ring-1 focus:ring-brand-200"
+        />
+
+        {/* Description input */}
+        <textarea
+          value={description}
+          onChange={e => setDescription(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="Add a description (optional) — e.g. Unit 2 exam prep, Week 3 revision…"
+          rows={2}
+          className="w-full text-sm text-ink-600 bg-ink-50 border border-ink-200 rounded-lg px-3 py-2 mb-3 resize-none focus:outline-none focus:border-brand-400 focus:ring-1 focus:ring-brand-200"
+        />
+
+        {saveError && <p className="text-xs text-red-500 mb-2">{saveError}</p>}
+
+        {/* Actions */}
+        <div className="flex items-center justify-end gap-2">
+          <button onClick={handleCancel}
+            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium text-ink-500 hover:bg-ink-100 transition-colors">
+            <X className="w-3 h-3" /> Cancel
+          </button>
+          <button onClick={handleSave} disabled={saving || !title.trim()}
+            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-ink-900 hover:bg-brand-600 text-white transition-colors disabled:opacity-50">
+            {saving
+              ? <span className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin" />
+              : <Check className="w-3 h-3" />
+            }
+            Save
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <button onClick={onClick}
       className="group text-left bg-white border border-ink-200 rounded-2xl p-5 shadow-sm hover:shadow-md hover:border-brand-300 transition-all duration-200 relative"
     >
-      <div className="flex items-start justify-between gap-2 mb-3">
+      <div className="flex items-start justify-between gap-2 mb-1">
         <h2 className="font-600 text-ink-800 text-[15px] leading-snug group-hover:text-brand-600 transition-colors line-clamp-2 flex-1">
           {record.title || 'Untitled Notes'}
         </h2>
@@ -99,6 +210,13 @@ function NoteCard({ record, onClick, onDelete, onQuiz, deleting }) {
           <ChevronRight className="w-4 h-4 text-ink-300 group-hover:text-brand-400 transition-colors" />
         </div>
       </div>
+
+      {/* Description */}
+      {record.description ? (
+        <p className="text-xs text-ink-400 mb-3 line-clamp-2 text-left">{record.description}</p>
+      ) : (
+        <div className="mb-3" />
+      )}
 
       <div className="flex items-center gap-3 text-xs text-ink-400 mb-3">
         <span className="flex items-center gap-1"><BookOpen className="w-3.5 h-3.5" />{record.topic_count ?? record.topicCount ?? 0} topics</span>
@@ -126,16 +244,20 @@ function NoteCard({ record, onClick, onDelete, onQuiz, deleting }) {
           <Clock className="w-3 h-3" />{dateStr} · {timeStr}
         </span>
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
+          <button onClick={handleEditClick}
+            className="flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-ink-100 text-ink-400 hover:text-ink-700 text-xs font-medium transition-colors">
+            <Pencil className="w-3 h-3" />
+          </button>
           {onQuiz && (
             <button onClick={onQuiz}
               className="flex items-center gap-1 px-2 py-1 rounded-lg bg-brand-50 hover:bg-brand-100 text-brand-600 text-xs font-medium transition-colors">
               <Zap className="w-3 h-3" /> Quiz
             </button>
           )}
-        <button onClick={onDelete} disabled={deleting}
-          className="p-1.5 rounded-lg hover:bg-red-50 hover:text-red-500 text-ink-400 transition-all">
-          <Trash2 className="w-3.5 h-3.5" />
-        </button>
+          <button onClick={onDelete} disabled={deleting}
+            className="p-1.5 rounded-lg hover:bg-red-50 hover:text-red-500 text-ink-400 transition-all">
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
         </div>
       </div>
     </button>

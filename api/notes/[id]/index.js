@@ -1,4 +1,4 @@
-import { getNoteById, deleteNote } from '../../../lib/store.js';
+import { getNoteById, deleteNote, updateNote } from '../../../lib/store.js';
 
 export default async function handler(req, res) {
   const { id } = req.query;
@@ -9,6 +9,14 @@ export default async function handler(req, res) {
       res.status(200).json(record);
     } catch (err) {
       res.status(404).json({ error: err.message });
+    }
+  } else if (req.method === 'PATCH') {
+    try {
+      const { title, description } = req.body;
+      const record = await updateNote(id, { title, description });
+      res.status(200).json(record);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
     }
   } else if (req.method === 'DELETE') {
     try {
