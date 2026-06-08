@@ -50,8 +50,7 @@ export default function NotesPage({ notes: initialNotes, noteId, onBack, onQuiz 
 
   const [selected, setSelected] = useState(sidebarItems[0] ?? null);
   const [docxLoading, setDocxLoading] = useState(false);
-  const [downloadOpen, setDownloadOpen] = useState(false);
-  const downloadRef = useRef(null);
+  const [downloadModalOpen, setDownloadModalOpen] = useState(false);
 
   // When mode switches, reset selected to first item
   useEffect(() => {
@@ -94,21 +93,29 @@ export default function NotesPage({ notes: initialNotes, noteId, onBack, onQuiz 
     }
   }
 
-  function handleDownloadMd() {
-    const blob = new Blob([buildMarkdown(activeNotes)], { type: 'text/markdown' });
-    const label = mode === 'concise' ? `${activeNotes.title || 'notes'}-concise` : (activeNotes.title || 'notes');
-    const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: `${label}.md` });
-    a.click(); URL.revokeObjectURL(a.href);
-  }
-
-  async function handleDownloadDocx() {
-    setDocxLoading(true);
-    try {
-      const blob = await generateDocx(activeNotes);
-      const label = mode === 'concise' ? `${activeNotes.title || 'notes'}-concise` : (activeNotes.title || 'notes');
-      const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: `${label}.docx` });
+  async function handleDownload({ dlMode, selectedTopicIndices, includeKeyTerms, format }) {
+    // Pick the right notes source
+    const sourceNotes = dlMode === 'concise' && conciseNotes ? conciseNotes : initialNotes;
+    // Build filtered notes
+    const filteredNotes = {
+      ...sourceNotes,
+      topics: (sourceNotes.topics || []).filter((_, i) => selectedTopicIndices.includes(i)),
+      keyTerms: includeKeyTerms ? (sourceNotes.keyTerms || []) : [],
+      videoSources: [],
+    };
+    const label = `${sourceNotes.title || 'notes'}${dlMode === 'concise' ? '-concise' : ''}`;
+    if (format === 'md') {
+      const blob = new Blob([buildMarkdown(filteredNotes)], { type: 'text/markdown' });
+      const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: `${label}.md` });
       a.click(); URL.revokeObjectURL(a.href);
-    } finally { setDocxLoading(false); }
+    } else {
+      setDocxLoading(true);
+      try {
+        const blob = await generateDocx(filteredNotes);
+        const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: `${label}.docx` });
+        a.click(); URL.revokeObjectURL(a.href);
+      } finally { setDocxLoading(false); }
+    }
   }
 
   if (!initialNotes) return null;
@@ -133,24 +140,21 @@ export default function NotesPage({ notes: initialNotes, noteId, onBack, onQuiz 
             <ModeToggle mode={mode} loading={conciseLoading} onToggle={handleToggleConcise} />
           )}
           {conciseError && <span className="text-xs text-red-500">Failed — try again</span>}
-          <div className="relative" ref={downloadRef}>
-            <button
-              onClick={() => setDownloadOpen(o => !o)}
-              className="flex items-center gap-1.5 bg-ink-100 hover:bg-ink-200 text-ink-700 px-3 py-2 rounded-xl text-sm font-medium transition-colors"
-            >
-              <Download className="w-3.5 h-3.5" />
-              Download
-              <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-150 ${downloadOpen ? 'rotate-180' : ''}`} />
-            </button>
-            {downloadOpen && (
-              <DownloadMenu
-                onMd={() => { handleDownloadMd(); setDownloadOpen(false); }}
-                onDocx={() => { handleDownloadDocx(); setDownloadOpen(false); }}
-                docxLoading={docxLoading}
-                onClose={() => setDownloadOpen(false)}
-              />
-            )}
-          </div>
+          <button
+            onClick={() => setDownloadModalOpen(true)}
+            className="flex items-center gap-1.5 bg-ink-100 hover:bg-ink-200 text-ink-700 px-3 py-2 rounded-xl text-sm font-medium transition-colors"
+          >
+            <Download className="w-3.5 h-3.5" /> Download
+          </button>
+          {downloadModalOpen && (
+            <DownloadModal
+              notes={initialNotes}
+              conciseNotes={conciseNotes}
+              docxLoading={docxLoading}
+              onDownload={async (opts) => { await handleDownload(opts); setDownloadModalOpen(false); }}
+              onClose={() => setDownloadModalOpen(false)}
+            />
+          )}
           {noteId && onQuiz && (
             <button onClick={onQuiz} className="flex items-center gap-1.5 bg-ink-900 hover:bg-brand-600 text-white px-3 py-2 rounded-xl text-sm font-medium transition-colors shadow-sm">
               <Zap className="w-3.5 h-3.5" /> Quiz
@@ -436,42 +440,162 @@ function VideoPane({ source, onToggleMerge }) {
   );
 }
 
-// ── Download menu ─────────────────────────────────────────────────────────────
+// ── Download modal ────────────────────────────────────────────────────────────
 
-function DownloadMenu({ onMd, onDocx, docxLoading, onClose }) {
-  const ref = useRef(null);
+function DownloadModal({ notes, conciseNotes, docxLoading, onDownload, onClose }) {
+  const [dlMode, setDlMode] = useState('standard');
+  const [format, setFormat] = useState('docx');
+  const topicCount = notes?.topics?.length || 0;
+  const hasKeyTerms = (notes?.keyTerms?.length || 0) > 0;
+  const [selectedTopics, setSelectedTopics] = useState(() => new Set(Array.from({ length: topicCount }, (_, i) => i)));
+  const [includeKeyTerms, setIncludeKeyTerms] = useState(true);
 
-  useEffect(() => {
-    function handleClick(e) {
-      if (ref.current && !ref.current.contains(e.target)) onClose();
+  const allTopicsSelected = selectedTopics.size === topicCount;
+  const noneSelected = selectedTopics.size === 0 && !includeKeyTerms;
+
+  function toggleTopic(i) {
+    setSelectedTopics(prev => {
+      const next = new Set(prev);
+      next.has(i) ? next.delete(i) : next.add(i);
+      return next;
+    });
+  }
+
+  function toggleAll() {
+    if (allTopicsSelected && includeKeyTerms) {
+      setSelectedTopics(new Set());
+      setIncludeKeyTerms(false);
+    } else {
+      setSelectedTopics(new Set(Array.from({ length: topicCount }, (_, i) => i)));
+      setIncludeKeyTerms(true);
     }
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, [onClose]);
+  }
+
+  // Close on backdrop click
+  function onBackdrop(e) { if (e.target === e.currentTarget) onClose(); }
 
   return (
-    <div ref={ref} className="absolute right-0 top-full mt-2 w-44 bg-white border border-ink-200 rounded-2xl shadow-lg overflow-hidden z-50 animate-fade-in">
-      <button
-        onClick={onMd}
-        className="w-full flex items-center gap-3 px-4 py-3 text-sm text-ink-700 hover:bg-ink-50 transition-colors border-b border-ink-100"
-      >
-        <FileText className="w-4 h-4 text-ink-400 flex-shrink-0" />
-        <div className="text-left">
-          <p className="font-600">Markdown</p>
-          <p className="text-xs text-ink-400">.md file</p>
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onBackdrop}>
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-fade-in">
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-ink-100">
+          <div className="flex items-center gap-2.5">
+            <Download className="w-4 h-4 text-ink-500" />
+            <span className="font-700 text-ink-900 text-base">Download notes</span>
+          </div>
+          <button onClick={onClose} className="text-ink-400 hover:text-ink-700 transition-colors text-lg leading-none">✕</button>
         </div>
-      </button>
-      <button
-        onClick={onDocx}
-        disabled={docxLoading}
-        className="w-full flex items-center gap-3 px-4 py-3 text-sm text-ink-700 hover:bg-ink-50 transition-colors disabled:opacity-60"
-      >
-        <FileDown className="w-4 h-4 text-ink-400 flex-shrink-0" />
-        <div className="text-left">
-          <p className="font-600">{docxLoading ? 'Building…' : 'Word Document'}</p>
-          <p className="text-xs text-ink-400">.docx file</p>
+
+        <div className="px-6 py-5 space-y-5">
+
+          {/* Version */}
+          <div>
+            <p className="text-xs font-600 text-ink-400 uppercase tracking-wider mb-2">Version</p>
+            <div className="flex gap-2">
+              {[
+                { val: 'standard', label: 'Standard', sub: 'Full notes' },
+                { val: 'concise',  label: 'Concise',  sub: conciseNotes ? 'Ready' : 'Not yet generated', disabled: !conciseNotes },
+              ].map(opt => (
+                <button key={opt.val} onClick={() => !opt.disabled && setDlMode(opt.val)} disabled={opt.disabled}
+                  className={`flex-1 flex flex-col items-center py-2.5 px-3 rounded-xl border-2 text-sm transition-all ${
+                    dlMode === opt.val ? 'border-ink-900 bg-ink-50' :
+                    opt.disabled ? 'border-ink-100 text-ink-300 cursor-not-allowed' :
+                    'border-ink-200 hover:border-ink-300'
+                  }`}>
+                  <span className="font-600 text-ink-800">{opt.label}</span>
+                  <span className={`text-xs mt-0.5 ${opt.disabled ? 'text-ink-300' : 'text-ink-400'}`}>{opt.sub}</span>
+                </button>
+              ))}
+            </div>
+            {!conciseNotes && (
+              <p className="text-xs text-ink-400 mt-1.5">Switch to Concise mode on the notes page first to enable this option.</p>
+            )}
+          </div>
+
+          {/* Topics */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-600 text-ink-400 uppercase tracking-wider">Content</p>
+              <button onClick={toggleAll} className="text-xs font-600 text-brand-600 hover:text-brand-700 transition-colors">
+                {allTopicsSelected && includeKeyTerms ? 'Deselect all' : 'Select all'}
+              </button>
+            </div>
+            <div className="space-y-0.5">
+              {(notes?.topics || []).map((t, i) => (
+                <label key={i} onClick={() => toggleTopic(i)}
+                  className="flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-ink-50 cursor-pointer transition-colors group">
+                  <Checkbox checked={selectedTopics.has(i)} />
+                  <span className="text-xs text-ink-400 w-4 tabular-nums flex-shrink-0">{i + 1}</span>
+                  <span className="text-sm text-ink-700 flex-1 leading-snug">{t.name}</span>
+                </label>
+              ))}
+              {hasKeyTerms && (
+                <label onClick={() => setIncludeKeyTerms(v => !v)}
+                  className="flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-ink-50 cursor-pointer transition-colors group">
+                  <Checkbox checked={includeKeyTerms} />
+                  <Hash className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+                  <span className="text-sm text-ink-700 flex-1">Key Terms</span>
+                </label>
+              )}
+            </div>
+          </div>
+
+          {/* Format */}
+          <div>
+            <p className="text-xs font-600 text-ink-400 uppercase tracking-wider mb-2">Format</p>
+            <div className="flex gap-2">
+              {[
+                { val: 'docx', label: 'Word Document', sub: '.docx', icon: <FileDown className="w-4 h-4" /> },
+                { val: 'md',   label: 'Markdown',      sub: '.md',   icon: <FileText className="w-4 h-4" /> },
+              ].map(opt => (
+                <button key={opt.val} onClick={() => setFormat(opt.val)}
+                  className={`flex-1 flex items-center gap-2.5 py-2.5 px-3 rounded-xl border-2 text-sm transition-all ${
+                    format === opt.val ? 'border-ink-900 bg-ink-50' : 'border-ink-200 hover:border-ink-300'
+                  }`}>
+                  <span className={format === opt.val ? 'text-ink-700' : 'text-ink-400'}>{opt.icon}</span>
+                  <div className="text-left">
+                    <p className="font-600 text-ink-800 text-xs">{opt.label}</p>
+                    <p className="text-ink-400 text-xs">{opt.sub}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
-      </button>
+
+        {/* Footer */}
+        <div className="px-6 pb-5">
+          <button
+            onClick={() => onDownload({ dlMode, selectedTopicIndices: [...selectedTopics], includeKeyTerms, format })}
+            disabled={noneSelected || docxLoading}
+            className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-600 transition-all ${
+              noneSelected || docxLoading
+                ? 'bg-ink-100 text-ink-400 cursor-not-allowed'
+                : 'bg-ink-900 hover:bg-brand-600 text-white shadow-sm'
+            }`}
+          >
+            {docxLoading
+              ? <><Loader2 className="w-4 h-4 animate-spin" /> Building…</>
+              : <><Download className="w-4 h-4" /> Download {format === 'docx' ? '.docx' : '.md'}</>
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Checkbox({ checked }) {
+  return (
+    <div className={`w-4 h-4 rounded flex items-center justify-center flex-shrink-0 border transition-colors ${
+      checked ? 'bg-ink-900 border-ink-900' : 'border-ink-300 bg-white group-hover:border-ink-400'
+    }`}>
+      {checked && (
+        <svg className="w-2.5 h-2.5 text-white" viewBox="0 0 10 8" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M1 4l3 3 5-6" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      )}
     </div>
   );
 }
