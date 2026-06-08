@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, ChevronDown, ChevronRight, Download, BookOpen, Hash, FileText, Zap, Layers, Youtube } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronRight, Download, BookOpen, Hash, FileText, Zap, Layers, Youtube, GitMerge, CheckCircle, Loader2 } from 'lucide-react';
 import { generateDocx } from '../utils/generateDocx.js';
 
 export default function NotesPage({ notes: initialNotes, noteId, onBack, onQuiz }) {
@@ -213,8 +213,8 @@ export default function NotesPage({ notes: initialNotes, noteId, onBack, onQuiz 
       {/* Video Sources */}
       {(initialNotes.videoSources?.length > 0) && (
         <div className="mt-3 space-y-3">
-          {initialNotes.videoSources.map((vs, vi) => (
-            <VideoSourceBlock key={vs.videoId} source={vs} />
+          {initialNotes.videoSources.map((vs) => (
+            <VideoSourceBlock key={vs.videoId} source={vs} noteId={noteId} />
           ))}
         </div>
       )}
@@ -300,20 +300,19 @@ function ConciseLoadingState({ onSwitchBack }) {
 
 // ── Video Source Block ────────────────────────────────────────────────────────
 
-function VideoSourceBlock({ source }) {
+function VideoSourceBlock({ source: initialSource, noteId }) {
   const [open, setOpen] = useState(true);
+  const [source, setSource] = useState(initialSource);
+  const [merging, setMerging] = useState(false);
+  const [mergeError, setMergeError] = useState(null);
   const iframeRef = useRef(null);
 
   function seekTo(seconds) {
-    // Use YouTube postMessage API to seek without reloading
     iframeRef.current?.contentWindow?.postMessage(
-      JSON.stringify({ event: 'command', func: 'seekTo', args: [seconds, true] }),
-      '*'
+      JSON.stringify({ event: 'command', func: 'seekTo', args: [seconds, true] }), '*'
     );
-    // Also ensure it plays
     iframeRef.current?.contentWindow?.postMessage(
-      JSON.stringify({ event: 'command', func: 'playVideo', args: [] }),
-      '*'
+      JSON.stringify({ event: 'command', func: 'playVideo', args: [] }), '*'
     );
   }
 
@@ -323,16 +322,61 @@ function VideoSourceBlock({ source }) {
     return `${m}:${s}`;
   }
 
+  async function handleMerge() {
+    if (!noteId || merging) return;
+    setMerging(true);
+    setMergeError(null);
+    try {
+      const res = await fetch(`/api/notes/${noteId}/merge-video`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ videoId: source.videoId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Merge failed');
+      setSource(prev => ({ ...prev, merged: true }));
+    } catch (err) {
+      setMergeError(err.message);
+    } finally {
+      setMerging(false);
+    }
+  }
+
   return (
     <div className="bg-white rounded-2xl border border-ink-200 shadow-sm overflow-hidden">
-      <button onClick={() => setOpen(v => !v)}
-        className="w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-ink-50 transition-colors">
-        <span className="w-6 h-6 rounded-lg bg-red-500 flex items-center justify-center flex-shrink-0">
-          <Youtube className="w-3.5 h-3.5 text-white" />
-        </span>
-        <span className="font-600 text-ink-800 flex-1 text-[15px] line-clamp-1">{source.title}</span>
-        {open ? <ChevronDown className="w-4 h-4 text-ink-400" /> : <ChevronRight className="w-4 h-4 text-ink-400" />}
-      </button>
+      {/* Header */}
+      <div className="flex items-center gap-3 px-5 py-4">
+        <button onClick={() => setOpen(v => !v)} className="flex items-center gap-3 flex-1 text-left min-w-0">
+          <span className="w-6 h-6 rounded-lg bg-red-500 flex items-center justify-center flex-shrink-0">
+            <Youtube className="w-3.5 h-3.5 text-white" />
+          </span>
+          <span className="font-600 text-ink-800 flex-1 text-[15px] line-clamp-1 min-w-0">{source.title}</span>
+          {open ? <ChevronDown className="w-4 h-4 text-ink-400 flex-shrink-0" /> : <ChevronRight className="w-4 h-4 text-ink-400 flex-shrink-0" />}
+        </button>
+
+        {/* Merge button */}
+        {noteId && (
+          source.merged ? (
+            <span className="flex items-center gap-1 text-xs font-600 text-green-600 bg-green-50 px-2.5 py-1 rounded-full flex-shrink-0">
+              <CheckCircle className="w-3 h-3" /> Merged
+            </span>
+          ) : (
+            <button
+              onClick={handleMerge}
+              disabled={merging}
+              className="flex items-center gap-1.5 text-xs font-600 text-ink-600 bg-ink-100 hover:bg-brand-100 hover:text-brand-700 px-2.5 py-1 rounded-full transition-colors flex-shrink-0 disabled:opacity-50"
+              title="Merge video content into main notes"
+            >
+              {merging ? <Loader2 className="w-3 h-3 animate-spin" /> : <GitMerge className="w-3 h-3" />}
+              {merging ? 'Merging…' : 'Merge into notes'}
+            </button>
+          )
+        )}
+      </div>
+
+      {mergeError && (
+        <p className="px-5 pb-3 text-xs text-red-500">{mergeError}</p>
+      )}
 
       {open && (
         <div className="border-t border-ink-100">
