@@ -221,6 +221,10 @@ export default function NotesPage({ notes: initialNotes, noteId, onBack, onQuiz 
                       className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left transition-all duration-150 outline-none ${
                         isSelected
                           ? 'bg-ink-900/10'
+                          : item.type === 'video'
+                          ? 'text-ink-500 hover:text-ink-800 bg-red-50/60 hover:bg-red-50'
+                          : item.type === 'terms'
+                          ? 'text-ink-500 hover:text-ink-800 bg-amber-50/60 hover:bg-amber-50'
                           : 'text-ink-500 hover:text-ink-800 hover:bg-ink-100'
                       }`}
                     >
