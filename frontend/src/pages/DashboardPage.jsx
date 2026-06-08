@@ -52,7 +52,7 @@ export default function DashboardPage({ onUpload, onOpenNote, onQuiz }) {
       {/* Header */}
       <div className="flex items-end justify-between mb-8">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-800 text-ink-900">Your Notes</h1>
+          <h1 className="text-2xl sm:text-3xl font-800 text-ink-900">My Study Notes</h1>
           <p className="text-ink-400 text-sm mt-1">
             {records.length === 0 ? 'No sessions yet' : `${records.length} session${records.length !== 1 ? 's' : ''}`}
           </p>
