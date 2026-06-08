@@ -9,10 +9,12 @@ export default function NotesPage({ notes: initialNotes, noteId, onBack, onQuiz 
   const [conciseError, setConciseError] = useState(null);
   const conciseFetchedRef = useRef(false);
 
-  // videoSources with local merged state
+  // Live notes — updated after Claude merges/restores video content
+  const [liveNotes, setLiveNotes] = useState(initialNotes);
   const [videoSources, setVideoSources] = useState(initialNotes.videoSources || []);
+  const [merging, setMerging] = useState(null); // videoId currently being processed
 
-  const activeNotes = mode === 'concise' && conciseNotes ? conciseNotes : initialNotes;
+  const activeNotes = mode === 'concise' && conciseNotes ? conciseNotes : liveNotes;
 
   // Global arrow-key navigation through sidebar
   useEffect(() => {
@@ -80,16 +82,26 @@ export default function NotesPage({ notes: initialNotes, noteId, onBack, onQuiz 
   }
 
   async function handleToggleVideoMerge(videoId, newMerged) {
-    setVideoSources(prev => prev.map(v => v.videoId === videoId ? { ...v, merged: newMerged } : v));
-    // Persist to DB (best-effort, non-blocking)
-    if (noteId) {
-      try {
-        await fetch(`/api/notes/${noteId}/video-merge`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ videoId, merged: newMerged }),
-        });
-      } catch { /* silent */ }
+    if (!noteId || merging) return;
+    setMerging(videoId);
+    try {
+      const res = await fetch(`/api/notes/${noteId}/merge-video`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ videoId, merged: newMerged }),
+      });
+      if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error || 'Failed'); }
+      const { notes: updatedNotes } = await res.json();
+      // Update live notes and videoSources from the server response
+      setLiveNotes(updatedNotes);
+      setVideoSources(updatedNotes.videoSources || []);
+      // Invalidate concise cache — notes changed
+      setConciseNotes(null);
+      conciseFetchedRef.current = false;
+    } catch (err) {
+      alert(`Could not ${newMerged ? 'merge' : 'remove'} video notes: ${err.message}`);
+    } finally {
+      setMerging(null);
     }
   }
 
@@ -264,6 +276,7 @@ export default function NotesPage({ notes: initialNotes, noteId, onBack, onQuiz 
               <VideoPane
                 source={videoSources.find(v => v.videoId === selected.videoId)}
                 onToggleMerge={handleToggleVideoMerge}
+                merging={merging === selected.videoId}
               />
             )}
           </div>
@@ -345,7 +358,7 @@ function TermsPane({ keyTerms }) {
 
 // ── Video pane ────────────────────────────────────────────────────────────────
 
-function VideoPane({ source, onToggleMerge }) {
+function VideoPane({ source, onToggleMerge, merging }) {
   const [openSections, setOpenSections] = useState({});
   const iframeRef = useRef(null);
 
@@ -390,17 +403,23 @@ function VideoPane({ source, onToggleMerge }) {
         <div className="flex-1">
           <p className="text-sm font-600 text-ink-800">Include notes in subject</p>
           <p className="text-xs text-ink-400 mt-0.5">
-            {source.merged
-              ? 'Video notes are included alongside your study notes'
-              : 'Toggle on to add this video\'s notes to your subject content'}
+            {merging
+              ? source.merged ? 'Removing video notes…' : 'Integrating video notes into your topics… this may take 20–30 seconds'
+              : source.merged
+              ? 'Video notes are integrated into your study topics'
+              : 'Toggle on to merge this video\'s notes into your subject content'}
           </p>
         </div>
-        <button
-          onClick={() => onToggleMerge(source.videoId, !source.merged)}
-          className={`relative w-10 h-6 rounded-full transition-colors duration-200 flex-shrink-0 outline-none focus:outline-none ${source.merged ? 'bg-green-500' : 'bg-ink-200'}`}
-        >
-          <span className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${source.merged ? 'translate-x-4' : 'translate-x-0'}`} />
-        </button>
+        {merging ? (
+          <Loader2 className="w-5 h-5 text-brand-500 animate-spin flex-shrink-0" />
+        ) : (
+          <button
+            onClick={() => onToggleMerge(source.videoId, !source.merged)}
+            className={`relative w-10 h-6 rounded-full transition-colors duration-200 flex-shrink-0 outline-none focus:outline-none ${source.merged ? 'bg-green-500' : 'bg-ink-200'}`}
+          >
+            <span className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${source.merged ? 'translate-x-4' : 'translate-x-0'}`} />
+          </button>
+        )}
       </div>
 
       {/* Timecoded notes */}
