@@ -1,4 +1,4 @@
-import { getNoteById, deleteNote, updateNote } from '../../../lib/store.js';
+import { getNoteById, deleteNote, updateNote, saveQuizScore } from '../../../lib/store.js';
 
 export default async function handler(req, res) {
   const { id } = req.query;
@@ -12,7 +12,12 @@ export default async function handler(req, res) {
     }
   } else if (req.method === 'PATCH') {
     try {
-      const { title, description, subject_id } = req.body;
+      const { title, description, subject_id, latest_quiz_pct } = req.body;
+      // Quiz score shortcut — just save the score, skip full update
+      if (latest_quiz_pct != null && title == null && description == null && subject_id == null) {
+        await saveQuizScore(id, latest_quiz_pct);
+        return res.status(200).json({ ok: true });
+      }
       const record = await updateNote(id, { title, description, subject_id });
       res.status(200).json(record);
     } catch (err) {

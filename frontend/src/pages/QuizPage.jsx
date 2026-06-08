@@ -88,10 +88,10 @@ export default function QuizPage({ noteId, noteTitle, notes, onBack }) {
     if (scoreSaved || !noteId) return;
     setScoreSaved(true);
     try {
-      await fetch('/api/quiz/score', {
-        method: 'POST',
+      await fetch(`/api/notes/${noteId}`, {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ noteId, pct }),
+        body: JSON.stringify({ latest_quiz_pct: pct }),
       });
     } catch { /* silent */ }
   }

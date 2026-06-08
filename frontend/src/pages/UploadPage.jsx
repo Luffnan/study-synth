@@ -188,7 +188,7 @@ function YouTubePanel({ onNotes }) {
     if (!url.trim() || loading) return;
     setLoading(true); setError(null);
     try {
-      const res = await fetch('/api/youtube/create', {
+      const res = await fetch('/api/youtube', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url: url.trim() }),

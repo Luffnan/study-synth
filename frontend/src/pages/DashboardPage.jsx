@@ -655,7 +655,7 @@ function YouTubeTab({ target, onDone, onClose }) {
     if (!url.trim()) return;
     setProcessing(true); setError(null);
     try {
-      const res = await fetch('/api/youtube/ingest', {
+      const res = await fetch('/api/youtube', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ noteId: target.id, url: url.trim() }),
       });
