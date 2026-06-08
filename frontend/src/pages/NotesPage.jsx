@@ -14,6 +14,34 @@ export default function NotesPage({ notes: initialNotes, noteId, onBack, onQuiz 
 
   const activeNotes = mode === 'concise' && conciseNotes ? conciseNotes : initialNotes;
 
+  // Global arrow-key navigation through sidebar
+  useEffect(() => {
+    function onKey(e) {
+      if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+      // Don't hijack arrow keys in inputs/textareas
+      if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
+      e.preventDefault();
+      setSelected(prev => {
+        const items = [
+          ...(activeNotes.topics || []).map((t, i) => ({ type: 'topic', index: i, label: t.name })),
+          ...(activeNotes.keyTerms?.length ? [{ type: 'terms', label: 'Key Terms' }] : []),
+          ...(videoSources || []).map(v => ({ type: 'video', videoId: v.videoId, label: v.title })),
+        ];
+        const idx = items.findIndex(item =>
+          prev?.type === item.type &&
+          (item.type === 'topic' ? prev.index === item.index :
+           item.type === 'video' ? prev.videoId === item.videoId : true)
+        );
+        const next = e.key === 'ArrowDown'
+          ? Math.min(idx + 1, items.length - 1)
+          : Math.max(idx - 1, 0);
+        return items[next] ?? prev;
+      });
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [activeNotes, videoSources]);
+
   // Build sidebar items: topics + key terms + videos
   const sidebarItems = [
     ...(activeNotes.topics || []).map((t, i) => ({ type: 'topic', index: i, label: t.name })),
@@ -180,7 +208,6 @@ export default function NotesPage({ notes: initialNotes, noteId, onBack, onQuiz 
                    item.type === 'video' ? selected.videoId === item.videoId : true);
                 const isMergedVideo = item.type === 'video' && videoSources.find(v => v.videoId === item.videoId)?.merged;
 
-                // Divider before Key Terms and before first video
                 const prevItem = currentSidebarItems[i - 1];
                 const showDivider = i > 0 && item.type !== prevItem?.type;
 
@@ -188,28 +215,28 @@ export default function NotesPage({ notes: initialNotes, noteId, onBack, onQuiz 
                   <div key={i}>
                     {showDivider && <div className="my-1.5 border-t border-ink-100" />}
                     <button onClick={() => setSelected(item)}
-                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left transition-all duration-150 group ${
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left transition-all duration-150 ${
                         isSelected
-                          ? 'bg-ink-900 text-white'
+                          ? 'bg-ink-900/40 text-ink-900'
                           : 'text-ink-500 hover:text-ink-800 hover:bg-ink-100'
                       }`}
                     >
                       {item.type === 'topic' && (
                         <span className={`w-4 h-4 rounded text-[9px] font-700 flex items-center justify-center flex-shrink-0 tabular-nums ${
-                          isSelected ? 'bg-white/15 text-white' : 'text-ink-400'
+                          isSelected ? 'text-ink-700' : 'text-ink-400'
                         }`}>
                           {item.index + 1}
                         </span>
                       )}
                       {item.type === 'terms' && (
-                        <Hash className={`w-3.5 h-3.5 flex-shrink-0 ${isSelected ? 'text-amber-300' : 'text-amber-400'}`} />
+                        <Hash className="w-3.5 h-3.5 flex-shrink-0 text-amber-400" />
                       )}
                       {item.type === 'video' && (
-                        <Youtube className={`w-3.5 h-3.5 flex-shrink-0 ${isSelected ? 'text-red-300' : 'text-red-400'}`} />
+                        <Youtube className="w-3.5 h-3.5 flex-shrink-0 text-red-400" />
                       )}
-                      <span className="text-xs font-500 line-clamp-2 flex-1 leading-snug">{item.label}</span>
+                      <span className={`text-xs line-clamp-2 flex-1 leading-snug ${isSelected ? 'font-600 text-ink-800' : 'font-500'}`}>{item.label}</span>
                       {isMergedVideo && (
-                        <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isSelected ? 'bg-green-400' : 'bg-green-400'}`} title="Included in notes" />
+                        <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 bg-green-400" title="Included in notes" />
                       )}
                     </button>
                   </div>
