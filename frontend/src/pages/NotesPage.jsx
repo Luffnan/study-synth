@@ -1,23 +1,65 @@
-import { useState } from 'react';
-import { ArrowLeft, ChevronDown, ChevronRight, Download, BookOpen, Hash, FileText, Zap } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { ArrowLeft, ChevronDown, ChevronRight, Download, BookOpen, Hash, FileText, Zap, Layers } from 'lucide-react';
 import { generateDocx } from '../utils/generateDocx.js';
 
-export default function NotesPage({ notes, noteId, onBack, onQuiz }) {
-  const [openTopics, setOpenTopics] = useState(() =>
-    Object.fromEntries((notes?.topics || []).map((_, i) => [i, true]))
-  );
+export default function NotesPage({ notes: initialNotes, noteId, onBack, onQuiz }) {
+  const [mode, setMode] = useState('standard'); // 'standard' | 'concise'
+  const [conciseNotes, setConciseNotes] = useState(null);
+  const [conciseLoading, setConciseLoading] = useState(false);
+  const [conciseError, setConciseError] = useState(null);
+  const conciseFetchedRef = useRef(false);
+
+  const activeNotes = mode === 'concise' && conciseNotes ? conciseNotes : initialNotes;
+
+  const [openTopics, setOpenTopics] = useState({});
   const [openSubtopics, setOpenSubtopics] = useState({});
   const [showTerms, setShowTerms] = useState(true);
   const [docxLoading, setDocxLoading] = useState(false);
 
+  // Reset open state whenever active notes change
+  useEffect(() => {
+    setOpenTopics(Object.fromEntries((activeNotes?.topics || []).map((_, i) => [i, true])));
+    setOpenSubtopics({});
+    setShowTerms(true);
+  }, [mode, conciseNotes]);
+
   function toggleTopic(i) { setOpenTopics(p => ({ ...p, [i]: !p[i] })); }
   function toggleSub(key) { setOpenSubtopics(p => ({ ...p, [key]: p[key] === false ? true : false })); }
 
+  async function handleToggleConcise() {
+    if (mode === 'concise') {
+      setMode('standard');
+      return;
+    }
+    // Switch to concise
+    setMode('concise');
+    if (conciseNotes || conciseFetchedRef.current) return; // already have them or fetching
+
+    conciseFetchedRef.current = true;
+    setConciseLoading(true);
+    setConciseError(null);
+    try {
+      const res = await fetch(`/api/notes/${noteId}/concise`, { method: 'POST' });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Failed to generate concise notes');
+      }
+      const data = await res.json();
+      setConciseNotes(data.conciseNotes);
+    } catch (err) {
+      setConciseError(err.message);
+      conciseFetchedRef.current = false; // allow retry
+    } finally {
+      setConciseLoading(false);
+    }
+  }
+
   function handleDownloadMd() {
-    const blob = new Blob([buildMarkdown(notes)], { type: 'text/markdown' });
+    const blob = new Blob([buildMarkdown(activeNotes)], { type: 'text/markdown' });
+    const label = mode === 'concise' ? `${activeNotes.title || 'study-notes'}-concise` : (activeNotes.title || 'study-notes');
     const a = Object.assign(document.createElement('a'), {
       href: URL.createObjectURL(blob),
-      download: `${notes.title || 'study-notes'}.md`
+      download: `${label}.md`
     });
     a.click(); URL.revokeObjectURL(a.href);
   }
@@ -25,10 +67,11 @@ export default function NotesPage({ notes, noteId, onBack, onQuiz }) {
   async function handleDownloadDocx() {
     setDocxLoading(true);
     try {
-      const blob = await generateDocx(notes);
+      const blob = await generateDocx(activeNotes);
+      const label = mode === 'concise' ? `${activeNotes.title || 'study-notes'}-concise` : (activeNotes.title || 'study-notes');
       const a = Object.assign(document.createElement('a'), {
         href: URL.createObjectURL(blob),
-        download: `${notes.title || 'study-notes'}.docx`
+        download: `${label}.docx`
       });
       a.click(); URL.revokeObjectURL(a.href);
     } finally {
@@ -36,7 +79,7 @@ export default function NotesPage({ notes, noteId, onBack, onQuiz }) {
     }
   }
 
-  if (!notes) return null;
+  if (!initialNotes) return null;
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 animate-fade-in">
@@ -67,87 +110,104 @@ export default function NotesPage({ notes, noteId, onBack, onQuiz }) {
       </div>
 
       {/* Title */}
-      <div className="mb-8">
+      <div className="mb-6">
         <p className="flex items-center gap-1.5 text-brand-600 text-xs font-600 uppercase tracking-wider mb-2">
           <BookOpen className="w-3.5 h-3.5" /> Study Notes
         </p>
-        <h1 className="text-2xl sm:text-3xl font-800 text-ink-900 leading-tight">{notes.title || 'Study Notes'}</h1>
+        <h1 className="text-2xl sm:text-3xl font-800 text-ink-900 leading-tight">{initialNotes.title || 'Study Notes'}</h1>
         <p className="text-ink-400 text-sm mt-1.5">
-          {notes.topics?.length || 0} topics · {notes.topics?.reduce((a, t) => a + (t.subtopics?.length || 0), 0) || 0} subtopics
-          {notes.keyTerms?.length > 0 && ` · ${notes.keyTerms.length} key terms`}
+          {activeNotes.topics?.length || 0} topics · {activeNotes.topics?.reduce((a, t) => a + (t.subtopics?.length || 0), 0) || 0} subtopics
+          {activeNotes.keyTerms?.length > 0 && ` · ${activeNotes.keyTerms.length} key terms`}
         </p>
       </div>
 
-      {/* Topics */}
-      <div className="space-y-2.5">
-        {notes.topics?.map((topic, ti) => (
-          <div key={ti} className="bg-white rounded-2xl border border-ink-200 shadow-sm overflow-hidden">
-            <button onClick={() => toggleTopic(ti)}
-              className="w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-ink-50 transition-colors">
-              <span className="w-6 h-6 rounded-lg bg-ink-900 text-white text-xs font-700 flex items-center justify-center flex-shrink-0">
-                {ti + 1}
-              </span>
-              <span className="font-600 text-ink-800 flex-1 text-[15px]">{topic.name}</span>
-              {openTopics[ti] ? <ChevronDown className="w-4 h-4 text-ink-400" /> : <ChevronRight className="w-4 h-4 text-ink-400" />}
-            </button>
-
-            {openTopics[ti] && (
-              <div className="border-t border-ink-100 px-4 py-3 space-y-2">
-                {topic.subtopics?.map((sub, si) => {
-                  const key = `${ti}-${si}`;
-                  const isOpen = openSubtopics[key] !== false;
-                  return (
-                    <div key={si} className="rounded-xl bg-ink-50 overflow-hidden">
-                      <button onClick={() => toggleSub(key)}
-                        className="w-full flex items-center gap-2 px-4 py-2.5 text-left hover:bg-ink-100 transition-colors">
-                        <span className="w-1 h-4 rounded-full bg-brand-500 flex-shrink-0" />
-                        <span className="text-sm font-600 text-ink-700 flex-1">{sub.name}</span>
-                        {isOpen ? <ChevronDown className="w-3.5 h-3.5 text-ink-400" /> : <ChevronRight className="w-3.5 h-3.5 text-ink-400" />}
-                      </button>
-                      {isOpen && (
-                        <ul className="px-4 pb-3 space-y-1.5">
-                          {sub.points?.map((pt, pi) => (
-                            <li key={pi} className="flex items-start gap-2 text-sm text-ink-600">
-                              <span className="w-1.5 h-1.5 rounded-full bg-brand-400 mt-[7px] flex-shrink-0" />
-                              {pt}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-
-      {/* Key Terms */}
-      {notes.keyTerms?.length > 0 && (
-        <div className="mt-3 bg-white rounded-2xl border border-ink-200 shadow-sm overflow-hidden">
-          <button onClick={() => setShowTerms(v => !v)}
-            className="w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-ink-50 transition-colors">
-            <span className="w-6 h-6 rounded-lg bg-amber-400 flex items-center justify-center flex-shrink-0">
-              <Hash className="w-3.5 h-3.5 text-white" />
-            </span>
-            <span className="font-600 text-ink-800 flex-1 text-[15px]">Key Terms</span>
-            <span className="text-xs text-ink-400 mr-1">{notes.keyTerms.length}</span>
-            {showTerms ? <ChevronDown className="w-4 h-4 text-ink-400" /> : <ChevronRight className="w-4 h-4 text-ink-400" />}
-          </button>
-          {showTerms && (
-            <div className="border-t border-ink-100 px-5 py-4">
-              <dl className="space-y-3">
-                {notes.keyTerms.map((item, i) => (
-                  <div key={i} className="flex gap-3 flex-col sm:flex-row">
-                    <dt className="text-sm font-600 text-brand-600 sm:min-w-[140px] sm:flex-shrink-0">{item.term}</dt>
-                    <dd className="text-sm text-ink-600">{item.definition}</dd>
-                  </div>
-                ))}
-              </dl>
-            </div>
+      {/* Standard / Concise Toggle */}
+      {noteId && (
+        <div className="flex items-center gap-3 mb-8">
+          <ModeToggle mode={mode} loading={conciseLoading} onToggle={handleToggleConcise} />
+          {conciseError && (
+            <span className="text-xs text-red-500">Failed to generate — try again</span>
           )}
         </div>
+      )}
+
+      {/* Content */}
+      {mode === 'concise' && conciseLoading ? (
+        <ConciseLoadingState onSwitchBack={() => setMode('standard')} />
+      ) : (
+        <>
+          {/* Topics */}
+          <div className="space-y-2.5">
+            {activeNotes.topics?.map((topic, ti) => (
+              <div key={`${mode}-${ti}`} className="bg-white rounded-2xl border border-ink-200 shadow-sm overflow-hidden">
+                <button onClick={() => toggleTopic(ti)}
+                  className="w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-ink-50 transition-colors">
+                  <span className="w-6 h-6 rounded-lg bg-ink-900 text-white text-xs font-700 flex items-center justify-center flex-shrink-0">
+                    {ti + 1}
+                  </span>
+                  <span className="font-600 text-ink-800 flex-1 text-[15px]">{topic.name}</span>
+                  {openTopics[ti] ? <ChevronDown className="w-4 h-4 text-ink-400" /> : <ChevronRight className="w-4 h-4 text-ink-400" />}
+                </button>
+
+                {openTopics[ti] && (
+                  <div className="border-t border-ink-100 px-4 py-3 space-y-2">
+                    {topic.subtopics?.map((sub, si) => {
+                      const key = `${ti}-${si}`;
+                      const isOpen = openSubtopics[key] !== false;
+                      return (
+                        <div key={si} className="rounded-xl bg-ink-50 overflow-hidden">
+                          <button onClick={() => toggleSub(key)}
+                            className="w-full flex items-center gap-2 px-4 py-2.5 text-left hover:bg-ink-100 transition-colors">
+                            <span className="w-1 h-4 rounded-full bg-brand-500 flex-shrink-0" />
+                            <span className="text-sm font-600 text-ink-700 flex-1">{sub.name}</span>
+                            {isOpen ? <ChevronDown className="w-3.5 h-3.5 text-ink-400" /> : <ChevronRight className="w-3.5 h-3.5 text-ink-400" />}
+                          </button>
+                          {isOpen && (
+                            <ul className="px-4 pb-3 space-y-1.5">
+                              {sub.points?.map((pt, pi) => (
+                                <li key={pi} className="flex items-start gap-2 text-sm text-ink-600">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-brand-400 mt-[7px] flex-shrink-0" />
+                                  {pt}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Key Terms */}
+          {activeNotes.keyTerms?.length > 0 && (
+            <div className="mt-3 bg-white rounded-2xl border border-ink-200 shadow-sm overflow-hidden">
+              <button onClick={() => setShowTerms(v => !v)}
+                className="w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-ink-50 transition-colors">
+                <span className="w-6 h-6 rounded-lg bg-amber-400 flex items-center justify-center flex-shrink-0">
+                  <Hash className="w-3.5 h-3.5 text-white" />
+                </span>
+                <span className="font-600 text-ink-800 flex-1 text-[15px]">Key Terms</span>
+                <span className="text-xs text-ink-400 mr-1">{activeNotes.keyTerms.length}</span>
+                {showTerms ? <ChevronDown className="w-4 h-4 text-ink-400" /> : <ChevronRight className="w-4 h-4 text-ink-400" />}
+              </button>
+              {showTerms && (
+                <div className="border-t border-ink-100 px-5 py-4">
+                  <dl className="space-y-3">
+                    {activeNotes.keyTerms.map((item, i) => (
+                      <div key={i} className="flex gap-3 flex-col sm:flex-row">
+                        <dt className="text-sm font-600 text-brand-600 sm:min-w-[140px] sm:flex-shrink-0">{item.term}</dt>
+                        <dd className="text-sm text-ink-600">{item.definition}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </div>
+              )}
+            </div>
+          )}
+        </>
       )}
 
       <p className="text-center text-ink-300 text-xs mt-10">
@@ -156,6 +216,78 @@ export default function NotesPage({ notes, noteId, onBack, onQuiz }) {
     </div>
   );
 }
+
+// ── Toggle component ──────────────────────────────────────────────────────────
+
+function ModeToggle({ mode, loading, onToggle }) {
+  return (
+    <div className="flex items-center gap-1 bg-ink-100 rounded-xl p-1">
+      <button
+        onClick={() => mode !== 'standard' && onToggle()}
+        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-600 transition-all duration-200 ${
+          mode === 'standard'
+            ? 'bg-white text-ink-900 shadow-sm'
+            : 'text-ink-400 hover:text-ink-600'
+        }`}
+      >
+        Standard
+      </button>
+      <button
+        onClick={() => mode !== 'concise' && onToggle()}
+        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-600 transition-all duration-200 ${
+          mode === 'concise'
+            ? 'bg-white text-ink-900 shadow-sm'
+            : 'text-ink-400 hover:text-ink-600'
+        }`}
+      >
+        {loading ? (
+          <>
+            <span className="w-3 h-3 border-[1.5px] border-brand-500 border-t-transparent rounded-full animate-spin" />
+            Concise
+          </>
+        ) : (
+          <>
+            <Layers className="w-3 h-3" />
+            Concise
+          </>
+        )}
+      </button>
+    </div>
+  );
+}
+
+// ── Loading skeleton while concise is generating ──────────────────────────────
+
+function ConciseLoadingState({ onSwitchBack }) {
+  return (
+    <div className="space-y-2.5">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-4 h-4 border-2 border-brand-500 border-t-transparent rounded-full animate-spin flex-shrink-0" />
+        <p className="text-sm text-ink-500">
+          Generating concise notes in the background…
+          <button onClick={onSwitchBack} className="ml-2 text-brand-600 hover:underline font-medium">
+            Switch back to Standard
+          </button>
+        </p>
+      </div>
+      {[1, 2, 3].map(i => (
+        <div key={i} className="bg-white rounded-2xl border border-ink-200 shadow-sm p-5 animate-pulse">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-6 h-6 rounded-lg bg-ink-200" />
+            <div className="h-4 bg-ink-200 rounded w-1/3" />
+          </div>
+          <div className="space-y-2 pl-9">
+            <div className="h-3 bg-ink-100 rounded w-full" />
+            <div className="h-3 bg-ink-100 rounded w-5/6" />
+            <div className="h-3 bg-ink-100 rounded w-4/6" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── Markdown builder ──────────────────────────────────────────────────────────
 
 function buildMarkdown(notes) {
   const lines = [`# ${notes.title || 'Study Notes'}`, ''];

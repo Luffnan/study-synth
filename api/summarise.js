@@ -28,11 +28,13 @@ If a section is purely exam technique or methodology with no subject content, sk
 
 Rules:
 1. Identify the main topics and subtopics of the SUBJECT CONTENT only
-2. Capture approximately 20% of the source — the most important facts and concepts
-3. Structure hierarchically: Topic → Subtopics → Key points
-4. Use clear, student-friendly language
-5. Preserve definitions, formulas, dates, and named concepts exactly as they appear
-6. Do NOT add information that isn't in the source material
+2. Capture approximately 30–35% of the source — aim for thorough coverage of all significant facts, concepts, and relationships; do not be overly brief
+3. Each subtopic should have 4–8 bullet points where the content warrants it; avoid single-point subtopics
+4. Structure hierarchically: Topic → Subtopics → Key points
+5. Write points as complete, informative sentences — include context, not just bare labels (e.g. "The Treaty of Versailles (1919) imposed heavy reparations on Germany, contributing to economic instability" rather than just "Treaty of Versailles")
+6. Use clear, student-friendly language
+7. Preserve definitions, formulas, dates, and named concepts exactly as they appear
+8. Do NOT add information that isn't in the source material
 
 Return your response as valid JSON in this exact format:
 {
