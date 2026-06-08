@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, ChevronDown, ChevronRight, Download, BookOpen, Hash, FileText, Zap, Layers, Youtube, CheckCircle, Loader2 } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronRight, Download, BookOpen, Hash, FileText, Zap, Layers, Youtube, CheckCircle, Loader2, FileDown } from 'lucide-react';
 import { generateDocx } from '../utils/generateDocx.js';
 
 export default function NotesPage({ notes: initialNotes, noteId, onBack, onQuiz }) {
@@ -23,6 +23,8 @@ export default function NotesPage({ notes: initialNotes, noteId, onBack, onQuiz 
 
   const [selected, setSelected] = useState(sidebarItems[0] ?? null);
   const [docxLoading, setDocxLoading] = useState(false);
+  const [downloadOpen, setDownloadOpen] = useState(false);
+  const downloadRef = useRef(null);
 
   // When mode switches, reset selected to first item
   useEffect(() => {
@@ -104,12 +106,24 @@ export default function NotesPage({ notes: initialNotes, noteId, onBack, onQuiz 
             <ModeToggle mode={mode} loading={conciseLoading} onToggle={handleToggleConcise} />
           )}
           {conciseError && <span className="text-xs text-red-500">Failed — try again</span>}
-          <button onClick={handleDownloadMd} className="flex items-center gap-1.5 bg-ink-100 hover:bg-ink-200 text-ink-700 px-3 py-2 rounded-xl text-sm font-medium transition-colors">
-            <Download className="w-3.5 h-3.5" /> .md
-          </button>
-          <button onClick={handleDownloadDocx} disabled={docxLoading} className="flex items-center gap-1.5 bg-ink-100 hover:bg-ink-200 text-ink-700 px-3 py-2 rounded-xl text-sm font-medium transition-colors disabled:opacity-60">
-            <FileText className="w-3.5 h-3.5" /> {docxLoading ? 'Building…' : '.docx'}
-          </button>
+          <div className="relative" ref={downloadRef}>
+            <button
+              onClick={() => setDownloadOpen(o => !o)}
+              className="flex items-center gap-1.5 bg-ink-100 hover:bg-ink-200 text-ink-700 px-3 py-2 rounded-xl text-sm font-medium transition-colors"
+            >
+              <Download className="w-3.5 h-3.5" />
+              Download
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-150 ${downloadOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {downloadOpen && (
+              <DownloadMenu
+                onMd={() => { handleDownloadMd(); setDownloadOpen(false); }}
+                onDocx={() => { handleDownloadDocx(); setDownloadOpen(false); }}
+                docxLoading={docxLoading}
+                onClose={() => setDownloadOpen(false)}
+              />
+            )}
+          </div>
           {noteId && onQuiz && (
             <button onClick={onQuiz} className="flex items-center gap-1.5 bg-ink-900 hover:bg-brand-600 text-white px-3 py-2 rounded-xl text-sm font-medium transition-colors shadow-sm">
               <Zap className="w-3.5 h-3.5" /> Quiz
@@ -388,6 +402,46 @@ function VideoPane({ source, onToggleMerge }) {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ── Download menu ─────────────────────────────────────────────────────────────
+
+function DownloadMenu({ onMd, onDocx, docxLoading, onClose }) {
+  const ref = useRef(null);
+
+  useEffect(() => {
+    function handleClick(e) {
+      if (ref.current && !ref.current.contains(e.target)) onClose();
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [onClose]);
+
+  return (
+    <div ref={ref} className="absolute right-0 top-full mt-2 w-44 bg-white border border-ink-200 rounded-2xl shadow-lg overflow-hidden z-50 animate-fade-in">
+      <button
+        onClick={onMd}
+        className="w-full flex items-center gap-3 px-4 py-3 text-sm text-ink-700 hover:bg-ink-50 transition-colors border-b border-ink-100"
+      >
+        <FileText className="w-4 h-4 text-ink-400 flex-shrink-0" />
+        <div className="text-left">
+          <p className="font-600">Markdown</p>
+          <p className="text-xs text-ink-400">.md file</p>
+        </div>
+      </button>
+      <button
+        onClick={onDocx}
+        disabled={docxLoading}
+        className="w-full flex items-center gap-3 px-4 py-3 text-sm text-ink-700 hover:bg-ink-50 transition-colors disabled:opacity-60"
+      >
+        <FileDown className="w-4 h-4 text-ink-400 flex-shrink-0" />
+        <div className="text-left">
+          <p className="font-600">{docxLoading ? 'Building…' : 'Word Document'}</p>
+          <p className="text-xs text-ink-400">.docx file</p>
+        </div>
+      </button>
     </div>
   );
 }
