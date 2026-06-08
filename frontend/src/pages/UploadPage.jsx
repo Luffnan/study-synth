@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
-import { FileText, Image, X, Loader2, AlertCircle, ArrowLeft, ArrowUp } from 'lucide-react';
+import { FileText, Image, X, Loader2, AlertCircle, ArrowLeft, ArrowUp, Youtube, Link } from 'lucide-react';
 import BrainLogo from '../components/BrainLogo.jsx';
 
 const ACCEPTED = {
@@ -12,6 +12,62 @@ const ACCEPTED = {
 const ACCEPTED_EXTS = Object.values(ACCEPTED).flat().join(',');
 
 export default function UploadPage({ onNotes, onBack }) {
+  const [tab, setTab] = useState('files'); // 'files' | 'youtube'
+
+  return (
+    <div className="max-w-xl mx-auto px-4 sm:px-6 py-10 sm:py-16 animate-fade-in">
+
+      {/* Back */}
+      {onBack && (
+        <button onClick={onBack} className="flex items-center gap-1.5 text-ink-400 hover:text-ink-700 text-sm font-medium mb-10 transition-colors">
+          <ArrowLeft className="w-4 h-4" /> Dashboard
+        </button>
+      )}
+
+      {/* Hero */}
+      <div className="text-center mb-8">
+        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-ink-900 mb-5 shadow-lg">
+          <BrainLogo className="w-[21px] h-[21px] text-white" />
+        </div>
+        <h1 className="text-3xl sm:text-4xl font-800 text-ink-900 leading-tight mb-3">
+          Create study notes
+        </h1>
+        <p className="text-ink-500 text-base sm:text-lg max-w-sm mx-auto">
+          Upload documents or add a YouTube video — we'll turn it into structured notes
+        </p>
+      </div>
+
+      {/* Tab switcher */}
+      <div className="flex gap-1 bg-ink-100 rounded-2xl p-1 mb-6">
+        <button
+          onClick={() => setTab('files')}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-600 transition-all duration-200 ${
+            tab === 'files' ? 'bg-white text-ink-900 shadow-sm' : 'text-ink-400 hover:text-ink-600'
+          }`}
+        >
+          <ArrowUp className="w-4 h-4" /> Files
+        </button>
+        <button
+          onClick={() => setTab('youtube')}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-600 transition-all duration-200 ${
+            tab === 'youtube' ? 'bg-white text-ink-900 shadow-sm' : 'text-ink-400 hover:text-ink-600'
+          }`}
+        >
+          <Youtube className="w-4 h-4" /> YouTube
+        </button>
+      </div>
+
+      {tab === 'files'
+        ? <FilesPanel onNotes={onNotes} />
+        : <YouTubePanel onNotes={onNotes} />
+      }
+    </div>
+  );
+}
+
+// ── Files panel ───────────────────────────────────────────────────────────────
+
+function FilesPanel({ onNotes }) {
   const [files, setFiles] = useState([]);
   const [dragging, setDragging] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -39,7 +95,7 @@ export default function UploadPage({ onNotes, onBack }) {
       const res = await fetch('/api/summarise', { method: 'POST', body: form });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Server error');
-      onNotes(data.notes);
+      onNotes(data);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -48,28 +104,7 @@ export default function UploadPage({ onNotes, onBack }) {
   }
 
   return (
-    <div className="max-w-xl mx-auto px-4 sm:px-6 py-10 sm:py-16 animate-fade-in">
-
-      {/* Back */}
-      {onBack && (
-        <button onClick={onBack} className="flex items-center gap-1.5 text-ink-400 hover:text-ink-700 text-sm font-medium mb-10 transition-colors">
-          <ArrowLeft className="w-4 h-4" /> Dashboard
-        </button>
-      )}
-
-      {/* Hero */}
-      <div className="text-center mb-10">
-        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-ink-900 mb-5 shadow-lg">
-          <BrainLogo className="w-[21px] h-[21px] text-white" />
-        </div>
-        <h1 className="text-3xl sm:text-4xl font-800 text-ink-900 leading-tight mb-3">
-          Upload your notes
-        </h1>
-        <p className="text-ink-500 text-base sm:text-lg max-w-sm mx-auto">
-          PDFs or photos → structured study notes at 20% of the original length
-        </p>
-      </div>
-
+    <>
       {/* Drop zone */}
       <div
         onDrop={onDrop}
@@ -115,7 +150,6 @@ export default function UploadPage({ onNotes, onBack }) {
         </ul>
       )}
 
-      {/* Error */}
       {error && (
         <div className="mt-4 flex items-start gap-3 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
           <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
@@ -123,7 +157,6 @@ export default function UploadPage({ onNotes, onBack }) {
         </div>
       )}
 
-      {/* Submit */}
       <button
         onClick={handleSubmit}
         disabled={!files.length || loading}
@@ -139,9 +172,100 @@ export default function UploadPage({ onNotes, onBack }) {
         }
       </button>
 
-      {loading && (
-        <p className="text-center text-ink-400 text-sm mt-3">This may take 15–30 seconds</p>
+      {loading && <p className="text-center text-ink-400 text-sm mt-3">This may take 15–30 seconds</p>}
+    </>
+  );
+}
+
+// ── YouTube panel ─────────────────────────────────────────────────────────────
+
+function YouTubePanel({ onNotes }) {
+  const [url, setUrl] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  async function handleSubmit() {
+    if (!url.trim() || loading) return;
+    setLoading(true); setError(null);
+    try {
+      const res = await fetch('/api/youtube/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: url.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Server error');
+      onNotes(data); // { notes, id }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <>
+      {/* Info card */}
+      <div className="bg-white border border-ink-200 rounded-2xl p-6 text-center mb-4 shadow-sm">
+        <div className="w-12 h-12 rounded-2xl bg-red-500 flex items-center justify-center mx-auto mb-3">
+          <Youtube className="w-6 h-6 text-white" />
+        </div>
+        <p className="font-600 text-ink-800 mb-1">Create notes from a YouTube video</p>
+        <p className="text-ink-400 text-sm leading-relaxed">
+          We'll extract the transcript, summarise the content into structured notes, and keep the video embedded with timecoded notes for quick reference
+        </p>
+      </div>
+
+      {/* URL input */}
+      <div className={`flex items-center gap-2 bg-white border-2 rounded-2xl px-4 transition-colors ${url ? 'border-brand-400' : 'border-ink-200'}`}>
+        <Link className="w-4 h-4 text-ink-400 flex-shrink-0" />
+        <input
+          value={url}
+          onChange={e => { setUrl(e.target.value); setError(null); }}
+          onKeyDown={e => e.key === 'Enter' && handleSubmit()}
+          placeholder="https://youtube.com/watch?v=..."
+          disabled={loading}
+          className="flex-1 py-4 bg-transparent text-sm text-ink-800 placeholder-ink-400 focus:outline-none"
+        />
+        {url && !loading && (
+          <button onClick={() => setUrl('')} className="text-ink-300 hover:text-ink-500 transition-colors">
+            <X className="w-4 h-4" />
+          </button>
+        )}
+      </div>
+
+      <p className="text-xs text-ink-400 mt-2 ml-1">
+        Supports youtube.com/watch, youtu.be, and embed URLs · Video must have captions enabled
+      </p>
+
+      {error && (
+        <div className="mt-4 flex items-start gap-3 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
+          <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+          <div><p className="font-medium">Could not process video</p><p className="text-red-600">{error}</p></div>
+        </div>
       )}
-    </div>
+
+      {loading && (
+        <div className="mt-4 flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
+          <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" />
+          Fetching transcript and generating notes… this may take 30–45 seconds
+        </div>
+      )}
+
+      <button
+        onClick={handleSubmit}
+        disabled={!url.trim() || loading}
+        className={`mt-5 w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl text-white font-600 text-base transition-all duration-200
+          ${url.trim() && !loading
+            ? 'bg-red-500 hover:bg-red-600 shadow-md hover:shadow-lg active:scale-[0.98]'
+            : 'bg-ink-200 text-ink-400 cursor-not-allowed'
+          }`}
+      >
+        {loading
+          ? <><Loader2 className="w-4 h-4 animate-spin" /> Processing video…</>
+          : <><Youtube className="w-4 h-4" /> Generate from Video</>
+        }
+      </button>
+    </>
   );
 }
