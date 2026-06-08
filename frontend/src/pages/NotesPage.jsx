@@ -222,9 +222,9 @@ export default function NotesPage({ notes: initialNotes, noteId, onBack, onQuiz 
                         isSelected
                           ? 'bg-ink-900/10'
                           : item.type === 'video'
-                          ? 'text-ink-500 hover:text-ink-800 bg-red-50/60 hover:bg-red-50'
+                          ? 'text-red-700 hover:text-red-800 bg-red-100 hover:bg-red-200/70'
                           : item.type === 'terms'
-                          ? 'text-ink-500 hover:text-ink-800 bg-amber-50/60 hover:bg-amber-50'
+                          ? 'text-amber-700 hover:text-amber-800 bg-amber-100 hover:bg-amber-200/70'
                           : 'text-ink-500 hover:text-ink-800 hover:bg-ink-100'
                       }`}
                     >
