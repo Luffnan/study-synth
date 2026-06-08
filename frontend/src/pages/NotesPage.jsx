@@ -18,7 +18,6 @@ export default function NotesPage({ notes: initialNotes, noteId, onBack, onQuiz 
   useEffect(() => {
     function onKey(e) {
       if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
-      // Don't hijack arrow keys in inputs/textareas
       if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
       e.preventDefault();
       setSelected(prev => {
@@ -215,9 +214,9 @@ export default function NotesPage({ notes: initialNotes, noteId, onBack, onQuiz 
                   <div key={i}>
                     {showDivider && <div className="my-1.5 border-t border-ink-100" />}
                     <button onClick={() => setSelected(item)}
-                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left transition-all duration-150 ${
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left transition-all duration-150 outline-none ${
                         isSelected
-                          ? 'bg-ink-900/40 text-ink-900'
+                          ? 'bg-ink-900/10'
                           : 'text-ink-500 hover:text-ink-800 hover:bg-ink-100'
                       }`}
                     >
