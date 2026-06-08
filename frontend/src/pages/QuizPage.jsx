@@ -1,24 +1,68 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, ArrowRight, CheckCircle, XCircle, Loader2, RotateCcw, Trophy, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle, XCircle, Loader2, RotateCcw, Trophy, ChevronDown, ChevronUp, Hash, Youtube, Zap } from 'lucide-react';
 
-export default function QuizPage({ noteId, noteTitle, onBack }) {
-  const [state, setState] = useState('loading'); // loading | quiz | results
+export default function QuizPage({ noteId, noteTitle, notes, onBack }) {
+  // If no notes were passed (launched from dashboard), skip straight to generating
+  const [state, setState] = useState(() => (!notes || !notes.topics?.length) ? 'loading' : 'pick');
   const [questions, setQuestions] = useState([]);
   const [current, setCurrent] = useState(0);
-  const [answers, setAnswers] = useState({}); // { index: { value, score, feedback, correct } }
+  const [answers, setAnswers] = useState({});
   const [error, setError] = useState(null);
   const [scoreSaved, setScoreSaved] = useState(false);
 
-  useEffect(() => { generateQuiz(); }, []);
+  // Auto-generate when launched from dashboard (no notes = skip pick screen)
+  useEffect(() => { if (state === 'loading') generateQuiz(); }, []);
+
+  // Build the list of selectable items from notes
+  const topicItems = (notes?.topics || []).map((t, i) => ({
+    id: `topic-${i}`, type: 'topic', label: t.name, index: i,
+  }));
+  const videoItems = (notes?.videoSources || []).map(v => ({
+    id: `video-${v.videoId}`, type: 'video', label: v.title, videoId: v.videoId,
+  }));
+  const allItems = [...topicItems, ...videoItems];
+
+  // Default: all selected
+  const [selected, setSelected] = useState(() => new Set(allItems.map(i => i.id)));
+
+  function toggleItem(id) {
+    setSelected(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) { next.delete(id); } else { next.add(id); }
+      return next;
+    });
+  }
+
+  function toggleAll() {
+    if (selected.size === allItems.length) {
+      setSelected(new Set());
+    } else {
+      setSelected(new Set(allItems.map(i => i.id)));
+    }
+  }
+
+  function buildFilteredNotes() {
+    if (!notes) return null;
+    const selectedTopicIndices = topicItems.filter(i => selected.has(i.id)).map(i => i.index);
+    const selectedVideoIds = videoItems.filter(i => selected.has(i.id)).map(i => i.videoId);
+
+    return {
+      title: notes.title,
+      topics: (notes.topics || []).filter((_, i) => selectedTopicIndices.includes(i)),
+      keyTerms: notes.keyTerms || [],
+      videoSources: (notes.videoSources || []).filter(v => selectedVideoIds.includes(v.videoId)),
+    };
+  }
 
   async function generateQuiz() {
     setState('loading');
     setError(null);
     try {
+      const filteredNotes = buildFilteredNotes();
       const res = await fetch('/api/quiz/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ noteId }),
+        body: JSON.stringify({ noteId, filteredNotes }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -49,7 +93,7 @@ export default function QuizPage({ noteId, noteTitle, onBack }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ noteId, pct }),
       });
-    } catch { /* silent — score saving is non-critical */ }
+    } catch { /* silent */ }
   }
 
   function next() {
@@ -67,6 +111,94 @@ export default function QuizPage({ noteId, noteTitle, onBack }) {
   const answered = Object.keys(answers).length;
   const pct = totalMarks > 0 ? Math.round((earnedMarks / totalMarks) * 100) : 0;
 
+  // ── Pick screen ────────────────────────────────────────────────────────────
+
+  if (state === 'pick') {
+    const allChecked = selected.size === allItems.length;
+    const noneChecked = selected.size === 0;
+
+    return (
+      <div className="max-w-lg mx-auto px-4 sm:px-6 py-8 animate-fade-in">
+        <button onClick={onBack} className="flex items-center gap-1.5 text-ink-400 hover:text-ink-700 text-sm font-medium transition-colors mb-8">
+          <ArrowLeft className="w-4 h-4" /> Back to notes
+        </button>
+
+        <div className="bg-white rounded-2xl border border-ink-200 shadow-sm overflow-hidden">
+          {/* Header */}
+          <div className="px-6 py-5 border-b border-ink-100">
+            <div className="flex items-center gap-3 mb-1">
+              <div className="w-8 h-8 rounded-xl bg-ink-900 flex items-center justify-center">
+                <Zap className="w-4 h-4 text-white" />
+              </div>
+              <h1 className="text-lg font-700 text-ink-900">Customise your quiz</h1>
+            </div>
+            <p className="text-ink-400 text-sm ml-11">Choose which topics to include</p>
+          </div>
+
+          {/* Select all toggle */}
+          <div className="px-6 py-3 border-b border-ink-100 flex items-center justify-between">
+            <span className="text-xs font-600 text-ink-500 uppercase tracking-wider">
+              {selected.size} of {allItems.length} selected
+            </span>
+            <button onClick={toggleAll} className="text-xs font-600 text-brand-600 hover:text-brand-700 transition-colors">
+              {allChecked ? 'Deselect all' : 'Select all'}
+            </button>
+          </div>
+
+          {/* Topics */}
+          {topicItems.length > 0 && (
+            <div className="px-4 py-2">
+              <p className="text-[10px] font-600 text-ink-400 uppercase tracking-wider px-2 py-1.5">Topics</p>
+              {topicItems.map((item, i) => (
+                <CheckRow
+                  key={item.id}
+                  checked={selected.has(item.id)}
+                  onChange={() => toggleItem(item.id)}
+                  icon={<span className="w-4 h-4 rounded text-[9px] font-700 flex items-center justify-center text-ink-500">{i + 1}</span>}
+                  label={item.label}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Videos */}
+          {videoItems.length > 0 && (
+            <div className="px-4 py-2 border-t border-ink-100">
+              <p className="text-[10px] font-600 text-ink-400 uppercase tracking-wider px-2 py-1.5">Videos</p>
+              {videoItems.map(item => (
+                <CheckRow
+                  key={item.id}
+                  checked={selected.has(item.id)}
+                  onChange={() => toggleItem(item.id)}
+                  icon={<Youtube className="w-3.5 h-3.5 text-red-400" />}
+                  label={item.label}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* CTA */}
+          <div className="px-6 py-4 border-t border-ink-100">
+            <button
+              onClick={generateQuiz}
+              disabled={noneChecked}
+              className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-600 transition-all ${
+                noneChecked
+                  ? 'bg-ink-100 text-ink-400 cursor-not-allowed'
+                  : 'bg-ink-900 hover:bg-brand-600 text-white shadow-sm'
+              }`}
+            >
+              <Zap className="w-4 h-4" />
+              Generate quiz{selected.size < allItems.length ? ` · ${selected.size} topic${selected.size !== 1 ? 's' : ''}` : ''}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Loading ────────────────────────────────────────────────────────────────
+
   if (state === 'loading') return (
     <div className="max-w-2xl mx-auto px-4 py-20 text-center">
       <div className="w-12 h-12 border-2 border-brand-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
@@ -78,7 +210,7 @@ export default function QuizPage({ noteId, noteTitle, onBack }) {
   if (state === 'error') return (
     <div className="max-w-2xl mx-auto px-4 py-20 text-center">
       <p className="text-red-500 font-medium mb-4">{error}</p>
-      <button onClick={generateQuiz} className="btn-primary">Try again</button>
+      <button onClick={() => setState('pick')} className="btn-primary">Back to topics</button>
     </div>
   );
 
@@ -91,12 +223,14 @@ export default function QuizPage({ noteId, noteTitle, onBack }) {
         earnedMarks={earnedMarks}
         totalMarks={totalMarks}
         pct={pct}
-        onRetry={generateQuiz}
+        onRetry={() => setState('pick')}
         onBack={onBack}
         noteTitle={noteTitle}
       />
     );
   }
+
+  // ── Quiz ───────────────────────────────────────────────────────────────────
 
   const q = questions[current];
   const thisAnswer = answers[current];
@@ -104,7 +238,6 @@ export default function QuizPage({ noteId, noteTitle, onBack }) {
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 animate-fade-in">
-      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <button onClick={onBack} className="flex items-center gap-1.5 text-ink-400 hover:text-ink-700 text-sm font-medium transition-colors">
           <ArrowLeft className="w-4 h-4" /> Back to notes
@@ -112,17 +245,12 @@ export default function QuizPage({ noteId, noteTitle, onBack }) {
         <span className="text-sm text-ink-400">{answered} / {questions.length} answered</span>
       </div>
 
-      {/* Progress bar */}
       <div className="w-full bg-ink-100 rounded-full h-1.5 mb-8">
-        <div
-          className="bg-brand-500 h-1.5 rounded-full transition-all duration-300"
-          style={{ width: `${((current + 1) / questions.length) * 100}%` }}
-        />
+        <div className="bg-brand-500 h-1.5 rounded-full transition-all duration-300"
+          style={{ width: `${((current + 1) / questions.length) * 100}%` }} />
       </div>
 
-      {/* Question card */}
       <div className="bg-white rounded-2xl border border-ink-200 shadow-sm p-6 mb-4 animate-slide-up" key={current}>
-        {/* Type badge + number */}
         <div className="flex items-center gap-2 mb-4">
           <TypeBadge type={q.type} />
           <span className="text-xs text-ink-400">Question {current + 1} of {questions.length}</span>
@@ -133,21 +261,11 @@ export default function QuizPage({ noteId, noteTitle, onBack }) {
 
         <p className="text-ink-800 font-medium text-base leading-relaxed mb-5">{q.question}</p>
 
-        {/* Question type inputs */}
-        {q.type === 'mcq' && (
-          <MCQInput question={q} answered={isAnswered} thisAnswer={thisAnswer} onAnswer={r => recordAnswer(current, r)} />
-        )}
-        {q.type === 'true_false' && (
-          <TrueFalseInput question={q} answered={isAnswered} thisAnswer={thisAnswer} onAnswer={r => recordAnswer(current, r)} />
-        )}
-        {q.type === 'fill_blank' && (
-          <FillBlankInput question={q} answered={isAnswered} thisAnswer={thisAnswer} onAnswer={r => recordAnswer(current, r)} />
-        )}
-        {q.type === 'short_answer' && (
-          <ShortAnswerInput question={q} onAnswer={r => recordAnswer(current, r)} />
-        )}
+        {q.type === 'mcq' && <MCQInput question={q} answered={isAnswered} thisAnswer={thisAnswer} onAnswer={r => recordAnswer(current, r)} />}
+        {q.type === 'true_false' && <TrueFalseInput question={q} answered={isAnswered} thisAnswer={thisAnswer} onAnswer={r => recordAnswer(current, r)} />}
+        {q.type === 'fill_blank' && <FillBlankInput question={q} answered={isAnswered} thisAnswer={thisAnswer} onAnswer={r => recordAnswer(current, r)} />}
+        {q.type === 'short_answer' && <ShortAnswerInput question={q} onAnswer={r => recordAnswer(current, r)} />}
 
-        {/* Feedback */}
         {isAnswered && q.type !== 'short_answer' && (
           <div className={`mt-4 rounded-xl px-4 py-3 text-sm ${thisAnswer.correct ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
             <p className="font-medium mb-0.5">{thisAnswer.correct ? '✓ Correct' : `✗ Incorrect — the answer is: ${q.answer === true ? 'True' : q.answer === false ? 'False' : q.answer}`}</p>
@@ -156,21 +274,15 @@ export default function QuizPage({ noteId, noteTitle, onBack }) {
         )}
       </div>
 
-      {/* Navigation */}
       <div className="flex items-center justify-between">
         <button onClick={prev} disabled={current === 0}
           className="flex items-center gap-1.5 text-sm font-medium text-ink-500 hover:text-ink-800 disabled:opacity-30 transition-colors">
           <ArrowLeft className="w-4 h-4" /> Previous
         </button>
-        <button
-          onClick={next}
-          disabled={!isAnswered}
+        <button onClick={next} disabled={!isAnswered}
           className={`flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${
-            isAnswered
-              ? 'bg-ink-900 hover:bg-brand-600 text-white shadow-sm'
-              : 'bg-ink-100 text-ink-400 cursor-not-allowed'
-          }`}
-        >
+            isAnswered ? 'bg-ink-900 hover:bg-brand-600 text-white shadow-sm' : 'bg-ink-100 text-ink-400 cursor-not-allowed'
+          }`}>
           {current === questions.length - 1 ? 'Finish' : 'Next'}
           <ArrowRight className="w-4 h-4" />
         </button>
@@ -179,7 +291,27 @@ export default function QuizPage({ noteId, noteTitle, onBack }) {
   );
 }
 
-// ── Question type components ────────────────────────────────────────────────
+// ── Checkbox row ───────────────────────────────────────────────────────────
+
+function CheckRow({ checked, onChange, icon, label }) {
+  return (
+    <label className="flex items-center gap-3 px-2 py-2.5 rounded-xl hover:bg-ink-50 cursor-pointer transition-colors group">
+      <div className={`w-4 h-4 rounded flex items-center justify-center flex-shrink-0 border transition-colors ${
+        checked ? 'bg-ink-900 border-ink-900' : 'border-ink-300 bg-white group-hover:border-ink-400'
+      }`}>
+        {checked && (
+          <svg className="w-2.5 h-2.5 text-white" viewBox="0 0 10 8" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M1 4l3 3 5-6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        )}
+      </div>
+      <span className="flex-shrink-0">{icon}</span>
+      <span className="text-sm text-ink-700 flex-1 leading-snug">{label}</span>
+    </label>
+  );
+}
+
+// ── Question type components ───────────────────────────────────────────────
 
 function MCQInput({ question, answered, thisAnswer, onAnswer }) {
   return (
@@ -238,24 +370,17 @@ function TrueFalseInput({ question, answered, thisAnswer, onAnswer }) {
 
 function FillBlankInput({ question, answered, thisAnswer, onAnswer }) {
   const [val, setVal] = useState('');
-
   function submit() {
     if (!val.trim()) return;
-    const correct = val.trim().toLowerCase() === question.answer.trim().toLowerCase();
-    onAnswer({ value: val.trim(), correct });
+    onAnswer({ value: val.trim(), correct: val.trim().toLowerCase() === question.answer.trim().toLowerCase() });
   }
-
   return (
     <div className="space-y-3">
-      <input
-        type="text"
-        value={answered ? thisAnswer.value : val}
+      <input type="text" value={answered ? thisAnswer.value : val}
         onChange={e => setVal(e.target.value)}
         onKeyDown={e => e.key === 'Enter' && !answered && submit()}
-        disabled={answered}
-        placeholder="Type your answer…"
-        className="w-full px-4 py-3 rounded-xl border-2 border-ink-200 focus:border-brand-500 focus:outline-none text-sm disabled:bg-ink-50 disabled:text-ink-600 transition-colors"
-      />
+        disabled={answered} placeholder="Type your answer…"
+        className="w-full px-4 py-3 rounded-xl border-2 border-ink-200 focus:border-brand-500 focus:outline-none text-sm disabled:bg-ink-50 disabled:text-ink-600 transition-colors" />
       {!answered && (
         <button onClick={submit} disabled={!val.trim()}
           className="px-5 py-2 bg-ink-900 hover:bg-brand-600 text-white rounded-xl text-sm font-medium disabled:opacity-40 transition-colors">
@@ -267,12 +392,9 @@ function FillBlankInput({ question, answered, thisAnswer, onAnswer }) {
 }
 
 function ShortAnswerInput({ question, onAnswer }) {
-  // attempts: [{ value, score, feedback }]
   const [attempts, setAttempts] = useState([]);
   const [val, setVal] = useState('');
   const [marking, setMarking] = useState(false);
-
-  const latestAttempt = attempts[attempts.length - 1] ?? null;
   const bestScore = attempts.length > 0 ? Math.max(...attempts.map(a => a.score)) : 0;
   const achieved2 = bestScore === 2;
 
@@ -290,79 +412,51 @@ function ShortAnswerInput({ question, onAnswer }) {
       const newAttempts = [...attempts, attempt];
       setAttempts(newAttempts);
       setVal('');
-      // Record best score so parent enables Next button
-      const newBest = Math.max(...newAttempts.map(a => a.score));
-      onAnswer({ value: attempt.value, score: newBest, feedback: attempt.feedback, modelAnswer: question.modelAnswer });
+      onAnswer({ value: attempt.value, score: Math.max(...newAttempts.map(a => a.score)), feedback: attempt.feedback, modelAnswer: question.modelAnswer });
     } catch {
       const attempt = { value: val.trim(), score: 0, feedback: 'Could not mark automatically — check the model answer below.' };
       const newAttempts = [...attempts, attempt];
       setAttempts(newAttempts);
       setVal('');
       onAnswer({ value: attempt.value, score: 0, feedback: attempt.feedback, modelAnswer: question.modelAnswer });
-    } finally {
-      setMarking(false);
-    }
+    } finally { setMarking(false); }
   }
 
-  const colourMap = {
-    2: 'bg-green-50 border-green-200 text-green-800',
-    1: 'bg-amber-50 border-amber-200 text-amber-800',
-    0: 'bg-red-50 border-red-200 text-red-800',
-  };
+  const colourMap = { 2: 'bg-green-50 border-green-200 text-green-800', 1: 'bg-amber-50 border-amber-200 text-amber-800', 0: 'bg-red-50 border-red-200 text-red-800' };
 
   return (
     <div className="space-y-3">
-      {/* Previous attempts */}
-      {attempts.map((attempt, i) => {
-        const isLatest = i === attempts.length - 1;
-        const colour = colourMap[attempt.score];
-        return (
-          <div key={i} className="space-y-2">
-            {/* The answer they gave */}
-            <div className={`px-4 py-3 rounded-xl text-sm italic ${isLatest ? 'bg-ink-50 text-ink-700' : 'bg-ink-50/50 text-ink-400'}`}>
-              {attempts.length > 1 && (
-                <span className="not-italic text-xs font-medium text-ink-400 mr-2">Attempt {i + 1}:</span>
-              )}
-              "{attempt.value}"
-            </div>
-            {/* Score + feedback */}
-            <div className={`rounded-xl border px-4 py-3 text-sm ${colour}`}>
-              <div className="flex items-center gap-2 font-semibold mb-1">
-                {attempt.score === 2 ? <CheckCircle className="w-4 h-4" /> : attempt.score === 1 ? '~' : <XCircle className="w-4 h-4" />}
-                {attempt.score} / 2 marks
-              </div>
-              <p>{attempt.feedback}</p>
-            </div>
+      {attempts.map((attempt, i) => (
+        <div key={i} className="space-y-2">
+          <div className={`px-4 py-3 rounded-xl text-sm italic ${i === attempts.length - 1 ? 'bg-ink-50 text-ink-700' : 'bg-ink-50/50 text-ink-400'}`}>
+            {attempts.length > 1 && <span className="not-italic text-xs font-medium text-ink-400 mr-2">Attempt {i + 1}:</span>}
+            "{attempt.value}"
           </div>
-        );
-      })}
-
-      {/* Model answer (collapsible) — only show after at least one attempt */}
+          <div className={`rounded-xl border px-4 py-3 text-sm ${colourMap[attempt.score]}`}>
+            <div className="flex items-center gap-2 font-semibold mb-1">
+              {attempt.score === 2 ? <CheckCircle className="w-4 h-4" /> : attempt.score === 1 ? '~' : <XCircle className="w-4 h-4" />}
+              {attempt.score} / 2 marks
+            </div>
+            <p>{attempt.feedback}</p>
+          </div>
+        </div>
+      ))}
       {attempts.length > 0 && (
         <details className="rounded-xl border border-ink-200 overflow-hidden">
           <summary className="px-4 py-2.5 text-sm font-medium text-ink-600 cursor-pointer hover:bg-ink-50 list-none flex items-center justify-between">
             Model answer <ChevronDown className="w-4 h-4" />
           </summary>
-          <div className="px-4 py-3 text-sm text-ink-600 bg-ink-50 border-t border-ink-200">
-            {question.modelAnswer}
-          </div>
+          <div className="px-4 py-3 text-sm text-ink-600 bg-ink-50 border-t border-ink-200">{question.modelAnswer}</div>
         </details>
       )}
-
-      {/* Retry input — shown until they hit 2/2 */}
       {!achieved2 && (
         <div className="space-y-2">
-          {attempts.length > 0 && (
-            <p className="text-xs text-ink-400 font-medium">Try again ↓</p>
-          )}
-          <textarea
-            value={val}
-            onChange={e => setVal(e.target.value)}
+          {attempts.length > 0 && <p className="text-xs text-ink-400 font-medium">Try again ↓</p>}
+          <textarea value={val} onChange={e => setVal(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && e.metaKey && submit()}
             placeholder={attempts.length === 0 ? 'Write your answer here…' : 'Write an improved answer…'}
             rows={attempts.length === 0 ? 4 : 3}
-            className="w-full px-4 py-3 rounded-xl border-2 border-ink-200 focus:border-brand-500 focus:outline-none text-sm resize-none transition-colors"
-          />
+            className="w-full px-4 py-3 rounded-xl border-2 border-ink-200 focus:border-brand-500 focus:outline-none text-sm resize-none transition-colors" />
           <button onClick={submit} disabled={!val.trim() || marking}
             className="flex items-center gap-2 px-5 py-2 bg-ink-900 hover:bg-brand-600 text-white rounded-xl text-sm font-medium disabled:opacity-40 transition-colors">
             {marking ? <><Loader2 className="w-4 h-4 animate-spin" /> Marking…</> : attempts.length === 0 ? 'Submit answer' : 'Submit improved answer'}
@@ -373,11 +467,10 @@ function ShortAnswerInput({ question, onAnswer }) {
   );
 }
 
-// ── Results screen ──────────────────────────────────────────────────────────
+// ── Results screen ─────────────────────────────────────────────────────────
 
 function ResultsScreen({ questions, answers, earnedMarks, totalMarks, pct, onRetry, onBack, noteTitle }) {
   const [expanded, setExpanded] = useState(null);
-
   const grade = pct >= 80 ? { label: 'Excellent', colour: 'text-green-600', bg: 'bg-green-50' }
     : pct >= 60 ? { label: 'Good', colour: 'text-amber-600', bg: 'bg-amber-50' }
     : pct >= 40 ? { label: 'Keep studying', colour: 'text-orange-600', bg: 'bg-orange-50' }
@@ -388,22 +481,15 @@ function ResultsScreen({ questions, answers, earnedMarks, totalMarks, pct, onRet
       <button onClick={onBack} className="flex items-center gap-1.5 text-ink-400 hover:text-ink-700 text-sm font-medium transition-colors mb-8">
         <ArrowLeft className="w-4 h-4" /> Back to notes
       </button>
-
-      {/* Score card */}
       <div className="bg-white rounded-2xl border border-ink-200 shadow-sm p-8 text-center mb-6">
         <div className="w-16 h-16 rounded-2xl bg-ink-900 flex items-center justify-center mx-auto mb-4">
           <Trophy className="w-8 h-8 text-white" />
         </div>
         <h1 className="text-2xl font-800 text-ink-900 mb-1">{noteTitle}</h1>
         <p className="text-ink-400 text-sm mb-6">Quiz complete</p>
-
         <div className="text-6xl font-800 text-ink-900 mb-1">{pct}%</div>
-        <div className={`inline-block px-4 py-1 rounded-full text-sm font-semibold mb-4 ${grade.colour} ${grade.bg}`}>
-          {grade.label}
-        </div>
+        <div className={`inline-block px-4 py-1 rounded-full text-sm font-semibold mb-4 ${grade.colour} ${grade.bg}`}>{grade.label}</div>
         <p className="text-ink-500 text-sm">{earnedMarks} / {totalMarks} marks</p>
-
-        {/* Breakdown */}
         <div className="grid grid-cols-3 gap-3 mt-6 text-center">
           {[
             { label: 'Correct', val: Object.values(answers).filter(a => (a.score ?? (a.correct ? 1 : 0)) > 0).length, colour: 'text-green-600' },
@@ -417,8 +503,6 @@ function ResultsScreen({ questions, answers, earnedMarks, totalMarks, pct, onRet
           ))}
         </div>
       </div>
-
-      {/* Actions */}
       <div className="flex gap-3 mb-8">
         <button onClick={onRetry}
           className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-ink-200 text-ink-700 hover:border-brand-400 hover:text-brand-600 font-medium text-sm transition-colors">
@@ -429,8 +513,6 @@ function ResultsScreen({ questions, answers, earnedMarks, totalMarks, pct, onRet
           Back to notes
         </button>
       </div>
-
-      {/* Question review */}
       <h2 className="text-base font-600 text-ink-700 mb-3">Review all questions</h2>
       <div className="space-y-2">
         {questions.map((q, i) => {
@@ -470,7 +552,7 @@ function ResultsScreen({ questions, answers, earnedMarks, totalMarks, pct, onRet
   );
 }
 
-// ── Helpers ─────────────────────────────────────────────────────────────────
+// ── Helpers ────────────────────────────────────────────────────────────────
 
 function TypeBadge({ type }) {
   const map = {

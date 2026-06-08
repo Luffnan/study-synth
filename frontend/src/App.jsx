@@ -43,7 +43,7 @@ export default function App() {
         {view === 'dashboard' && <DashboardPage onUpload={() => setView('upload')} onOpenNote={handleOpenNote} onQuiz={handleStartQuiz} />}
         {view === 'upload'    && <UploadPage onNotes={handleNotes} onBack={handleReset} />}
         {view === 'notes'     && <NotesPage notes={notes} noteId={noteId} onBack={handleReset} onQuiz={() => handleStartQuiz(noteId, noteTitle)} />}
-        {view === 'quiz'      && <QuizPage noteId={noteId} noteTitle={noteTitle} onBack={() => setView(notes ? 'notes' : 'dashboard')} />}
+        {view === 'quiz'      && <QuizPage noteId={noteId} noteTitle={noteTitle} notes={notes} onBack={() => setView(notes ? 'notes' : 'dashboard')} />}
       </main>
     </div>
   );

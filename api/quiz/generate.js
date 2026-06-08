@@ -55,13 +55,14 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { noteId } = req.body;
+    const { noteId, filteredNotes } = req.body;
     if (!noteId) return res.status(400).json({ error: 'noteId required' });
 
     const record = await getNoteById(noteId);
     if (!record) return res.status(404).json({ error: 'Note not found' });
 
-    const notesText = JSON.stringify(record.notes, null, 2);
+    // Use filtered notes if the student customised their selection, otherwise full notes
+    const notesText = JSON.stringify(filteredNotes || record.notes, null, 2);
 
     const response = await client.messages.create({
       model: 'claude-opus-4-7',
