@@ -301,11 +301,16 @@ function ConciseLoadingState({ onSwitchBack }) {
 // ── Video Source Block ────────────────────────────────────────────────────────
 
 function VideoSourceBlock({ source: initialSource, noteId }) {
-  const [open, setOpen] = useState(true);
+  const [notesOpen, setNotesOpen] = useState(true);
+  const [openSections, setOpenSections] = useState({});
   const [source, setSource] = useState(initialSource);
   const [merging, setMerging] = useState(false);
   const [mergeError, setMergeError] = useState(null);
   const iframeRef = useRef(null);
+
+  function toggleSection(i) {
+    setOpenSections(p => ({ ...p, [i]: p[i] === false ? true : false }));
+  }
 
   function seekTo(seconds) {
     iframeRef.current?.contentWindow?.postMessage(
@@ -324,8 +329,7 @@ function VideoSourceBlock({ source: initialSource, noteId }) {
 
   async function handleMerge() {
     if (!noteId || merging) return;
-    setMerging(true);
-    setMergeError(null);
+    setMerging(true); setMergeError(null);
     try {
       const res = await fetch(`/api/notes/${noteId}/merge-video`, {
         method: 'POST',
@@ -344,29 +348,21 @@ function VideoSourceBlock({ source: initialSource, noteId }) {
 
   return (
     <div className="bg-white rounded-2xl border border-ink-200 shadow-sm overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center gap-3 px-5 py-4">
-        <button onClick={() => setOpen(v => !v)} className="flex items-center gap-3 flex-1 text-left min-w-0">
-          <span className="w-6 h-6 rounded-lg bg-red-500 flex items-center justify-center flex-shrink-0">
-            <Youtube className="w-3.5 h-3.5 text-white" />
-          </span>
-          <span className="font-600 text-ink-800 flex-1 text-[15px] line-clamp-1 min-w-0">{source.title}</span>
-          {open ? <ChevronDown className="w-4 h-4 text-ink-400 flex-shrink-0" /> : <ChevronRight className="w-4 h-4 text-ink-400 flex-shrink-0" />}
-        </button>
 
-        {/* Merge button */}
+      {/* Title bar + merge button */}
+      <div className="flex items-center gap-3 px-5 py-3.5 border-b border-ink-100">
+        <span className="w-6 h-6 rounded-lg bg-red-500 flex items-center justify-center flex-shrink-0">
+          <Youtube className="w-3.5 h-3.5 text-white" />
+        </span>
+        <span className="font-600 text-ink-800 flex-1 text-[15px] line-clamp-1 min-w-0">{source.title}</span>
         {noteId && (
           source.merged ? (
             <span className="flex items-center gap-1 text-xs font-600 text-green-600 bg-green-50 px-2.5 py-1 rounded-full flex-shrink-0">
               <CheckCircle className="w-3 h-3" /> Merged
             </span>
           ) : (
-            <button
-              onClick={handleMerge}
-              disabled={merging}
-              className="flex items-center gap-1.5 text-xs font-600 text-ink-600 bg-ink-100 hover:bg-brand-100 hover:text-brand-700 px-2.5 py-1 rounded-full transition-colors flex-shrink-0 disabled:opacity-50"
-              title="Merge video content into main notes"
-            >
+            <button onClick={handleMerge} disabled={merging}
+              className="flex items-center gap-1.5 text-xs font-600 text-ink-500 bg-ink-100 hover:bg-brand-100 hover:text-brand-700 px-2.5 py-1 rounded-full transition-colors flex-shrink-0 disabled:opacity-50">
               {merging ? <Loader2 className="w-3 h-3 animate-spin" /> : <GitMerge className="w-3 h-3" />}
               {merging ? 'Merging…' : 'Merge into notes'}
             </button>
@@ -374,52 +370,73 @@ function VideoSourceBlock({ source: initialSource, noteId }) {
         )}
       </div>
 
-      {mergeError && (
-        <p className="px-5 pb-3 text-xs text-red-500">{mergeError}</p>
-      )}
+      {mergeError && <p className="px-5 py-2 text-xs text-red-500">{mergeError}</p>}
 
-      {open && (
+      {/* Embed — always visible */}
+      <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+        <iframe
+          ref={iframeRef}
+          src={`https://www.youtube.com/embed/${source.videoId}?enablejsapi=1`}
+          title={source.title}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          className="absolute inset-0 w-full h-full"
+        />
+      </div>
+
+      {/* Collapsible notes panel */}
+      {source.notes?.length > 0 && (
         <div className="border-t border-ink-100">
-          {/* Embed */}
-          <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
-            <iframe
-              ref={iframeRef}
-              src={`https://www.youtube.com/embed/${source.videoId}?enablejsapi=1`}
-              title={source.title}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              className="absolute inset-0 w-full h-full"
-            />
-          </div>
+          {/* Panel header */}
+          <button
+            onClick={() => setNotesOpen(v => !v)}
+            className="w-full flex items-center gap-2 px-5 py-3 text-left hover:bg-ink-50 transition-colors"
+          >
+            {/* Filled triangle indicator */}
+            <span className={`text-[8px] text-ink-400 transition-transform duration-150 leading-none ${notesOpen ? 'rotate-90' : ''}`}
+              style={{ display: 'inline-block' }}>▶</span>
+            <span className="text-xs font-600 text-ink-500 uppercase tracking-wider flex-1">
+              Video Notes
+            </span>
+            <span className="text-xs text-ink-400">{source.notes.length} sections · click a timecode to jump</span>
+          </button>
 
-          {/* Timecoded notes */}
-          {source.notes?.length > 0 && (
-            <div className="px-4 py-4 space-y-3">
-              <p className="text-xs font-600 text-ink-400 uppercase tracking-wider">Video Notes — click a timecode to jump</p>
-              {source.notes.map((section, si) => (
-                <div key={si} className="rounded-xl bg-ink-50 overflow-hidden">
-                  <div className="flex items-center gap-2 px-4 py-2.5">
+          {notesOpen && (
+            <div className="px-4 pb-4 space-y-1">
+              {source.notes.map((section, si) => {
+                const isOpen = openSections[si] !== false;
+                return (
+                  <div key={si} className="rounded-xl overflow-hidden">
+                    {/* Section header */}
                     <button
-                      onClick={() => seekTo(section.timecode)}
-                      className="flex-shrink-0 text-xs font-700 text-white bg-red-500 hover:bg-red-600 px-2 py-0.5 rounded-md transition-colors tabular-nums"
-                      title={`Jump to ${formatTime(section.timecode)}`}
+                      onClick={() => toggleSection(si)}
+                      className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left hover:bg-ink-50 rounded-xl transition-colors group"
                     >
-                      {formatTime(section.timecode)}
+                      <span className={`text-[7px] text-ink-400 transition-transform duration-150 leading-none flex-shrink-0 ${isOpen ? 'rotate-90' : ''}`}
+                        style={{ display: 'inline-block' }}>▶</span>
+                      <button
+                        onClick={e => { e.stopPropagation(); seekTo(section.timecode); }}
+                        className="flex-shrink-0 text-xs font-700 text-white bg-red-500 hover:bg-red-600 px-2 py-0.5 rounded-md transition-colors tabular-nums"
+                      >
+                        {formatTime(section.timecode)}
+                      </button>
+                      <span className="text-sm font-600 text-ink-700 flex-1">{section.heading}</span>
                     </button>
-                    <span className="text-sm font-600 text-ink-700">{section.heading}</span>
+
+                    {/* Section points */}
+                    {isOpen && section.points?.length > 0 && (
+                      <ul className="pl-10 pr-3 pb-2 space-y-1.5">
+                        {section.points.map((pt, pi) => (
+                          <li key={pi} className="flex items-start gap-2 text-sm text-ink-600">
+                            <span className="w-1.5 h-1.5 rounded-full bg-red-300 mt-[7px] flex-shrink-0" />
+                            {pt}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
-                  {section.points?.length > 0 && (
-                    <ul className="px-4 pb-3 space-y-1.5">
-                      {section.points.map((pt, pi) => (
-                        <li key={pi} className="flex items-start gap-2 text-sm text-ink-600">
-                          <span className="w-1.5 h-1.5 rounded-full bg-red-400 mt-[7px] flex-shrink-0" />
-                          {pt}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
