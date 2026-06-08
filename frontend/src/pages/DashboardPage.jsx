@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { FileText, Image, Trash2, ChevronRight, BookOpen, Hash, Clock, AlertCircle, Zap, Pencil, Check, X } from 'lucide-react';
+import { FileText, Image, Trash2, ChevronRight, BookOpen, Hash, Clock, AlertCircle, Zap, Pencil, Check, X, Plus, UploadCloud, Loader2 } from 'lucide-react';
 import BrainLogo from '../components/BrainLogo.jsx';
 
 export default function DashboardPage({ onUpload, onOpenNote, onQuiz }) {
@@ -7,6 +7,7 @@ export default function DashboardPage({ onUpload, onOpenNote, onQuiz }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [deleting, setDeleting] = useState(null);
+  const [ingestTarget, setIngestTarget] = useState(null); // { id, title }
 
   useEffect(() => { fetchRecords(); }, []);
 
@@ -38,6 +39,11 @@ export default function DashboardPage({ onUpload, onOpenNote, onQuiz }) {
 
   function handleSaveEdit(id, updates) {
     setRecords(p => p.map(r => r.id === id ? { ...r, ...updates } : r));
+  }
+
+  function handleIngestDone(id, updated) {
+    setRecords(p => p.map(r => r.id === id ? { ...r, ...updated } : r));
+    setIngestTarget(null);
   }
 
   if (loading) return (
@@ -75,16 +81,175 @@ export default function DashboardPage({ onUpload, onOpenNote, onQuiz }) {
               onDelete={e => handleDelete(e, r.id)}
               onQuiz={onQuiz ? e => { e.stopPropagation(); onQuiz(r.id, r.title); } : null}
               onSaveEdit={updates => handleSaveEdit(r.id, updates)}
+              onAddSource={e => { e.stopPropagation(); setIngestTarget({ id: r.id, title: r.title }); }}
               deleting={deleting === r.id}
             />
           ))}
         </div>
       )}
+
+      {/* Add sources modal */}
+      {ingestTarget && (
+        <AddSourcesModal
+          target={ingestTarget}
+          onDone={updated => handleIngestDone(ingestTarget.id, updated)}
+          onClose={() => setIngestTarget(null)}
+        />
+      )}
     </div>
   );
 }
 
-function NoteCard({ record, onClick, onDelete, onQuiz, onSaveEdit, deleting }) {
+// ── Add Sources Modal ─────────────────────────────────────────────────────────
+
+function AddSourcesModal({ target, onDone, onClose }) {
+  const [files, setFiles] = useState([]);
+  const [dragging, setDragging] = useState(false);
+  const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState(null);
+  const inputRef = useRef(null);
+
+  function addFiles(newFiles) {
+    const valid = Array.from(newFiles).filter(f =>
+      f.type === 'application/pdf' || f.type.startsWith('image/')
+    );
+    setFiles(prev => {
+      const existing = new Set(prev.map(f => f.name));
+      return [...prev, ...valid.filter(f => !existing.has(f.name))];
+    });
+  }
+
+  function removeFile(name) {
+    setFiles(prev => prev.filter(f => f.name !== name));
+  }
+
+  function handleDrop(e) {
+    e.preventDefault();
+    setDragging(false);
+    addFiles(e.dataTransfer.files);
+  }
+
+  async function handleSubmit() {
+    if (!files.length) return;
+    setProcessing(true);
+    setError(null);
+    try {
+      const form = new FormData();
+      files.forEach(f => form.append('files', f));
+      const res = await fetch(`/api/notes/${target.id}/ingest`, { method: 'POST', body: form });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to process');
+      onDone({
+        file_names: data.record.file_names,
+        topic_count: data.record.topic_count,
+        key_term_count: data.record.key_term_count,
+      });
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setProcessing(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={!processing ? onClose : undefined} />
+
+      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md animate-slide-up">
+        {/* Header */}
+        <div className="flex items-start justify-between p-6 pb-4">
+          <div>
+            <h2 className="font-700 text-ink-900 text-base">Add sources</h2>
+            <p className="text-ink-400 text-sm mt-0.5 line-clamp-1">{target.title}</p>
+          </div>
+          {!processing && (
+            <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-ink-100 text-ink-400 transition-colors">
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+
+        <div className="px-6 pb-6 space-y-4">
+          {/* Drop zone */}
+          <div
+            onDragOver={e => { e.preventDefault(); setDragging(true); }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={handleDrop}
+            onClick={() => inputRef.current?.click()}
+            className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${
+              dragging ? 'border-brand-400 bg-brand-50' : 'border-ink-200 hover:border-brand-300 hover:bg-ink-50'
+            }`}
+          >
+            <UploadCloud className="w-7 h-7 text-ink-300 mx-auto mb-2" />
+            <p className="text-sm font-medium text-ink-600">Drop files here or <span className="text-brand-600">browse</span></p>
+            <p className="text-xs text-ink-400 mt-1">PDF, JPG, PNG — new content will be merged into existing notes</p>
+            <input
+              ref={inputRef}
+              type="file"
+              multiple
+              accept=".pdf,image/*"
+              className="hidden"
+              onChange={e => addFiles(e.target.files)}
+            />
+          </div>
+
+          {/* File list */}
+          {files.length > 0 && (
+            <ul className="space-y-1.5">
+              {files.map(f => (
+                <li key={f.name} className="flex items-center gap-2 bg-ink-50 rounded-lg px-3 py-2 text-sm">
+                  {f.type === 'application/pdf' ? <FileText className="w-3.5 h-3.5 text-ink-400 flex-shrink-0" /> : <Image className="w-3.5 h-3.5 text-ink-400 flex-shrink-0" />}
+                  <span className="flex-1 text-ink-700 truncate">{f.name}</span>
+                  <button onClick={() => removeFile(f.name)} className="text-ink-300 hover:text-red-400 transition-colors">
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {error && (
+            <p className="text-sm text-red-500 flex items-center gap-1.5">
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />{error}
+            </p>
+          )}
+
+          {/* Processing state */}
+          {processing && (
+            <div className="flex items-center gap-3 bg-brand-50 rounded-xl px-4 py-3 text-sm text-brand-700">
+              <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" />
+              Merging new content into your notes… this may take 20–30 seconds
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="flex gap-2 pt-1">
+            {!processing && (
+              <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-ink-200 text-ink-600 hover:bg-ink-50 text-sm font-medium transition-colors">
+                Cancel
+              </button>
+            )}
+            <button
+              onClick={handleSubmit}
+              disabled={!files.length || processing}
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-ink-900 hover:bg-brand-600 text-white text-sm font-medium disabled:opacity-40 transition-colors"
+            >
+              {processing
+                ? <><Loader2 className="w-4 h-4 animate-spin" /> Processing…</>
+                : <><Plus className="w-4 h-4" /> Merge into notes</>
+              }
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Note Card ────────────────────────────────────────────────────────────────
+
+function NoteCard({ record, onClick, onDelete, onQuiz, onSaveEdit, onAddSource, deleting }) {
   const [sourcesOpen, setSourcesOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(record.title || '');
@@ -93,7 +258,6 @@ function NoteCard({ record, onClick, onDelete, onQuiz, onSaveEdit, deleting }) {
   const [saveError, setSaveError] = useState(null);
   const titleRef = useRef(null);
 
-  // Keep local state in sync if parent record changes
   useEffect(() => {
     if (!editing) {
       setTitle(record.title || '');
@@ -151,11 +315,7 @@ function NoteCard({ record, onClick, onDelete, onQuiz, onSaveEdit, deleting }) {
 
   if (editing) {
     return (
-      <div
-        className="text-left bg-white border-2 border-brand-400 rounded-2xl p-5 shadow-md"
-        onClick={e => e.stopPropagation()}
-      >
-        {/* Title input */}
+      <div className="text-left bg-white border-2 border-brand-400 rounded-2xl p-5 shadow-md" onClick={e => e.stopPropagation()}>
         <input
           ref={titleRef}
           value={title}
@@ -164,8 +324,6 @@ function NoteCard({ record, onClick, onDelete, onQuiz, onSaveEdit, deleting }) {
           placeholder="Subject name"
           className="w-full text-[15px] font-600 text-ink-800 bg-ink-50 border border-ink-200 rounded-lg px-3 py-2 mb-2 focus:outline-none focus:border-brand-400 focus:ring-1 focus:ring-brand-200"
         />
-
-        {/* Description input */}
         <textarea
           value={description}
           onChange={e => setDescription(e.target.value)}
@@ -174,21 +332,14 @@ function NoteCard({ record, onClick, onDelete, onQuiz, onSaveEdit, deleting }) {
           rows={2}
           className="w-full text-sm text-ink-600 bg-ink-50 border border-ink-200 rounded-lg px-3 py-2 mb-3 resize-none focus:outline-none focus:border-brand-400 focus:ring-1 focus:ring-brand-200"
         />
-
         {saveError && <p className="text-xs text-red-500 mb-2">{saveError}</p>}
-
-        {/* Actions */}
         <div className="flex items-center justify-end gap-2">
-          <button onClick={handleCancel}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium text-ink-500 hover:bg-ink-100 transition-colors">
+          <button onClick={handleCancel} className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium text-ink-500 hover:bg-ink-100 transition-colors">
             <X className="w-3 h-3" /> Cancel
           </button>
           <button onClick={handleSave} disabled={saving || !title.trim()}
             className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-ink-900 hover:bg-brand-600 text-white transition-colors disabled:opacity-50">
-            {saving
-              ? <span className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin" />
-              : <Check className="w-3 h-3" />
-            }
+            {saving ? <span className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin" /> : <Check className="w-3 h-3" />}
             Save
           </button>
         </div>
@@ -205,27 +356,23 @@ function NoteCard({ record, onClick, onDelete, onQuiz, onSaveEdit, deleting }) {
           {record.title || 'Untitled Notes'}
         </h2>
         <div className="flex items-center gap-1.5 flex-shrink-0">
-          {record.latest_quiz_pct != null && (
-            <ScoreBadge pct={record.latest_quiz_pct} />
-          )}
+          {record.latest_quiz_pct != null && <ScoreBadge pct={record.latest_quiz_pct} />}
           <ChevronRight className="w-4 h-4 text-ink-300 group-hover:text-brand-400 transition-colors" />
         </div>
       </div>
 
-      {/* Description */}
       {record.description ? (
         <p className="text-xs text-ink-400 mb-3 line-clamp-2 text-left">{record.description}</p>
-      ) : (
-        <div className="mb-3" />
-      )}
+      ) : <div className="mb-3" />}
 
       <div className="flex items-center gap-3 text-xs text-ink-400 mb-3">
-        <span className="flex items-center gap-1"><BookOpen className="w-3.5 h-3.5" />{record.topic_count ?? record.topicCount ?? 0} topics</span>
-        {(record.key_term_count ?? record.keyTermCount ?? 0) > 0 && (
-          <span className="flex items-center gap-1"><Hash className="w-3.5 h-3.5" />{record.key_term_count ?? record.keyTermCount} terms</span>
+        <span className="flex items-center gap-1"><BookOpen className="w-3.5 h-3.5" />{record.topic_count ?? 0} topics</span>
+        {(record.key_term_count ?? 0) > 0 && (
+          <span className="flex items-center gap-1"><Hash className="w-3.5 h-3.5" />{record.key_term_count} terms</span>
         )}
       </div>
 
+      {/* Sources toggle */}
       {(record.file_names ?? record.fileNames)?.length > 0 && (
         <div className="mb-3">
           <button
@@ -253,6 +400,11 @@ function NoteCard({ record, onClick, onDelete, onQuiz, onSaveEdit, deleting }) {
           <Clock className="w-3 h-3" />{dateStr} · {timeStr}
         </span>
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
+          <button onClick={onAddSource}
+            className="flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-brand-50 text-ink-400 hover:text-brand-600 text-xs font-medium transition-colors"
+            title="Add sources">
+            <Plus className="w-3 h-3" />
+          </button>
           <button onClick={handleEditClick}
             className="flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-ink-100 text-ink-400 hover:text-ink-700 text-xs font-medium transition-colors">
             <Pencil className="w-3 h-3" />
