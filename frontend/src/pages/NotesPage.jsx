@@ -1,66 +1,74 @@
 import { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, ChevronDown, ChevronRight, Download, BookOpen, Hash, FileText, Zap, Layers, Youtube, GitMerge, CheckCircle, Loader2 } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronRight, Download, BookOpen, Hash, FileText, Zap, Layers, Youtube, CheckCircle, Loader2 } from 'lucide-react';
 import { generateDocx } from '../utils/generateDocx.js';
 
 export default function NotesPage({ notes: initialNotes, noteId, onBack, onQuiz }) {
-  const [mode, setMode] = useState('standard'); // 'standard' | 'concise'
+  const [mode, setMode] = useState('standard');
   const [conciseNotes, setConciseNotes] = useState(null);
   const [conciseLoading, setConciseLoading] = useState(false);
   const [conciseError, setConciseError] = useState(null);
   const conciseFetchedRef = useRef(false);
 
+  // videoSources with local merged state
+  const [videoSources, setVideoSources] = useState(initialNotes.videoSources || []);
+
   const activeNotes = mode === 'concise' && conciseNotes ? conciseNotes : initialNotes;
 
-  const [openTopics, setOpenTopics] = useState({});
-  const [openSubtopics, setOpenSubtopics] = useState({});
-  const [showTerms, setShowTerms] = useState(true);
+  // Build sidebar items: topics + key terms + videos
+  const sidebarItems = [
+    ...(activeNotes.topics || []).map((t, i) => ({ type: 'topic', index: i, label: t.name })),
+    ...(activeNotes.keyTerms?.length ? [{ type: 'terms', label: 'Key Terms' }] : []),
+    ...videoSources.map(v => ({ type: 'video', videoId: v.videoId, label: v.title })),
+  ];
+
+  const [selected, setSelected] = useState(sidebarItems[0] ?? null);
   const [docxLoading, setDocxLoading] = useState(false);
 
-  // Reset open state whenever active notes change
+  // When mode switches, reset selected to first item
   useEffect(() => {
-    setOpenTopics(Object.fromEntries((activeNotes?.topics || []).map((_, i) => [i, true])));
-    setOpenSubtopics({});
-    setShowTerms(true);
+    const items = [
+      ...(activeNotes.topics || []).map((t, i) => ({ type: 'topic', index: i, label: t.name })),
+      ...(activeNotes.keyTerms?.length ? [{ type: 'terms', label: 'Key Terms' }] : []),
+      ...videoSources.map(v => ({ type: 'video', videoId: v.videoId, label: v.title })),
+    ];
+    setSelected(items[0] ?? null);
   }, [mode, conciseNotes]);
 
-  function toggleTopic(i) { setOpenTopics(p => ({ ...p, [i]: !p[i] })); }
-  function toggleSub(key) { setOpenSubtopics(p => ({ ...p, [key]: p[key] === false ? true : false })); }
-
   async function handleToggleConcise() {
-    if (mode === 'concise') {
-      setMode('standard');
-      return;
-    }
-    // Switch to concise
+    if (mode === 'concise') { setMode('standard'); return; }
     setMode('concise');
-    if (conciseNotes || conciseFetchedRef.current) return; // already have them or fetching
-
+    if (conciseNotes || conciseFetchedRef.current) return;
     conciseFetchedRef.current = true;
-    setConciseLoading(true);
-    setConciseError(null);
+    setConciseLoading(true); setConciseError(null);
     try {
       const res = await fetch(`/api/notes/${noteId}/concise`, { method: 'POST' });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || 'Failed to generate concise notes');
-      }
+      if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error || 'Failed'); }
       const data = await res.json();
       setConciseNotes(data.conciseNotes);
     } catch (err) {
       setConciseError(err.message);
-      conciseFetchedRef.current = false; // allow retry
-    } finally {
-      setConciseLoading(false);
+      conciseFetchedRef.current = false;
+    } finally { setConciseLoading(false); }
+  }
+
+  async function handleToggleVideoMerge(videoId, newMerged) {
+    setVideoSources(prev => prev.map(v => v.videoId === videoId ? { ...v, merged: newMerged } : v));
+    // Persist to DB (best-effort, non-blocking)
+    if (noteId) {
+      try {
+        await fetch(`/api/notes/${noteId}/video-merge`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ videoId, merged: newMerged }),
+        });
+      } catch { /* silent */ }
     }
   }
 
   function handleDownloadMd() {
     const blob = new Blob([buildMarkdown(activeNotes)], { type: 'text/markdown' });
-    const label = mode === 'concise' ? `${activeNotes.title || 'study-notes'}-concise` : (activeNotes.title || 'study-notes');
-    const a = Object.assign(document.createElement('a'), {
-      href: URL.createObjectURL(blob),
-      download: `${label}.md`
-    });
+    const label = mode === 'concise' ? `${activeNotes.title || 'notes'}-concise` : (activeNotes.title || 'notes');
+    const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: `${label}.md` });
     a.click(); URL.revokeObjectURL(a.href);
   }
 
@@ -68,41 +76,42 @@ export default function NotesPage({ notes: initialNotes, noteId, onBack, onQuiz 
     setDocxLoading(true);
     try {
       const blob = await generateDocx(activeNotes);
-      const label = mode === 'concise' ? `${activeNotes.title || 'study-notes'}-concise` : (activeNotes.title || 'study-notes');
-      const a = Object.assign(document.createElement('a'), {
-        href: URL.createObjectURL(blob),
-        download: `${label}.docx`
-      });
+      const label = mode === 'concise' ? `${activeNotes.title || 'notes'}-concise` : (activeNotes.title || 'notes');
+      const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: `${label}.docx` });
       a.click(); URL.revokeObjectURL(a.href);
-    } finally {
-      setDocxLoading(false);
-    }
+    } finally { setDocxLoading(false); }
   }
 
   if (!initialNotes) return null;
 
+  // Rebuild sidebar every render (accounts for mode switch)
+  const currentSidebarItems = [
+    ...(activeNotes.topics || []).map((t, i) => ({ type: 'topic', index: i, label: t.name })),
+    ...(activeNotes.keyTerms?.length ? [{ type: 'terms', label: 'Key Terms' }] : []),
+    ...videoSources.map(v => ({ type: 'video', videoId: v.videoId, label: v.title })),
+  ];
+
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 animate-fade-in">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 animate-fade-in">
 
       {/* Top bar */}
-      <div className="flex items-center justify-between mb-8">
-        <button onClick={onBack}
-          className="flex items-center gap-1.5 text-ink-400 hover:text-ink-800 text-sm font-medium transition-colors">
+      <div className="flex items-center justify-between mb-5">
+        <button onClick={onBack} className="flex items-center gap-1.5 text-ink-400 hover:text-ink-800 text-sm font-medium transition-colors">
           <ArrowLeft className="w-4 h-4" /> Dashboard
         </button>
         <div className="flex items-center gap-2">
-          <button onClick={handleDownloadMd}
-            className="flex items-center gap-1.5 bg-ink-100 hover:bg-ink-200 text-ink-700 px-3 py-2 rounded-xl text-sm font-medium transition-colors">
+          {noteId && (
+            <ModeToggle mode={mode} loading={conciseLoading} onToggle={handleToggleConcise} />
+          )}
+          {conciseError && <span className="text-xs text-red-500">Failed — try again</span>}
+          <button onClick={handleDownloadMd} className="flex items-center gap-1.5 bg-ink-100 hover:bg-ink-200 text-ink-700 px-3 py-2 rounded-xl text-sm font-medium transition-colors">
             <Download className="w-3.5 h-3.5" /> .md
           </button>
-          <button onClick={handleDownloadDocx} disabled={docxLoading}
-            className="flex items-center gap-1.5 bg-ink-100 hover:bg-ink-200 text-ink-700 px-3 py-2 rounded-xl text-sm font-medium transition-colors disabled:opacity-60">
-            <FileText className="w-3.5 h-3.5" />
-            {docxLoading ? 'Building…' : '.docx'}
+          <button onClick={handleDownloadDocx} disabled={docxLoading} className="flex items-center gap-1.5 bg-ink-100 hover:bg-ink-200 text-ink-700 px-3 py-2 rounded-xl text-sm font-medium transition-colors disabled:opacity-60">
+            <FileText className="w-3.5 h-3.5" /> {docxLoading ? 'Building…' : '.docx'}
           </button>
           {noteId && onQuiz && (
-            <button onClick={onQuiz}
-              className="flex items-center gap-1.5 bg-ink-900 hover:bg-brand-600 text-white px-3 py-2 rounded-xl text-sm font-medium transition-colors shadow-sm">
+            <button onClick={onQuiz} className="flex items-center gap-1.5 bg-ink-900 hover:bg-brand-600 text-white px-3 py-2 rounded-xl text-sm font-medium transition-colors shadow-sm">
               <Zap className="w-3.5 h-3.5" /> Quiz
             </button>
           )}
@@ -110,162 +119,297 @@ export default function NotesPage({ notes: initialNotes, noteId, onBack, onQuiz 
       </div>
 
       {/* Title */}
-      <div className="mb-6">
-        <p className="flex items-center gap-1.5 text-brand-600 text-xs font-600 uppercase tracking-wider mb-2">
-          <BookOpen className="w-3.5 h-3.5" /> Study Notes
-        </p>
-        <h1 className="text-2xl sm:text-3xl font-800 text-ink-900 leading-tight">{initialNotes.title || 'Study Notes'}</h1>
-        <p className="text-ink-400 text-sm mt-1.5">
+      <div className="mb-5">
+        <h1 className="text-xl sm:text-2xl font-800 text-ink-900 leading-tight">{initialNotes.title || 'Study Notes'}</h1>
+        <p className="text-ink-400 text-sm mt-1">
           {activeNotes.topics?.length || 0} topics · {activeNotes.topics?.reduce((a, t) => a + (t.subtopics?.length || 0), 0) || 0} subtopics
           {activeNotes.keyTerms?.length > 0 && ` · ${activeNotes.keyTerms.length} key terms`}
+          {videoSources.length > 0 && ` · ${videoSources.length} video${videoSources.length > 1 ? 's' : ''}`}
         </p>
       </div>
 
-      {/* Standard / Concise Toggle */}
-      {noteId && (
-        <div className="flex items-center gap-3 mb-8">
-          <ModeToggle mode={mode} loading={conciseLoading} onToggle={handleToggleConcise} />
-          {conciseError && (
-            <span className="text-xs text-red-500">Failed to generate — try again</span>
-          )}
-        </div>
-      )}
-
-      {/* Content */}
       {mode === 'concise' && conciseLoading ? (
         <ConciseLoadingState onSwitchBack={() => setMode('standard')} />
       ) : (
         <>
-          {/* Topics */}
-          <div className="space-y-2.5">
-            {activeNotes.topics?.map((topic, ti) => (
-              <div key={`${mode}-${ti}`} className="bg-white rounded-2xl border border-ink-200 shadow-sm overflow-hidden">
-                <button onClick={() => toggleTopic(ti)}
-                  className="w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-ink-50 transition-colors">
-                  <span className="w-6 h-6 rounded-lg bg-ink-900 text-white text-xs font-700 flex items-center justify-center flex-shrink-0">
-                    {ti + 1}
-                  </span>
-                  <span className="font-600 text-ink-800 flex-1 text-[15px]">{topic.name}</span>
-                  {openTopics[ti] ? <ChevronDown className="w-4 h-4 text-ink-400" /> : <ChevronRight className="w-4 h-4 text-ink-400" />}
+        {/* ── Mobile nav (horizontal scroll) — full width above the flex area ── */}
+        <div className="sm:hidden w-full mb-4">
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+            {currentSidebarItems.map((item, i) => {
+              const isSelected = selected?.type === item.type &&
+                (item.type === 'topic' ? selected.index === item.index :
+                 item.type === 'video' ? selected.videoId === item.videoId : true);
+              return (
+                <button key={i} onClick={() => setSelected(item)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-600 whitespace-nowrap flex-shrink-0 transition-colors ${
+                    isSelected ? 'bg-ink-900 text-white' : 'bg-white border border-ink-200 text-ink-600 hover:border-brand-300'
+                  }`}
+                >
+                  {item.type === 'video' && <Youtube className="w-3 h-3" />}
+                  {item.type === 'terms' && <Hash className="w-3 h-3" />}
+                  {item.type === 'topic' && <span className="font-700">{item.index + 1}</span>}
+                  <span className="max-w-[120px] truncate">{item.label}</span>
                 </button>
-
-                {openTopics[ti] && (
-                  <div className="border-t border-ink-100 px-4 py-3 space-y-2">
-                    {topic.subtopics?.map((sub, si) => {
-                      const key = `${ti}-${si}`;
-                      const isOpen = openSubtopics[key] !== false;
-                      return (
-                        <div key={si} className="rounded-xl bg-ink-50 overflow-hidden">
-                          <button onClick={() => toggleSub(key)}
-                            className="w-full flex items-center gap-2 px-4 py-2.5 text-left hover:bg-ink-100 transition-colors">
-                            <span className="w-1 h-4 rounded-full bg-brand-500 flex-shrink-0" />
-                            <span className="text-sm font-600 text-ink-700 flex-1">{sub.name}</span>
-                            {isOpen ? <ChevronDown className="w-3.5 h-3.5 text-ink-400" /> : <ChevronRight className="w-3.5 h-3.5 text-ink-400" />}
-                          </button>
-                          {isOpen && (
-                            <ul className="px-4 pb-3 space-y-1.5">
-                              {sub.points?.map((pt, pi) => (
-                                <li key={pi} className="flex items-start gap-2 text-sm text-ink-600">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-brand-400 mt-[7px] flex-shrink-0" />
-                                  {pt}
-                                </li>
-                              ))}
-                            </ul>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
+        </div>
 
-          {/* Key Terms */}
-          {activeNotes.keyTerms?.length > 0 && (
-            <div className="mt-3 bg-white rounded-2xl border border-ink-200 shadow-sm overflow-hidden">
-              <button onClick={() => setShowTerms(v => !v)}
-                className="w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-ink-50 transition-colors">
-                <span className="w-6 h-6 rounded-lg bg-amber-400 flex items-center justify-center flex-shrink-0">
-                  <Hash className="w-3.5 h-3.5 text-white" />
-                </span>
-                <span className="font-600 text-ink-800 flex-1 text-[15px]">Key Terms</span>
-                <span className="text-xs text-ink-400 mr-1">{activeNotes.keyTerms.length}</span>
-                {showTerms ? <ChevronDown className="w-4 h-4 text-ink-400" /> : <ChevronRight className="w-4 h-4 text-ink-400" />}
-              </button>
-              {showTerms && (
-                <div className="border-t border-ink-100 px-5 py-4">
-                  <dl className="space-y-3">
-                    {activeNotes.keyTerms.map((item, i) => (
-                      <div key={i} className="flex gap-3 flex-col sm:flex-row">
-                        <dt className="text-sm font-600 text-brand-600 sm:min-w-[140px] sm:flex-shrink-0">{item.term}</dt>
-                        <dd className="text-sm text-ink-600">{item.definition}</dd>
-                      </div>
-                    ))}
-                  </dl>
-                </div>
-              )}
-            </div>
-          )}
+        <div className="flex gap-5 items-start">
+
+          {/* ── Sidebar ── */}
+          <aside className="hidden sm:flex flex-col w-56 flex-shrink-0 sticky top-20">
+            <nav className="bg-white border border-ink-200 rounded-2xl shadow-sm overflow-hidden">
+              {currentSidebarItems.map((item, i) => {
+                const isSelected = selected?.type === item.type &&
+                  (item.type === 'topic' ? selected.index === item.index :
+                   item.type === 'video' ? selected.videoId === item.videoId : true);
+                const isMergedVideo = item.type === 'video' && videoSources.find(v => v.videoId === item.videoId)?.merged;
+
+                return (
+                  <button key={i} onClick={() => setSelected(item)}
+                    className={`w-full flex items-center gap-2.5 px-4 py-3 text-left transition-colors border-b border-ink-100 last:border-0 ${
+                      isSelected ? 'bg-ink-900 text-white' : 'hover:bg-ink-50 text-ink-600'
+                    }`}
+                  >
+                    {item.type === 'topic' && (
+                      <span className={`w-5 h-5 rounded-md text-[10px] font-700 flex items-center justify-center flex-shrink-0 ${isSelected ? 'bg-white/20 text-white' : 'bg-ink-900 text-white'}`}>
+                        {item.index + 1}
+                      </span>
+                    )}
+                    {item.type === 'terms' && (
+                      <span className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 ${isSelected ? 'bg-white/20' : 'bg-amber-400'}`}>
+                        <Hash className="w-3 h-3 text-white" />
+                      </span>
+                    )}
+                    {item.type === 'video' && (
+                      <span className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 ${isSelected ? 'bg-white/20' : 'bg-red-500'}`}>
+                        <Youtube className="w-3 h-3 text-white" />
+                      </span>
+                    )}
+                    <span className="text-xs font-600 line-clamp-2 flex-1">{item.label}</span>
+                    {isMergedVideo && (
+                      <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isSelected ? 'bg-green-400' : 'bg-green-500'}`} title="Included in notes" />
+                    )}
+                  </button>
+                );
+              })}
+            </nav>
+            <p className="text-center text-ink-300 text-[10px] mt-6">
+              StudySynth · verify against originals
+            </p>
+          </aside>
+
+          {/* ── Content pane ── */}
+          <div className="flex-1 min-w-0">
+            {selected?.type === 'topic' && (
+              <TopicPane topic={activeNotes.topics[selected.index]} mode={mode} />
+            )}
+            {selected?.type === 'terms' && (
+              <TermsPane keyTerms={activeNotes.keyTerms} />
+            )}
+            {selected?.type === 'video' && (
+              <VideoPane
+                source={videoSources.find(v => v.videoId === selected.videoId)}
+                onToggleMerge={handleToggleVideoMerge}
+              />
+            )}
+          </div>
+        </div>
         </>
       )}
-
-      {/* Video Sources */}
-      {(initialNotes.videoSources?.length > 0) && (
-        <div className="mt-3 space-y-3">
-          {initialNotes.videoSources.map((vs) => (
-            <VideoSourceBlock key={vs.videoId} source={vs} noteId={noteId} />
-          ))}
-        </div>
-      )}
-
-      <p className="text-center text-ink-300 text-xs mt-10">
-        StudySynth · Always verify against your original materials
-      </p>
     </div>
   );
 }
 
-// ── Toggle component ──────────────────────────────────────────────────────────
+// ── Topic pane ────────────────────────────────────────────────────────────────
+
+function TopicPane({ topic, mode }) {
+  const [openSubs, setOpenSubs] = useState({});
+
+  // Default all subtopics open
+  useEffect(() => {
+    setOpenSubs(Object.fromEntries((topic?.subtopics || []).map((_, i) => [i, true])));
+  }, [topic, mode]);
+
+  if (!topic) return null;
+
+  return (
+    <div className="space-y-2">
+      <div className="bg-white rounded-2xl border border-ink-200 shadow-sm px-5 py-4 mb-3">
+        <h2 className="font-700 text-ink-900 text-lg">{topic.name}</h2>
+        <p className="text-ink-400 text-sm mt-0.5">{topic.subtopics?.length || 0} subtopics</p>
+      </div>
+      {topic.subtopics?.map((sub, si) => {
+        const isOpen = openSubs[si] !== false;
+        return (
+          <div key={si} className="bg-white rounded-2xl border border-ink-200 shadow-sm overflow-hidden">
+            <button onClick={() => setOpenSubs(p => ({ ...p, [si]: !p[si] }))}
+              className="w-full flex items-center gap-3 px-5 py-3.5 text-left hover:bg-ink-50 transition-colors">
+              <span className="w-1 h-4 rounded-full bg-brand-500 flex-shrink-0" />
+              <span className="text-sm font-600 text-ink-800 flex-1">{sub.name}</span>
+              {isOpen ? <ChevronDown className="w-4 h-4 text-ink-400" /> : <ChevronRight className="w-4 h-4 text-ink-400" />}
+            </button>
+            {isOpen && (
+              <ul className="px-5 pb-4 space-y-2 border-t border-ink-100 pt-3">
+                {sub.points?.map((pt, pi) => (
+                  <li key={pi} className="flex items-start gap-2.5 text-sm text-ink-600 leading-relaxed">
+                    <span className="w-1.5 h-1.5 rounded-full bg-brand-400 mt-[7px] flex-shrink-0" />
+                    {pt}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── Terms pane ────────────────────────────────────────────────────────────────
+
+function TermsPane({ keyTerms }) {
+  return (
+    <div className="bg-white rounded-2xl border border-ink-200 shadow-sm overflow-hidden">
+      <div className="flex items-center gap-3 px-5 py-4 border-b border-ink-100">
+        <span className="w-6 h-6 rounded-lg bg-amber-400 flex items-center justify-center flex-shrink-0">
+          <Hash className="w-3.5 h-3.5 text-white" />
+        </span>
+        <span className="font-700 text-ink-900 text-base">Key Terms</span>
+        <span className="text-xs text-ink-400 ml-auto">{keyTerms?.length} terms</span>
+      </div>
+      <dl className="divide-y divide-ink-100">
+        {keyTerms?.map((item, i) => (
+          <div key={i} className="flex gap-4 px-5 py-3.5 flex-col sm:flex-row">
+            <dt className="text-sm font-600 text-brand-600 sm:w-40 sm:flex-shrink-0">{item.term}</dt>
+            <dd className="text-sm text-ink-600 leading-relaxed">{item.definition}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  );
+}
+
+// ── Video pane ────────────────────────────────────────────────────────────────
+
+function VideoPane({ source, onToggleMerge }) {
+  const [openSections, setOpenSections] = useState({});
+  const iframeRef = useRef(null);
+
+  if (!source) return null;
+
+  function seekTo(seconds) {
+    iframeRef.current?.contentWindow?.postMessage(
+      JSON.stringify({ event: 'command', func: 'seekTo', args: [seconds, true] }), '*'
+    );
+    iframeRef.current?.contentWindow?.postMessage(
+      JSON.stringify({ event: 'command', func: 'playVideo', args: [] }), '*'
+    );
+  }
+
+  function formatTime(s) {
+    const m = Math.floor(s / 60);
+    return `${m}:${String(s % 60).padStart(2, '0')}`;
+  }
+
+  return (
+    <div className="space-y-3">
+      {/* Video embed */}
+      <div className="bg-white rounded-2xl border border-ink-200 shadow-sm overflow-hidden">
+        <div className="flex items-center gap-3 px-5 py-3.5 border-b border-ink-100">
+          <span className="w-6 h-6 rounded-lg bg-red-500 flex items-center justify-center flex-shrink-0">
+            <Youtube className="w-3.5 h-3.5 text-white" />
+          </span>
+          <span className="font-600 text-ink-800 flex-1 text-[15px] line-clamp-1">{source.title}</span>
+        </div>
+        <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+          <iframe ref={iframeRef}
+            src={`https://www.youtube.com/embed/${source.videoId}?enablejsapi=1`}
+            title={source.title}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen className="absolute inset-0 w-full h-full"
+          />
+        </div>
+      </div>
+
+      {/* Merge toggle */}
+      <div className="bg-white rounded-2xl border border-ink-200 shadow-sm px-5 py-4 flex items-center gap-3">
+        <div className="flex-1">
+          <p className="text-sm font-600 text-ink-800">Include notes in subject</p>
+          <p className="text-xs text-ink-400 mt-0.5">
+            {source.merged
+              ? 'Video notes are included alongside your study notes'
+              : 'Toggle on to add this video\'s notes to your subject content'}
+          </p>
+        </div>
+        <button
+          onClick={() => onToggleMerge(source.videoId, !source.merged)}
+          className={`relative w-11 h-6 rounded-full transition-colors duration-200 flex-shrink-0 ${source.merged ? 'bg-green-500' : 'bg-ink-200'}`}
+        >
+          <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${source.merged ? 'translate-x-5' : 'translate-x-0.5'}`} />
+        </button>
+      </div>
+
+      {/* Timecoded notes */}
+      {source.notes?.length > 0 && (
+        <div className="bg-white rounded-2xl border border-ink-200 shadow-sm overflow-hidden">
+          <div className="px-5 py-3.5 border-b border-ink-100">
+            <p className="text-xs font-600 text-ink-500 uppercase tracking-wider">Video Notes — click a timecode to jump</p>
+          </div>
+          <div className="p-3 space-y-1">
+            {source.notes.map((section, si) => {
+              const isOpen = openSections[si] !== false;
+              return (
+                <div key={si} className="rounded-xl overflow-hidden">
+                  <button onClick={() => setOpenSections(p => ({ ...p, [si]: !isOpen }))}
+                    className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left hover:bg-ink-50 rounded-xl transition-colors">
+                    <span className={`text-[7px] text-ink-400 transition-transform duration-150 leading-none flex-shrink-0 ${isOpen ? 'rotate-90' : ''}`}
+                      style={{ display: 'inline-block' }}>▶</span>
+                    <button onClick={e => { e.stopPropagation(); seekTo(section.timecode); }}
+                      className="flex-shrink-0 text-xs font-700 text-white bg-red-500 hover:bg-red-600 px-2 py-0.5 rounded-md transition-colors tabular-nums">
+                      {formatTime(section.timecode)}
+                    </button>
+                    <span className="text-sm font-600 text-ink-700 flex-1">{section.heading}</span>
+                  </button>
+                  {isOpen && section.points?.length > 0 && (
+                    <ul className="pl-10 pr-3 pb-2 space-y-1.5">
+                      {section.points.map((pt, pi) => (
+                        <li key={pi} className="flex items-start gap-2 text-sm text-ink-600">
+                          <span className="w-1.5 h-1.5 rounded-full bg-red-300 mt-[7px] flex-shrink-0" />
+                          {pt}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Mode toggle ───────────────────────────────────────────────────────────────
 
 function ModeToggle({ mode, loading, onToggle }) {
   return (
     <div className="flex items-center gap-1 bg-ink-100 rounded-xl p-1">
-      <button
-        onClick={() => mode !== 'standard' && onToggle()}
-        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-600 transition-all duration-200 ${
-          mode === 'standard'
-            ? 'bg-white text-ink-900 shadow-sm'
-            : 'text-ink-400 hover:text-ink-600'
-        }`}
-      >
+      <button onClick={() => mode !== 'standard' && onToggle()}
+        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-600 transition-all duration-200 ${mode === 'standard' ? 'bg-white text-ink-900 shadow-sm' : 'text-ink-400 hover:text-ink-600'}`}>
         Standard
       </button>
-      <button
-        onClick={() => mode !== 'concise' && onToggle()}
-        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-600 transition-all duration-200 ${
-          mode === 'concise'
-            ? 'bg-white text-ink-900 shadow-sm'
-            : 'text-ink-400 hover:text-ink-600'
-        }`}
-      >
-        {loading ? (
-          <>
-            <span className="w-3 h-3 border-[1.5px] border-brand-500 border-t-transparent rounded-full animate-spin" />
-            Concise
-          </>
-        ) : (
-          <>
-            <Layers className="w-3 h-3" />
-            Concise
-          </>
-        )}
+      <button onClick={() => mode !== 'concise' && onToggle()}
+        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-600 transition-all duration-200 ${mode === 'concise' ? 'bg-white text-ink-900 shadow-sm' : 'text-ink-400 hover:text-ink-600'}`}>
+        {loading ? <><span className="w-3 h-3 border-[1.5px] border-brand-500 border-t-transparent rounded-full animate-spin" />Concise</> : <><Layers className="w-3 h-3" />Concise</>}
       </button>
     </div>
   );
 }
 
-// ── Loading skeleton while concise is generating ──────────────────────────────
+// ── Concise loading skeleton ──────────────────────────────────────────────────
 
 function ConciseLoadingState({ onSwitchBack }) {
   return (
@@ -273,10 +417,8 @@ function ConciseLoadingState({ onSwitchBack }) {
       <div className="flex items-center gap-3 mb-4">
         <div className="w-4 h-4 border-2 border-brand-500 border-t-transparent rounded-full animate-spin flex-shrink-0" />
         <p className="text-sm text-ink-500">
-          Generating concise notes in the background…
-          <button onClick={onSwitchBack} className="ml-2 text-brand-600 hover:underline font-medium">
-            Switch back to Standard
-          </button>
+          Generating concise notes…
+          <button onClick={onSwitchBack} className="ml-2 text-brand-600 hover:underline font-medium">Switch back to Standard</button>
         </p>
       </div>
       {[1, 2, 3].map(i => (
@@ -297,153 +439,6 @@ function ConciseLoadingState({ onSwitchBack }) {
 }
 
 // ── Markdown builder ──────────────────────────────────────────────────────────
-
-// ── Video Source Block ────────────────────────────────────────────────────────
-
-function VideoSourceBlock({ source: initialSource, noteId }) {
-  const [notesOpen, setNotesOpen] = useState(true);
-  const [openSections, setOpenSections] = useState({});
-  const [source, setSource] = useState(initialSource);
-  const [merging, setMerging] = useState(false);
-  const [mergeError, setMergeError] = useState(null);
-  const iframeRef = useRef(null);
-
-  function toggleSection(i) {
-    setOpenSections(p => ({ ...p, [i]: p[i] === false ? true : false }));
-  }
-
-  function seekTo(seconds) {
-    iframeRef.current?.contentWindow?.postMessage(
-      JSON.stringify({ event: 'command', func: 'seekTo', args: [seconds, true] }), '*'
-    );
-    iframeRef.current?.contentWindow?.postMessage(
-      JSON.stringify({ event: 'command', func: 'playVideo', args: [] }), '*'
-    );
-  }
-
-  function formatTime(seconds) {
-    const m = Math.floor(seconds / 60);
-    const s = String(seconds % 60).padStart(2, '0');
-    return `${m}:${s}`;
-  }
-
-  async function handleMerge() {
-    if (!noteId || merging) return;
-    setMerging(true); setMergeError(null);
-    try {
-      const res = await fetch(`/api/notes/${noteId}/merge-video`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ videoId: source.videoId }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Merge failed');
-      setSource(prev => ({ ...prev, merged: true }));
-    } catch (err) {
-      setMergeError(err.message);
-    } finally {
-      setMerging(false);
-    }
-  }
-
-  return (
-    <div className="bg-white rounded-2xl border border-ink-200 shadow-sm overflow-hidden">
-
-      {/* Title bar + merge button */}
-      <div className="flex items-center gap-3 px-5 py-3.5 border-b border-ink-100">
-        <span className="w-6 h-6 rounded-lg bg-red-500 flex items-center justify-center flex-shrink-0">
-          <Youtube className="w-3.5 h-3.5 text-white" />
-        </span>
-        <span className="font-600 text-ink-800 flex-1 text-[15px] line-clamp-1 min-w-0">{source.title}</span>
-        {noteId && (
-          source.merged ? (
-            <span className="flex items-center gap-1 text-xs font-600 text-green-600 bg-green-50 px-2.5 py-1 rounded-full flex-shrink-0">
-              <CheckCircle className="w-3 h-3" /> Merged
-            </span>
-          ) : (
-            <button onClick={handleMerge} disabled={merging}
-              className="flex items-center gap-1.5 text-xs font-600 text-ink-500 bg-ink-100 hover:bg-brand-100 hover:text-brand-700 px-2.5 py-1 rounded-full transition-colors flex-shrink-0 disabled:opacity-50">
-              {merging ? <Loader2 className="w-3 h-3 animate-spin" /> : <GitMerge className="w-3 h-3" />}
-              {merging ? 'Merging…' : 'Merge into notes'}
-            </button>
-          )
-        )}
-      </div>
-
-      {mergeError && <p className="px-5 py-2 text-xs text-red-500">{mergeError}</p>}
-
-      {/* Embed — always visible */}
-      <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
-        <iframe
-          ref={iframeRef}
-          src={`https://www.youtube.com/embed/${source.videoId}?enablejsapi=1`}
-          title={source.title}
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-          className="absolute inset-0 w-full h-full"
-        />
-      </div>
-
-      {/* Collapsible notes panel */}
-      {source.notes?.length > 0 && (
-        <div className="border-t border-ink-100">
-          {/* Panel header */}
-          <button
-            onClick={() => setNotesOpen(v => !v)}
-            className="w-full flex items-center gap-2 px-5 py-3 text-left hover:bg-ink-50 transition-colors"
-          >
-            {/* Filled triangle indicator */}
-            <span className={`text-[8px] text-ink-400 transition-transform duration-150 leading-none ${notesOpen ? 'rotate-90' : ''}`}
-              style={{ display: 'inline-block' }}>▶</span>
-            <span className="text-xs font-600 text-ink-500 uppercase tracking-wider flex-1">
-              Video Notes
-            </span>
-            <span className="text-xs text-ink-400">{source.notes.length} sections · click a timecode to jump</span>
-          </button>
-
-          {notesOpen && (
-            <div className="px-4 pb-4 space-y-1">
-              {source.notes.map((section, si) => {
-                const isOpen = openSections[si] !== false;
-                return (
-                  <div key={si} className="rounded-xl overflow-hidden">
-                    {/* Section header */}
-                    <button
-                      onClick={() => toggleSection(si)}
-                      className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left hover:bg-ink-50 rounded-xl transition-colors group"
-                    >
-                      <span className={`text-[7px] text-ink-400 transition-transform duration-150 leading-none flex-shrink-0 ${isOpen ? 'rotate-90' : ''}`}
-                        style={{ display: 'inline-block' }}>▶</span>
-                      <button
-                        onClick={e => { e.stopPropagation(); seekTo(section.timecode); }}
-                        className="flex-shrink-0 text-xs font-700 text-white bg-red-500 hover:bg-red-600 px-2 py-0.5 rounded-md transition-colors tabular-nums"
-                      >
-                        {formatTime(section.timecode)}
-                      </button>
-                      <span className="text-sm font-600 text-ink-700 flex-1">{section.heading}</span>
-                    </button>
-
-                    {/* Section points */}
-                    {isOpen && section.points?.length > 0 && (
-                      <ul className="pl-10 pr-3 pb-2 space-y-1.5">
-                        {section.points.map((pt, pi) => (
-                          <li key={pi} className="flex items-start gap-2 text-sm text-ink-600">
-                            <span className="w-1.5 h-1.5 rounded-full bg-red-300 mt-[7px] flex-shrink-0" />
-                            {pt}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
 
 function buildMarkdown(notes) {
   const lines = [`# ${notes.title || 'Study Notes'}`, ''];
