@@ -3,13 +3,31 @@ import { getNoteById } from '../../lib/store.js';
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-const QUIZ_PROMPT = `You are a quiz generator for students. You have been given structured study notes.
+/**
+ * Scale question counts based on number of topics selected.
+ * Each "unit" = 1 topic or 1 video source.
+ *
+ * 1 unit:  3 mcq, 2 tf, 2 fill, 1 short  = 8 questions
+ * 2–3:     4 mcq, 3 tf, 3 fill, 2 short  = 12 questions
+ * 4–5:     5 mcq, 3 tf, 3 fill, 3 short  = 14 questions
+ * 6+:      5 mcq, 4 tf, 4 fill, 4 short  = 17 questions
+ */
+function getQuestionCounts(units) {
+  if (units <= 1) return { mcq: 3, true_false: 2, fill_blank: 2, short_answer: 1 };
+  if (units <= 3) return { mcq: 4, true_false: 3, fill_blank: 3, short_answer: 2 };
+  if (units <= 5) return { mcq: 5, true_false: 3, fill_blank: 3, short_answer: 3 };
+  return                { mcq: 5, true_false: 4, fill_blank: 4, short_answer: 4 };
+}
 
-Generate a quiz with EXACTLY this mix of question types:
-- 5 multiple choice questions (4 options each, one correct)
-- 4 true/false questions
-- 4 fill-in-the-blank questions (replace ONE key word/phrase with _____)
-- 4 short answer questions (worth 2 marks each, require a sentence or two to answer)
+function buildPrompt(counts) {
+  const total = counts.mcq + counts.true_false + counts.fill_blank + counts.short_answer;
+  return `You are a quiz generator for students. You have been given structured study notes.
+
+Generate a quiz with EXACTLY this mix of question types (${total} questions total):
+- ${counts.mcq} multiple choice questions (4 options each, one correct)
+- ${counts.true_false} true/false questions
+- ${counts.fill_blank} fill-in-the-blank questions (replace ONE key word/phrase with _____)
+- ${counts.short_answer} short answer question${counts.short_answer !== 1 ? 's' : ''} (worth 2 marks each, require a sentence or two to answer)
 
 Rules:
 - Questions must test FACTUAL KNOWLEDGE from the notes — not exam technique or study tips
@@ -50,6 +68,7 @@ Return ONLY valid JSON in this exact format (no markdown, no extra text):
     }
   ]
 }`;
+}
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -62,12 +81,19 @@ export default async function handler(req, res) {
     if (!record) return res.status(404).json({ error: 'Note not found' });
 
     // Use filtered notes if the student customised their selection, otherwise full notes
-    const notesText = JSON.stringify(filteredNotes || record.notes, null, 2);
+    const notes = filteredNotes || record.notes;
+    const notesText = JSON.stringify(notes, null, 2);
+
+    // Count units to scale question count
+    const topicCount = notes.topics?.length || 0;
+    const videoCount = notes.videoSources?.length || 0;
+    const units = topicCount + videoCount;
+    const counts = getQuestionCounts(units);
 
     const response = await client.messages.create({
       model: 'claude-opus-4-7',
       max_tokens: 4096,
-      system: QUIZ_PROMPT,
+      system: buildPrompt(counts),
       messages: [{
         role: 'user',
         content: `Generate a quiz based on these study notes:\n\n${notesText}`
@@ -78,7 +104,7 @@ export default async function handler(req, res) {
     const jsonMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/) || [null, raw];
     const quiz = JSON.parse(jsonMatch[1].trim());
 
-    res.status(200).json({ quiz, title: record.notes.title });
+    res.status(200).json({ quiz, title: record.notes.title, counts });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
