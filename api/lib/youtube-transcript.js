@@ -1,87 +1,54 @@
 /**
- * Fetch a YouTube transcript via the InnerTube API.
- * YouTube's internal API used by their Android app — returns full player
- * data including captions and is not subject to the same bot-detection
- * that blocks page-scraping from server IPs.
+ * Fetch a YouTube transcript via Supadata's transcript API.
+ * Supadata handles all of YouTube's bot-detection reliably.
+ * Free tier: 1,000 requests/month — https://supadata.ai
+ *
+ * Required env var: SUPADATA_API_KEY
  */
 
-const INNERTUBE_API_KEY = 'AIzaSyA8eiZmM1FaDVjRy-df2KTyQ_vz_yYM39w';
-const ANDROID_CLIENT = {
-  clientName: 'ANDROID',
-  clientVersion: '19.09.37',
-  androidSdkVersion: 30,
-  userAgent: 'com.google.android.youtube/19.09.37 (Linux; U; Android 11) gzip',
-  hl: 'en',
-  gl: 'US',
-};
-
 export async function fetchTranscript(videoId) {
-  // 1. Call InnerTube /player to get caption track URLs
-  const playerRes = await fetch(
-    `https://www.youtube.com/youtubei/v1/player?key=${INNERTUBE_API_KEY}`,
+  const apiKey = process.env.SUPADATA_API_KEY;
+  if (!apiKey) {
+    throw new Error('SUPADATA_API_KEY environment variable is not set. Add it in your Vercel dashboard.');
+  }
+
+  const url = `https://www.youtube.com/watch?v=${videoId}`;
+  const res = await fetch(
+    `https://api.supadata.ai/v1/youtube/transcript?url=${encodeURIComponent(url)}`,
     {
-      method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'User-Agent': ANDROID_CLIENT.userAgent,
-        'X-Youtube-Client-Name': '3',
-        'X-Youtube-Client-Version': ANDROID_CLIENT.clientVersion,
-        'Accept-Language': 'en-US,en;q=0.9',
-        Origin: 'https://www.youtube.com',
-        Referer: 'https://www.youtube.com/',
+        'x-api-key': apiKey,
+        'Accept': 'application/json',
       },
-      body: JSON.stringify({
-        context: { client: ANDROID_CLIENT },
-        videoId,
-        params: 'CgIQBg==', // request captions
-      }),
     }
   );
 
-  if (!playerRes.ok) throw new Error(`InnerTube player API returned ${playerRes.status}`);
-
-  const player = await playerRes.json();
-
-  // Check for playability issues (private, age-restricted, etc.)
-  const status = player?.playabilityStatus?.status;
-  if (status && status !== 'OK') {
-    const reason = player?.playabilityStatus?.reason || status;
-    throw new Error(`Video unavailable: ${reason}`);
+  if (res.status === 404) {
+    throw new Error('No transcript found for this video. It may not have captions enabled.');
+  }
+  if (res.status === 401 || res.status === 403) {
+    throw new Error('Invalid Supadata API key — check your SUPADATA_API_KEY environment variable.');
+  }
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body?.message || `Transcript service returned ${res.status}`);
   }
 
-  const captionTracks =
-    player?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
+  const data = await res.json();
 
-  if (!captionTracks?.length) {
-    throw new Error(
-      'No captions found for this video. It may not have auto-generated or manual captions enabled — try a different video.'
-    );
+  // Supadata returns { content: [{ text, offset, duration, lang }], lang, availableLangs }
+  // offset is in milliseconds
+  const segments = (data.content || [])
+    .filter(s => s.text?.trim())
+    .map(s => ({
+      text: s.text.replace(/\n/g, ' ').trim(),
+      offset: s.offset ?? 0,
+      duration: s.duration ?? 0,
+    }));
+
+  if (!segments.length) {
+    throw new Error('Transcript appears to be empty for this video.');
   }
-
-  // Prefer English; fall back to first available
-  const track =
-    captionTracks.find(t => t.languageCode === 'en') ||
-    captionTracks.find(t => t.languageCode?.startsWith('en')) ||
-    captionTracks[0];
-
-  // 2. Fetch the actual caption data (json3 format)
-  const captionUrl = `${track.baseUrl}&fmt=json3`;
-  const captionRes = await fetch(captionUrl);
-  if (!captionRes.ok) throw new Error(`Failed to fetch captions: ${captionRes.status}`);
-
-  const captionData = await captionRes.json();
-
-  // json3 format: { events: [{ tStartMs, dDurationMs, segs: [{ utf8 }] }] }
-  const segments = (captionData.events || [])
-    .filter(e => e.segs?.length)
-    .map(e => ({
-      text: e.segs.map(s => s.utf8 ?? '').join('').replace(/\n/g, ' ').trim(),
-      offset: e.tStartMs ?? 0,    // milliseconds
-      duration: e.dDurationMs ?? 0,
-    }))
-    .filter(s => s.text);
-
-  if (!segments.length) throw new Error('Transcript appears to be empty.');
 
   return segments;
 }
