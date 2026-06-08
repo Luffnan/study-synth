@@ -125,7 +125,7 @@ export default function DashboardPage({ onUpload, onOpenNote, onQuiz }) {
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12 animate-fade-in">
 
       {/* Header */}
-      <div className="flex items-end justify-between mb-8">
+      <div className="flex items-center gap-3 mb-8">
         <div>
           <h1 className="text-2xl sm:text-3xl font-800 text-ink-900">My Study Notes</h1>
           <p className="text-ink-400 text-sm mt-1">
@@ -136,8 +136,8 @@ export default function DashboardPage({ onUpload, onOpenNote, onQuiz }) {
           </p>
         </div>
         <button onClick={() => setNewSubjectOpen(true)}
-          className="flex items-center gap-1.5 bg-ink-900 hover:bg-brand-600 text-white px-4 py-2 rounded-xl text-sm font-600 transition-colors shadow-sm">
-          <FolderPlus className="w-4 h-4" /> New Subject
+          className="flex items-center gap-1.5 bg-ink-100 hover:bg-ink-200 text-ink-600 px-3 py-1.5 rounded-xl text-sm font-600 transition-colors">
+          <FolderPlus className="w-3.5 h-3.5" /> New Subject
         </button>
       </div>
 
