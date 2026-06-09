@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { getNoteById, updateNoteContent } from '../../../lib/store.js';
+import { tryGetUserId } from '../../../lib/auth.js';
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -33,15 +34,17 @@ export default async function handler(req, res) {
   if (!videoId) return res.status(400).json({ error: 'videoId required' });
   if (typeof merged !== 'boolean') return res.status(400).json({ error: 'merged (boolean) required' });
 
+  const { userId, err } = await tryGetUserId(req);
+  if (err) return res.status(401).json({ error: 'Unauthorized' });
+
   try {
-    const record = await getNoteById(id);
+    const record = await getNoteById(id, userId);
     const notes = record.notes || {};
     const videoSources = notes.videoSources || [];
     const videoSource = videoSources.find(v => v.videoId === videoId);
     if (!videoSource) return res.status(404).json({ error: 'Video source not found' });
 
     if (merged) {
-      // ── Merge ON: Claude integrates video notes into main topics ──────────
       const videoNotesText = (videoSource.notes || [])
         .map(s => `## ${s.heading}\n${(s.points || []).map(p => `- ${p}`).join('\n')}`)
         .join('\n\n');
@@ -60,29 +63,25 @@ export default async function handler(req, res) {
       const jsonMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/) || [null, raw];
       const mergedNotes = JSON.parse(jsonMatch[1].trim());
 
-      // Ensure videoSources is preserved — Claude may drop or alter it
       if (!mergedNotes.videoSources) mergedNotes.videoSources = videoSources;
 
-      // Mark this video as merged=true, store pre-merge snapshot for undo
       mergedNotes.videoSources = mergedNotes.videoSources.map(v =>
         v.videoId === videoId
-          ? { ...v, merged: true, preMergeSnapshot: notes } // snapshot BEFORE merge
+          ? { ...v, merged: true, preMergeSnapshot: notes }
           : v
       );
 
       const updated = await updateNoteContent(id, {
         notes: mergedNotes,
         fileNames: record.file_names,
-      });
+      }, userId);
 
       return res.status(200).json({ notes: mergedNotes, record: updated });
 
     } else {
-      // ── Merge OFF: restore from snapshot ──────────────────────────────────
       const snapshot = videoSource.preMergeSnapshot;
 
       if (snapshot) {
-        // Restore pre-merge notes, but update all videoSources to reflect current merged states
         const restoredNotes = {
           ...snapshot,
           videoSources: (snapshot.videoSources || videoSources).map(v =>
@@ -91,16 +90,14 @@ export default async function handler(req, res) {
               : v
           ),
         };
-
-        await updateNoteContent(id, { notes: restoredNotes, fileNames: record.file_names });
+        await updateNoteContent(id, { notes: restoredNotes, fileNames: record.file_names }, userId);
         return res.status(200).json({ notes: restoredNotes });
       } else {
-        // No snapshot — just flip the flag (shouldn't happen in normal flow)
         const updatedSources = videoSources.map(v =>
           v.videoId === videoId ? { ...v, merged: false } : v
         );
         const updatedNotes = { ...notes, videoSources: updatedSources };
-        await updateNoteContent(id, { notes: updatedNotes, fileNames: record.file_names });
+        await updateNoteContent(id, { notes: updatedNotes, fileNames: record.file_names }, userId);
         return res.status(200).json({ notes: updatedNotes });
       }
     }

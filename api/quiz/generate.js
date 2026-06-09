@@ -1,17 +1,9 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { getNoteById } from '../../lib/store.js';
+import { tryGetUserId } from '../../lib/auth.js';
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-/**
- * Scale question counts based on number of topics selected.
- * Each "unit" = 1 topic or 1 video source.
- *
- * 1 unit:  3 mcq, 2 tf, 2 fill, 1 short  = 8 questions
- * 2–3:     4 mcq, 3 tf, 3 fill, 2 short  = 12 questions
- * 4–5:     5 mcq, 3 tf, 3 fill, 3 short  = 14 questions
- * 6+:      5 mcq, 4 tf, 4 fill, 4 short  = 17 questions
- */
 function getQuestionCounts(units) {
   if (units <= 1) return { mcq: 3, true_false: 2, fill_blank: 2, short_answer: 1 };
   if (units <= 3) return { mcq: 4, true_false: 3, fill_blank: 3, short_answer: 2 };
@@ -73,18 +65,19 @@ Return ONLY valid JSON in this exact format (no markdown, no extra text):
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
+  const { userId, err: authErr } = await tryGetUserId(req);
+  if (authErr) return res.status(401).json({ error: 'Unauthorized' });
+
   try {
     const { noteId, filteredNotes } = req.body;
     if (!noteId) return res.status(400).json({ error: 'noteId required' });
 
-    const record = await getNoteById(noteId);
+    const record = await getNoteById(noteId, userId);
     if (!record) return res.status(404).json({ error: 'Note not found' });
 
-    // Use filtered notes if the student customised their selection, otherwise full notes
     const notes = filteredNotes || record.notes;
     const notesText = JSON.stringify(notes, null, 2);
 
-    // Count units to scale question count
     const topicCount = notes.topics?.length || 0;
     const videoCount = notes.videoSources?.length || 0;
     const units = topicCount + videoCount;
@@ -94,10 +87,7 @@ export default async function handler(req, res) {
       model: 'claude-opus-4-7',
       max_tokens: 4096,
       system: buildPrompt(counts),
-      messages: [{
-        role: 'user',
-        content: `Generate a quiz based on these study notes:\n\n${notesText}`
-      }]
+      messages: [{ role: 'user', content: `Generate a quiz based on these study notes:\n\n${notesText}` }]
     });
 
     const raw = response.content[0].text.trim();

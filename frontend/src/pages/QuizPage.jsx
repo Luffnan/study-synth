@@ -1,3 +1,4 @@
+import { apiFetch } from '../lib/api.js';
 import { useState, useEffect } from 'react';
 import { ArrowLeft, ArrowRight, CheckCircle, XCircle, Loader2, RotateCcw, Trophy, ChevronDown, ChevronUp, Hash, Youtube, Zap } from 'lucide-react';
 
@@ -59,7 +60,7 @@ export default function QuizPage({ noteId, noteTitle, notes, onBack }) {
     setError(null);
     try {
       const filteredNotes = buildFilteredNotes();
-      const res = await fetch('/api/quiz/generate', {
+      const res = await apiFetch('/api/quiz/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ noteId, filteredNotes }),
@@ -88,7 +89,7 @@ export default function QuizPage({ noteId, noteTitle, notes, onBack }) {
     if (scoreSaved || !noteId) return;
     setScoreSaved(true);
     try {
-      await fetch(`/api/notes/${noteId}`, {
+      await apiFetch(`/api/notes/${noteId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ latest_quiz_pct: pct }),
@@ -402,7 +403,7 @@ function ShortAnswerInput({ question, onAnswer }) {
     if (!val.trim() || marking) return;
     setMarking(true);
     try {
-      const res = await fetch('/api/quiz/mark', {
+      const res = await apiFetch('/api/quiz/mark', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question: question.question, modelAnswer: question.modelAnswer, studentAnswer: val.trim() }),

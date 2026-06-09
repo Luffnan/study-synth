@@ -1,11 +1,12 @@
 /**
  * Unified YouTube endpoint.
- * POST { url }              → create new note from video (was youtube/create)
- * POST { url, noteId }     → ingest video into existing note (was youtube/ingest)
+ * POST { url }              → create new note from video
+ * POST { url, noteId }     → ingest video into existing note
  */
 import Anthropic from '@anthropic-ai/sdk';
 import { fetchTranscript } from './lib/youtube-transcript.js';
 import { saveNote, getNoteById, addVideoSource } from '../lib/store.js';
+import { tryGetUserId } from '../lib/auth.js';
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -84,6 +85,9 @@ function parseJson(raw) {
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
+  const { userId, err: authErr } = await tryGetUserId(req);
+  if (authErr) return res.status(401).json({ error: 'Unauthorized' });
+
   try {
     const { url, noteId } = req.body;
     if (!url) return res.status(400).json({ error: 'YouTube URL required' });
@@ -102,24 +106,22 @@ export default async function handler(req, res) {
     const transcript = formatTranscript(segments);
 
     if (noteId) {
-      // ── Ingest into existing note ──
       const response = await client.messages.create({
         model: 'claude-opus-4-7', max_tokens: 4096, system: INGEST_PROMPT,
         messages: [{ role: 'user', content: `Video: "${videoTitle || 'Unknown'}"\n\n${transcript}\n\nReturn the timestamped JSON array.` }],
       });
       const videoNotes = parseJson(response.content[0].text);
       const newSource = { videoId, title: videoTitle || 'YouTube Video', url: `https://www.youtube.com/watch?v=${videoId}`, notes: videoNotes || [], merged: false };
-      const record = await addVideoSource(noteId, newSource);
+      const record = await addVideoSource(noteId, newSource, userId);
       return res.status(200).json({ videoSource: newSource, record });
     } else {
-      // ── Create new note ──
       const response = await client.messages.create({
         model: 'claude-opus-4-7', max_tokens: 8192, system: CREATE_PROMPT,
         messages: [{ role: 'user', content: `Video: "${videoTitle || 'Unknown'}"\n\n${transcript}` }],
       });
       const { notes, videoNotes } = parseJson(response.content[0].text);
       notes.videoSources = [{ videoId, title: videoTitle || 'YouTube Video', url: `https://www.youtube.com/watch?v=${videoId}`, notes: videoNotes || [], merged: false }];
-      const record = await saveNote(notes, [`youtube:${videoId}`]);
+      const record = await saveNote(notes, [`youtube:${videoId}`], userId);
       return res.status(200).json({ notes, id: record.id });
     }
   } catch (err) {

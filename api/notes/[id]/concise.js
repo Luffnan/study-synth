@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { getNoteById, saveConciseNotes } from '../../../lib/store.js';
+import { tryGetUserId } from '../../../lib/auth.js';
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -24,15 +25,15 @@ export default async function handler(req, res) {
   const { id } = req.query;
   if (!id) return res.status(400).json({ error: 'Note id required' });
 
-  try {
-    const record = await getNoteById(id);
+  const { userId, err } = await tryGetUserId(req);
+  if (err) return res.status(401).json({ error: 'Unauthorized' });
 
-    // Return cached concise notes if they already exist
+  try {
+    const record = await getNoteById(id, userId);
+
     if (record.concise_notes) {
       return res.status(200).json({ conciseNotes: record.concise_notes });
     }
-
-    const standardNotes = record.notes;
 
     const response = await client.messages.create({
       model: 'claude-opus-4-7',
@@ -40,7 +41,7 @@ export default async function handler(req, res) {
       system: CONCISE_PROMPT,
       messages: [{
         role: 'user',
-        content: `Here are the standard study notes to compress into concise format:\n\n${JSON.stringify(standardNotes, null, 2)}\n\nReturn only the JSON — no other text.`
+        content: `Here are the standard study notes to compress into concise format:\n\n${JSON.stringify(record.notes, null, 2)}\n\nReturn only the JSON — no other text.`
       }]
     });
 
@@ -48,7 +49,7 @@ export default async function handler(req, res) {
     const jsonMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/) || [null, raw];
     const conciseNotes = JSON.parse(jsonMatch[1].trim());
 
-    await saveConciseNotes(id, conciseNotes);
+    await saveConciseNotes(id, conciseNotes, userId);
 
     res.status(200).json({ conciseNotes });
   } catch (err) {

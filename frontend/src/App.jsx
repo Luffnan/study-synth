@@ -1,12 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import UploadPage from './pages/UploadPage.jsx';
 import NotesPage from './pages/NotesPage.jsx';
 import DashboardPage from './pages/DashboardPage.jsx';
 import SubjectPage from './pages/SubjectPage.jsx';
 import QuizPage from './pages/QuizPage.jsx';
+import LandingPage from './pages/LandingPage.jsx';
+import AuthPage from './pages/AuthPage.jsx';
+import ProfilePage from './pages/ProfilePage.jsx';
 import BrainLogo from './components/BrainLogo.jsx';
+import { supabase } from './lib/supabase.js';
 
 export default function App() {
+  const [session, setSession] = useState(undefined); // undefined = loading, null = logged out
   const [notes, setNotes] = useState(null);
   const [noteId, setNoteId] = useState(null);
   const [noteTitle, setNoteTitle] = useState(null);
@@ -17,6 +22,24 @@ export default function App() {
   const [allRecords, setAllRecords] = useState([]);
   const [allSubjects, setAllSubjects] = useState([]);
 
+  // ── Auth: listen for session changes ────────────────────────────────────────
+  useEffect(() => {
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    // Listen for login/logout/token refresh
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      // After login, always go to dashboard
+      if (session) setView('dashboard');
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // ── App navigation ───────────────────────────────────────────────────────────
   function handleNotes(data) {
     setNotes(data.notes ?? data);
     setNoteId(data.id ?? null);
@@ -49,9 +72,37 @@ export default function App() {
     setView('subject');
   }
 
+  async function handleSignOut() {
+    await supabase.auth.signOut();
+    setSession(null);
+    setView('dashboard');
+  }
+
+  // ── Loading state ────────────────────────────────────────────────────────────
+  if (session === undefined) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-ink-50">
+        <div className="w-6 h-6 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // ── Not authenticated ────────────────────────────────────────────────────────
+  if (!session) {
+    if (view === 'auth') return <AuthPage onBack={() => setView('landing')} />;
+    return <LandingPage onGetStarted={() => setView('auth')} onLogin={() => setView('auth')} />;
+  }
+
+  // ── Authenticated ────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen flex flex-col bg-ink-50">
-      <Header onLogoClick={handleReset} onUploadClick={() => setView('upload')} view={view} />
+      <Header
+        onLogoClick={handleReset}
+        onUploadClick={() => setView('upload')}
+        onProfileClick={() => setView('profile')}
+        view={view}
+        user={session.user}
+      />
       <main className="flex-1">
         {view === 'dashboard' && (
           <DashboardPage
@@ -72,15 +123,19 @@ export default function App() {
             onRecordsChange={setAllRecords}
           />
         )}
-        {view === 'upload'    && <UploadPage onNotes={handleNotes} onBack={handleReset} />}
-        {view === 'notes'     && <NotesPage notes={notes} noteId={noteId} onBack={handleReset} onQuiz={() => handleStartQuiz(noteId, noteTitle)} />}
-        {view === 'quiz'      && <QuizPage noteId={noteId} noteTitle={noteTitle} notes={notes} onBack={() => setView(notes ? 'notes' : 'dashboard')} />}
+        {view === 'upload'   && <UploadPage onNotes={handleNotes} onBack={handleReset} />}
+        {view === 'notes'    && <NotesPage notes={notes} noteId={noteId} onBack={handleReset} onQuiz={() => handleStartQuiz(noteId, noteTitle)} />}
+        {view === 'quiz'     && <QuizPage noteId={noteId} noteTitle={noteTitle} notes={notes} onBack={() => setView(notes ? 'notes' : 'dashboard')} />}
+        {view === 'profile'  && <ProfilePage user={session.user} onBack={handleReset} onSignOut={handleSignOut} />}
       </main>
     </div>
   );
 }
 
-function Header({ onLogoClick, onUploadClick, view }) {
+function Header({ onLogoClick, onUploadClick, onProfileClick, view, user }) {
+  const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || '';
+  const avatarUrl = user?.user_metadata?.avatar_url;
+
   return (
     <header className="bg-white/80 backdrop-blur-md border-b border-ink-200/60 sticky top-0 z-20">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-3">
@@ -104,16 +159,32 @@ function Header({ onLogoClick, onUploadClick, view }) {
           </button>
         </nav>
 
-        <button
-          onClick={onUploadClick}
-          className="ml-auto flex items-center gap-1.5 bg-ink-900 hover:bg-brand-600 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors duration-200 shadow-sm"
-        >
-          <svg viewBox="0 0 16 16" fill="none" className="w-3.5 h-3.5" stroke="currentColor" strokeWidth="2.2">
-            <path d="M8 3v10M3 8l5-5 5 5"/>
-          </svg>
-          <span className="hidden sm:inline">New Notes</span>
-          <span className="sm:hidden">New</span>
-        </button>
+        <div className="ml-auto flex items-center gap-2">
+          <button
+            onClick={onUploadClick}
+            className="flex items-center gap-1.5 bg-ink-900 hover:bg-brand-600 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors duration-200 shadow-sm"
+          >
+            <svg viewBox="0 0 16 16" fill="none" className="w-3.5 h-3.5" stroke="currentColor" strokeWidth="2.2">
+              <path d="M8 3v10M3 8l5-5 5 5"/>
+            </svg>
+            <span className="hidden sm:inline">New Notes</span>
+            <span className="sm:hidden">New</span>
+          </button>
+
+          {/* Profile avatar */}
+          <button onClick={onProfileClick}
+            className={`flex items-center gap-2 pl-1 pr-2.5 py-1 rounded-xl transition-colors ${view === 'profile' ? 'bg-ink-100' : 'hover:bg-ink-100'}`}
+            title="Profile">
+            {avatarUrl ? (
+              <img src={avatarUrl} alt={displayName} className="w-7 h-7 rounded-full object-cover" />
+            ) : (
+              <div className="w-7 h-7 rounded-full bg-brand-600 flex items-center justify-center flex-shrink-0">
+                <span className="text-white text-xs font-700">{displayName[0]?.toUpperCase() || '?'}</span>
+              </div>
+            )}
+            <span className="text-sm font-500 text-ink-700 hidden sm:block max-w-[100px] truncate">{displayName}</span>
+          </button>
+        </div>
       </div>
     </header>
   );

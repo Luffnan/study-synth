@@ -2,6 +2,7 @@ import { IncomingForm } from 'formidable';
 import { readFileSync } from 'fs';
 import Anthropic from '@anthropic-ai/sdk';
 import { getNoteById, updateNoteContent } from '../../../lib/store.js';
+import { tryGetUserId } from '../../../lib/auth.js';
 
 export const config = { api: { bodyParser: false } };
 
@@ -57,9 +58,13 @@ export default async function handler(req, res) {
   const { id } = req.query;
   if (!id) return res.status(400).json({ error: 'Note id required' });
 
+  // Auth check happens on headers before body is parsed
+  const { userId, err: authErr } = await tryGetUserId(req);
+  if (authErr) return res.status(401).json({ error: 'Unauthorized' });
+
   try {
     const [record, { files }] = await Promise.all([
-      getNoteById(id),
+      getNoteById(id, userId),
       parseForm(req),
     ]);
 
@@ -68,7 +73,6 @@ export default async function handler(req, res) {
 
     const newFileNames = uploaded.map(f => f.originalFilename || f.newFilename);
 
-    // Build content blocks: existing notes first, then new files
     const contentBlocks = [
       {
         type: 'text',
@@ -82,26 +86,17 @@ export default async function handler(req, res) {
       const base64 = buffer.toString('base64');
 
       if (mime === 'application/pdf') {
-        contentBlocks.push({
-          type: 'document',
-          source: { type: 'base64', media_type: 'application/pdf', data: base64 },
-        });
+        contentBlocks.push({ type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: base64 } });
         contentBlocks.push({ type: 'text', text: `(Above document: ${file.originalFilename})` });
       } else if (mime.startsWith('image/')) {
-        contentBlocks.push({
-          type: 'image',
-          source: { type: 'base64', media_type: mime, data: base64 },
-        });
+        contentBlocks.push({ type: 'image', source: { type: 'base64', media_type: mime, data: base64 } });
         contentBlocks.push({ type: 'text', text: `(Above image: ${file.originalFilename})` });
       } else {
         return res.status(400).json({ error: `Unsupported file type: ${mime}` });
       }
     }
 
-    contentBlocks.push({
-      type: 'text',
-      text: 'Please merge the new source material into the existing notes as instructed. Return only the merged JSON.',
-    });
+    contentBlocks.push({ type: 'text', text: 'Please merge the new source material into the existing notes as instructed. Return only the merged JSON.' });
 
     const response = await client.messages.create({
       model: 'claude-opus-4-7',
@@ -115,7 +110,7 @@ export default async function handler(req, res) {
     const mergedNotes = JSON.parse(jsonMatch[1].trim());
 
     const allFileNames = [...(record.file_names || []), ...newFileNames];
-    const updated = await updateNoteContent(id, { notes: mergedNotes, fileNames: allFileNames });
+    const updated = await updateNoteContent(id, { notes: mergedNotes, fileNames: allFileNames }, userId);
 
     res.status(200).json({ notes: mergedNotes, record: updated });
   } catch (err) {

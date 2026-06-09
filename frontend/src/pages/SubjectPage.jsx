@@ -1,3 +1,4 @@
+import { apiFetch } from '../lib/api.js';
 import { useState } from 'react';
 import { ChevronRight, Plus, Zap, AlertCircle } from 'lucide-react';
 import BrainLogo from '../components/BrainLogo.jsx';
@@ -25,7 +26,7 @@ export default function SubjectPage({
 
   async function handleOpen(record) {
     try {
-      const res = await fetch(`/api/notes/${record.id}`);
+      const res = await apiFetch(`/api/notes/${record.id}`);
       onOpenNote(await res.json());
     } catch { setError('Failed to load note'); }
   }
@@ -35,7 +36,7 @@ export default function SubjectPage({
     if (!confirm('Delete these notes?')) return;
     setDeleting(id);
     try {
-      await fetch(`/api/notes/${id}`, { method: 'DELETE' });
+      await apiFetch(`/api/notes/${id}`, { method: 'DELETE' });
       onRecordsChange(allRecords.filter(r => r.id !== id));
     } finally { setDeleting(null); }
   }
@@ -51,7 +52,7 @@ export default function SubjectPage({
 
   async function handleRemoveFromSubject(noteId) {
     try {
-      await fetch(`/api/notes/${noteId}`, {
+      await apiFetch(`/api/notes/${noteId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ subject_id: null }),
@@ -62,7 +63,7 @@ export default function SubjectPage({
 
   async function handleMoveToSubject(noteId, subjectId) {
     try {
-      await fetch(`/api/notes/${noteId}`, {
+      await apiFetch(`/api/notes/${noteId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ subject_id: subjectId }),

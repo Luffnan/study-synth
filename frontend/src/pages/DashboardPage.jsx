@@ -1,3 +1,4 @@
+import { apiFetch } from '../lib/api.js';
 import { useState, useEffect, useRef } from 'react';
 import {
   FileText, Image, Trash2, BookOpen, Hash, AlertCircle, Zap, Pencil,
@@ -31,8 +32,8 @@ export default function DashboardPage({ onUpload, onOpenNote, onQuiz, onOpenSubj
   async function fetchAll() {
     try {
       const [notesRes, subjectsRes] = await Promise.all([
-        fetch('/api/notes'),
-        fetch('/api/subjects'),
+        apiFetch('/api/notes'),
+        apiFetch('/api/subjects'),
       ]);
       if (!notesRes.ok || !subjectsRes.ok) throw new Error('Failed to load');
       const [notes, subjs] = await Promise.all([notesRes.json(), subjectsRes.json()]);
@@ -47,14 +48,14 @@ export default function DashboardPage({ onUpload, onOpenNote, onQuiz, onOpenSubj
     if (!confirm('Delete these notes?')) return;
     setDeleting(id);
     try {
-      await fetch(`/api/notes/${id}`, { method: 'DELETE' });
+      await apiFetch(`/api/notes/${id}`, { method: 'DELETE' });
       setRecords(p => p.filter(r => r.id !== id));
     } finally { setDeleting(null); }
   }
 
   async function handleOpen(record) {
     try {
-      const res = await fetch(`/api/notes/${record.id}`);
+      const res = await apiFetch(`/api/notes/${record.id}`);
       onOpenNote(await res.json());
     } catch { setError('Failed to load note'); }
   }
@@ -70,7 +71,7 @@ export default function DashboardPage({ onUpload, onOpenNote, onQuiz, onOpenSubj
 
   async function handleMoveToSubject(noteId, subjectId) {
     try {
-      await fetch(`/api/notes/${noteId}`, {
+      await apiFetch(`/api/notes/${noteId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ subject_id: subjectId }),
@@ -92,7 +93,7 @@ export default function DashboardPage({ onUpload, onOpenNote, onQuiz, onOpenSubj
   async function handleDeleteSubject(subjectId) {
     if (!confirm('Delete this subject? Topics inside will become uncategorised.')) return;
     try {
-      await fetch(`/api/subjects/${subjectId}`, { method: 'DELETE' });
+      await apiFetch(`/api/subjects/${subjectId}`, { method: 'DELETE' });
       setSubjects(p => p.filter(s => s.id !== subjectId));
       setRecords(p => p.map(r => r.subject_id === subjectId ? { ...r, subject_id: null } : r));
     } catch { setError('Failed to delete subject'); }
@@ -100,7 +101,7 @@ export default function DashboardPage({ onUpload, onOpenNote, onQuiz, onOpenSubj
 
   async function handleRenameSubject(subjectId, updates) {
     try {
-      const res = await fetch(`/api/subjects/${subjectId}`, {
+      const res = await apiFetch(`/api/subjects/${subjectId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updates),
@@ -300,7 +301,7 @@ function NewSubjectModal({ onCreated, onClose }) {
     if (!title.trim() || saving) return;
     setSaving(true);
     try {
-      const res = await fetch('/api/subjects', {
+      const res = await apiFetch('/api/subjects', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title: title.trim(), color }),
@@ -375,7 +376,7 @@ export function TopicCard({ record, onClick, onDelete, onQuiz, onSaveEdit, onAdd
     if (!title.trim()) return;
     setSaving(true);
     try {
-      const res = await fetch(`/api/notes/${record.id}`, {
+      const res = await apiFetch(`/api/notes/${record.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title: title.trim(), description: description.trim() }),
@@ -583,7 +584,7 @@ function FilesTab({ target, onDone, onClose }) {
     try {
       const form = new FormData();
       files.forEach(f => form.append('files', f));
-      const res = await fetch(`/api/notes/${target.id}/ingest`, { method: 'POST', body: form });
+      const res = await apiFetch(`/api/notes/${target.id}/ingest`, { method: 'POST', body: form });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed');
       onDone({ file_names: data.record.file_names, topic_count: data.record.topic_count, key_term_count: data.record.key_term_count });
@@ -635,7 +636,7 @@ function YouTubeTab({ target, onDone, onClose }) {
     if (!url.trim()) return;
     setProcessing(true); setError(null);
     try {
-      const res = await fetch('/api/youtube', {
+      const res = await apiFetch('/api/youtube', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ noteId: target.id, url: url.trim() }),
       });

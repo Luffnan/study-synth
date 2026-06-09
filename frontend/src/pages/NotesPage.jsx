@@ -1,3 +1,4 @@
+import { apiFetch } from '../lib/api.js';
 import { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, ChevronDown, ChevronRight, Download, BookOpen, Hash, FileText, Zap, Layers, Youtube, CheckCircle, Loader2, FileDown } from 'lucide-react';
 import { generateDocx } from '../utils/generateDocx.js';
@@ -71,7 +72,7 @@ export default function NotesPage({ notes: initialNotes, noteId, onBack, onQuiz 
     conciseFetchedRef.current = true;
     setConciseLoading(true); setConciseError(null);
     try {
-      const res = await fetch(`/api/notes/${noteId}/concise`, { method: 'POST' });
+      const res = await apiFetch(`/api/notes/${noteId}/concise`, { method: 'POST' });
       if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error || 'Failed'); }
       const data = await res.json();
       setConciseNotes(data.conciseNotes);
@@ -85,7 +86,7 @@ export default function NotesPage({ notes: initialNotes, noteId, onBack, onQuiz 
     if (!noteId || merging) return;
     setMerging(videoId);
     try {
-      const res = await fetch(`/api/notes/${noteId}/merge-video`, {
+      const res = await apiFetch(`/api/notes/${noteId}/merge-video`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ videoId, merged: newMerged }),

@@ -1,3 +1,4 @@
+import { apiFetch } from '../lib/api.js';
 import { useState, useRef, useCallback } from 'react';
 import { FileText, Image, X, Loader2, AlertCircle, ArrowLeft, ArrowUp, Youtube, Link } from 'lucide-react';
 import BrainLogo from '../components/BrainLogo.jsx';
@@ -92,7 +93,7 @@ function FilesPanel({ onNotes }) {
     try {
       const form = new FormData();
       files.forEach(f => form.append('files', f));
-      const res = await fetch('/api/summarise', { method: 'POST', body: form });
+      const res = await apiFetch('/api/summarise', { method: 'POST', body: form });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Server error');
       onNotes(data);
@@ -188,7 +189,7 @@ function YouTubePanel({ onNotes }) {
     if (!url.trim() || loading) return;
     setLoading(true); setError(null);
     try {
-      const res = await fetch('/api/youtube', {
+      const res = await apiFetch('/api/youtube', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url: url.trim() }),
