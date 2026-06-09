@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import {
   FileText, Image, Trash2, BookOpen, Hash, AlertCircle, Zap, Pencil,
   Check, X, Plus, UploadCloud, Loader2, Youtube, Link, FolderPlus,
-  ChevronRight, MoveRight, Folder,
+  ChevronDown, ChevronRight, MoveRight, Folder,
 } from 'lucide-react';
 import BrainLogo from '../components/BrainLogo.jsx';
 
@@ -413,90 +413,98 @@ export function TopicCard({ record, onClick, onDelete, onQuiz, onSaveEdit, onAdd
 
   return (
     <div onClick={onClick}
-      className={`relative bg-white border border-ink-200 rounded-2xl p-4 shadow-sm hover:shadow-md hover:border-ink-300 transition-all duration-200 cursor-pointer group ${deleting ? 'opacity-50' : ''}`}>
+      className={`bg-white border border-ink-200 rounded-2xl shadow-sm hover:shadow-md hover:border-ink-300 transition-all duration-200 cursor-pointer group overflow-hidden ${deleting ? 'opacity-50' : ''}`}>
 
-      {/* Hover actions */}
-      <div className="absolute top-3 right-3 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-        {onAddSource && (
-          <button onClick={e => { e.stopPropagation(); onAddSource(e); }} title="Add sources"
-            className="p-1.5 rounded-lg bg-ink-100 hover:bg-brand-100 text-ink-500 hover:text-brand-600 transition-colors">
-            <Plus className="w-3.5 h-3.5" />
-          </button>
-        )}
-        <button onClick={handleEditClick} title="Edit"
-          className="p-1.5 rounded-lg bg-ink-100 hover:bg-brand-100 text-ink-500 hover:text-brand-600 transition-colors">
-          <Pencil className="w-3.5 h-3.5" />
-        </button>
-        {onQuiz && (
-          <button onClick={onQuiz} title="Quiz"
-            className="p-1.5 rounded-lg bg-ink-100 hover:bg-brand-100 text-ink-500 hover:text-brand-600 transition-colors">
-            <Zap className="w-3.5 h-3.5" />
-          </button>
-        )}
-        {onMoveToSubject && (
-          <div className="relative">
-            <button onClick={e => { e.stopPropagation(); setMoveOpen(o => !o); }} title="Move to subject"
-              className="p-1.5 rounded-lg bg-ink-100 hover:bg-brand-100 text-ink-500 hover:text-brand-600 transition-colors">
-              <MoveRight className="w-3.5 h-3.5" />
+      {/* Card body */}
+      <div className="p-4">
+        {/* Title */}
+        <h3 className="text-[15px] font-600 text-ink-800 leading-snug mb-1">{record.title || 'Untitled'}</h3>
+        {record.description && <p className="text-xs text-ink-400 mb-2 line-clamp-1">{record.description}</p>}
+
+        {/* Stats row */}
+        <div className="flex items-center gap-3 text-xs text-ink-400 mb-2">
+          {record.topic_count > 0 && <span className="flex items-center gap-1"><BookOpen className="w-3 h-3" />{record.topic_count} sections</span>}
+          {record.key_term_count > 0 && <span className="flex items-center gap-1"><Hash className="w-3 h-3" />{record.key_term_count} terms</span>}
+          {record.latest_quiz_pct != null && (
+            <span className="flex items-center gap-1 text-brand-600 font-500"><Zap className="w-3 h-3" />{record.latest_quiz_pct}%</span>
+          )}
+        </div>
+
+        {/* Sources */}
+        {sources.length > 0 && (
+          <div>
+            <button onClick={e => { e.stopPropagation(); setSourcesOpen(o => !o); }}
+              className="flex items-center gap-1 text-xs text-ink-400 hover:text-ink-600 transition-colors">
+              {sourcesOpen ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+              Sources ({sources.length})
             </button>
-            {moveOpen && (
-              <MoveMenu subjects={subjects} onMove={id => { onMoveToSubject(id); setMoveOpen(false); }} onClose={() => setMoveOpen(false)} />
+            {sourcesOpen && (
+              <ul className="mt-1.5 space-y-1 pl-3">
+                {sources.map((f, i) => f.startsWith('youtube:') ? (
+                  <li key={i} className="flex items-center gap-1.5 text-xs text-red-500">
+                    <Youtube className="w-3 h-3 flex-shrink-0" />
+                    <a href={`https://youtube.com/watch?v=${f.replace('youtube:', '')}`} target="_blank" rel="noopener noreferrer"
+                      onClick={e => e.stopPropagation()} className="hover:underline truncate">
+                      youtu.be/{f.replace('youtube:', '')}
+                    </a>
+                  </li>
+                ) : (
+                  <li key={i} className="flex items-center gap-1.5 text-xs text-ink-500">
+                    <FileText className="w-3 h-3 flex-shrink-0 text-ink-400" />
+                    <span className="truncate">{f}</span>
+                  </li>
+                ))}
+              </ul>
             )}
           </div>
         )}
-        {onRemoveFromSubject && (
-          <button onClick={e => { e.stopPropagation(); onRemoveFromSubject(); }} title="Remove from subject"
-            className="p-1.5 rounded-lg bg-ink-100 hover:bg-ink-200 text-ink-500 transition-colors">
-            <X className="w-3.5 h-3.5" />
+      </div>
+
+      {/* Bottom action bar — slides in on hover */}
+      <div className="border-t border-ink-100 bg-ink-50 px-3 py-2 flex items-center gap-0.5
+                      opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+        {/* Left: primary actions */}
+        <div className="flex items-center gap-0.5 flex-1">
+          {onAddSource && (
+            <button onClick={e => { e.stopPropagation(); onAddSource(e); }} title="Add sources"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-500 text-ink-500 hover:bg-white hover:text-brand-600 transition-colors">
+              <Plus className="w-3.5 h-3.5" /> Add
+            </button>
+          )}
+          <button onClick={handleEditClick} title="Rename"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-500 text-ink-500 hover:bg-white hover:text-ink-800 transition-colors">
+            <Pencil className="w-3.5 h-3.5" /> Edit
           </button>
-        )}
+          {onQuiz && (
+            <button onClick={onQuiz} title="Start quiz"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-500 text-ink-500 hover:bg-white hover:text-brand-600 transition-colors">
+              <Zap className="w-3.5 h-3.5" /> Quiz
+            </button>
+          )}
+          {onMoveToSubject && (
+            <div className="relative">
+              <button onClick={e => { e.stopPropagation(); setMoveOpen(o => !o); }} title="Move to subject"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-500 text-ink-500 hover:bg-white hover:text-ink-800 transition-colors">
+                <MoveRight className="w-3.5 h-3.5" /> Move
+              </button>
+              {moveOpen && (
+                <MoveMenu subjects={subjects} onMove={id => { onMoveToSubject(id); setMoveOpen(false); }} onClose={() => setMoveOpen(false)} />
+              )}
+            </div>
+          )}
+          {onRemoveFromSubject && (
+            <button onClick={e => { e.stopPropagation(); onRemoveFromSubject(); }} title="Remove from subject"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-500 text-ink-500 hover:bg-white hover:text-ink-800 transition-colors">
+              <X className="w-3.5 h-3.5" /> Remove
+            </button>
+          )}
+        </div>
+        {/* Right: destructive */}
         <button onClick={onDelete} title="Delete"
-          className="p-1.5 rounded-lg bg-ink-100 hover:bg-red-100 text-ink-500 hover:text-red-500 transition-colors">
+          className="p-1.5 rounded-lg text-ink-400 hover:bg-red-50 hover:text-red-500 transition-colors ml-auto flex-shrink-0">
           <Trash2 className="w-3.5 h-3.5" />
         </button>
       </div>
-
-      {/* Title */}
-      <h3 className="text-[15px] font-600 text-ink-800 pr-20 leading-snug mb-1">{record.title || 'Untitled'}</h3>
-      {record.description && <p className="text-xs text-ink-400 mb-2 line-clamp-1">{record.description}</p>}
-
-      {/* Stats row */}
-      <div className="flex items-center gap-3 text-xs text-ink-400 mb-2">
-        {record.topic_count > 0 && <span className="flex items-center gap-1"><BookOpen className="w-3 h-3" />{record.topic_count} sections</span>}
-        {record.key_term_count > 0 && <span className="flex items-center gap-1"><Hash className="w-3 h-3" />{record.key_term_count} terms</span>}
-        {record.latest_quiz_pct != null && (
-          <span className="flex items-center gap-1 text-brand-600 font-500"><Zap className="w-3 h-3" />{record.latest_quiz_pct}%</span>
-        )}
-      </div>
-
-      {/* Sources */}
-      {sources.length > 0 && (
-        <div>
-          <button onClick={e => { e.stopPropagation(); setSourcesOpen(o => !o); }}
-            className="flex items-center gap-1 text-xs text-ink-400 hover:text-ink-600 transition-colors">
-            {sourcesOpen ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
-            Sources ({sources.length})
-          </button>
-          {sourcesOpen && (
-            <ul className="mt-1.5 space-y-1 pl-3">
-              {sources.map((f, i) => f.startsWith('youtube:') ? (
-                <li key={i} className="flex items-center gap-1.5 text-xs text-red-500">
-                  <Youtube className="w-3 h-3 flex-shrink-0" />
-                  <a href={`https://youtube.com/watch?v=${f.replace('youtube:', '')}`} target="_blank" rel="noopener noreferrer"
-                    onClick={e => e.stopPropagation()} className="hover:underline truncate">
-                    youtu.be/{f.replace('youtube:', '')}
-                  </a>
-                </li>
-              ) : (
-                <li key={i} className="flex items-center gap-1.5 text-xs text-ink-500">
-                  <FileText className="w-3 h-3 flex-shrink-0 text-ink-400" />
-                  <span className="truncate">{f}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      )}
     </div>
   );
 }
