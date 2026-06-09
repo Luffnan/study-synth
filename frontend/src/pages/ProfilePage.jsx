@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase.js';
 import { YEAR_LEVELS, saveProfile, searchSchools, yearLevelLabel } from '../lib/profile.js';
 
 export default function ProfilePage({ user, profile, onBack, onSignOut, onProfileSaved }) {
-  const [tab, setTab] = useState('profile'); // 'profile' | 'school' | 'password'
+  const [tab, setTab] = useState('profile'); // 'profile' | 'password'
 
   const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Student';
   const avatarUrl = user?.user_metadata?.avatar_url;
@@ -37,7 +37,7 @@ export default function ProfilePage({ user, profile, onBack, onSignOut, onProfil
 
       {/* Tabs */}
       <div className="flex gap-1 bg-ink-100 rounded-xl p-1 mb-6">
-        {[['profile', 'Profile'], ['school', 'School & Year'], ['password', 'Password']].map(([key, label]) => (
+        {[['profile', 'Profile'], ['password', 'Password']].map(([key, label]) => (
           <button key={key} onClick={() => setTab(key)}
             className={`flex-1 py-2 rounded-lg text-xs font-600 transition-all ${tab === key ? 'bg-white text-ink-900 shadow-sm' : 'text-ink-400 hover:text-ink-700'}`}>
             {label}
@@ -45,8 +45,7 @@ export default function ProfilePage({ user, profile, onBack, onSignOut, onProfil
         ))}
       </div>
 
-      {tab === 'profile' && <ProfileTab user={user} />}
-      {tab === 'school'  && <SchoolTab user={user} profile={profile} onSaved={onProfileSaved} />}
+      {tab === 'profile' && <ProfileTab user={user} profile={profile} onSaved={onProfileSaved} />}
       {tab === 'password' && <PasswordTab />}
 
       {/* Sign out */}
@@ -60,57 +59,10 @@ export default function ProfilePage({ user, profile, onBack, onSignOut, onProfil
   );
 }
 
-// ── Profile details tab ───────────────────────────────────────────────────────
+// ── Profile tab (name, email, school, year) ───────────────────────────────────
 
-function ProfileTab({ user }) {
+function ProfileTab({ user, profile, onSaved }) {
   const [name, setName] = useState(user?.user_metadata?.full_name || '');
-  const [saving, setSaving] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState(null);
-
-  async function handleSave(e) {
-    e.preventDefault();
-    setSaving(true); setError(null); setSuccess(false);
-    const { error } = await supabase.auth.updateUser({ data: { full_name: name.trim() } });
-    if (error) setError(error.message);
-    else setSuccess(true);
-    setSaving(false);
-    if (!error) setTimeout(() => setSuccess(false), 3000);
-  }
-
-  return (
-    <form onSubmit={handleSave} className="space-y-5">
-      <div>
-        <label className="block text-xs font-600 text-ink-600 mb-1.5">Display name</label>
-        <div className="relative">
-          <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-400" />
-          <input value={name} onChange={e => setName(e.target.value)} placeholder="Your name"
-            className="w-full pl-10 pr-3 py-2.5 rounded-xl border-2 border-ink-200 focus:border-brand-400 focus:outline-none text-sm text-ink-800 transition-colors" />
-        </div>
-      </div>
-      <div>
-        <label className="block text-xs font-600 text-ink-600 mb-1.5">Email</label>
-        <div className="relative">
-          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-400" />
-          <input value={user?.email || ''} disabled
-            className="w-full pl-10 pr-3 py-2.5 rounded-xl border-2 border-ink-100 bg-ink-50 text-sm text-ink-500 cursor-not-allowed" />
-        </div>
-        <p className="text-[11px] text-ink-400 mt-1">Email cannot be changed here</p>
-      </div>
-      {error && <ErrorBanner message={error} />}
-      {success && <SuccessBanner message="Profile updated" />}
-      <button type="submit" disabled={saving || !name.trim()}
-        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-ink-900 hover:bg-brand-600 text-white text-sm font-600 disabled:opacity-40 transition-colors">
-        {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-        Save changes
-      </button>
-    </form>
-  );
-}
-
-// ── School & Year level tab ───────────────────────────────────────────────────
-
-function SchoolTab({ user, profile, onSaved }) {
   const [school, setSchool] = useState(profile?.schools ?? null);
   const [schoolCustom, setSchoolCustom] = useState(profile?.school_name_custom ?? '');
   const [yearLevel, setYearLevel] = useState(profile?.year_level ?? null);
@@ -131,29 +83,29 @@ function SchoolTab({ user, profile, onSaved }) {
   }, []);
 
   function handleQuery(val) {
-    setQuery(val);
-    setSchool(null);
+    setQuery(val); setSchool(null);
     clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => doSearch(val), 300);
   }
 
   function selectSchool(s) {
-    setSchool(s);
-    setQuery(s.name);
-    setResults([]);
-    setShowCustom(false);
-    setSchoolCustom('');
+    setSchool(s); setQuery(s.name); setResults([]); setShowCustom(false); setSchoolCustom('');
   }
 
   async function handleSave(e) {
     e.preventDefault();
+    if (!name.trim()) return;
     setSaving(true); setError(null); setSuccess(false);
     try {
-      const updated = await saveProfile(user.id, {
-        schoolId: school?.id ?? null,
-        schoolNameCustom: school ? null : (schoolCustom.trim() || null),
-        yearLevel,
-      });
+      const [authRes, updated] = await Promise.all([
+        supabase.auth.updateUser({ data: { full_name: name.trim() } }),
+        saveProfile(user.id, {
+          schoolId: school?.id ?? null,
+          schoolNameCustom: school ? null : (schoolCustom.trim() || null),
+          yearLevel,
+        }),
+      ]);
+      if (authRes.error) throw authRes.error;
       setSuccess(true);
       onSaved({ ...updated, schools: school });
       setTimeout(() => setSuccess(false), 3000);
@@ -165,7 +117,28 @@ function SchoolTab({ user, profile, onSaved }) {
   }
 
   return (
-    <form onSubmit={handleSave} className="space-y-6">
+    <form onSubmit={handleSave} className="space-y-5">
+
+      {/* Name */}
+      <div>
+        <label className="block text-xs font-600 text-ink-600 mb-1.5">Display name</label>
+        <div className="relative">
+          <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-400" />
+          <input value={name} onChange={e => setName(e.target.value)} placeholder="Your name"
+            className="w-full pl-10 pr-3 py-2.5 rounded-xl border-2 border-ink-200 focus:border-brand-400 focus:outline-none text-sm text-ink-800 transition-colors" />
+        </div>
+      </div>
+
+      {/* Email */}
+      <div>
+        <label className="block text-xs font-600 text-ink-600 mb-1.5">Email</label>
+        <div className="relative">
+          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-400" />
+          <input value={user?.email || ''} disabled
+            className="w-full pl-10 pr-3 py-2.5 rounded-xl border-2 border-ink-100 bg-ink-50 text-sm text-ink-500 cursor-not-allowed" />
+        </div>
+        <p className="text-[11px] text-ink-400 mt-1">Email cannot be changed here</p>
+      </div>
 
       {/* School */}
       <div>
@@ -196,7 +169,6 @@ function SchoolTab({ user, profile, onSaved }) {
             </div>
           )}
         </div>
-
         {!school && (
           <button type="button" onClick={() => setShowCustom(c => !c)}
             className="text-xs text-ink-400 hover:text-ink-600 transition-colors mt-1.5">
@@ -217,16 +189,10 @@ function SchoolTab({ user, profile, onSaved }) {
         </label>
         <div className="grid grid-cols-1 gap-1.5">
           {YEAR_LEVELS.map(y => (
-            <button
-              key={y.value}
-              type="button"
-              onClick={() => setYearLevel(y.value)}
+            <button key={y.value} type="button" onClick={() => setYearLevel(y.value)}
               className={`flex items-center justify-between px-4 py-3 rounded-xl border-2 text-left transition-all ${
-                yearLevel === y.value
-                  ? 'border-brand-500 bg-brand-50 text-brand-700'
-                  : 'border-ink-200 hover:border-brand-300 hover:bg-ink-50'
-              }`}
-            >
+                yearLevel === y.value ? 'border-brand-500 bg-brand-50 text-brand-700' : 'border-ink-200 hover:border-brand-300 hover:bg-ink-50'
+              }`}>
               <div>
                 <p className="text-sm font-700">{y.label}</p>
                 <p className="text-xs text-ink-400">{y.detail}</p>
@@ -238,9 +204,9 @@ function SchoolTab({ user, profile, onSaved }) {
       </div>
 
       {error && <ErrorBanner message={error} />}
-      {success && <SuccessBanner message="School and year level saved" />}
+      {success && <SuccessBanner message="Profile saved" />}
 
-      <button type="submit" disabled={saving}
+      <button type="submit" disabled={saving || !name.trim()}
         className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-ink-900 hover:bg-brand-600 text-white text-sm font-600 disabled:opacity-40 transition-colors">
         {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
         Save changes
