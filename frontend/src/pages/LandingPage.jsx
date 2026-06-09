@@ -30,7 +30,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
 
         <div className="inline-flex items-center gap-2 bg-brand-50 text-brand-700 text-xs font-600 px-3 py-1.5 rounded-full mb-6 border border-brand-200">
           <Sparkles className="w-3.5 h-3.5" />
-          AI-powered study notes — only from your source material
+          Build bite-sized brain food
         </div>
 
         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-800 text-ink-900 leading-tight mb-6">
