@@ -1,8 +1,8 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { saveNote } from '../lib/store.js';
 import { tryGetUserId } from '../lib/auth.js';
-import { parseFilesFromRequest } from '../lib/parse-files.js';
-import { yearLevelModifier } from '../lib/year-level.js';
+import { parseFilesFromRequest } from './lib/parse-files.js';
+import { yearLevelModifier } from './lib/year-level.js';
 
 export const config = { api: { bodyParser: false } };
 

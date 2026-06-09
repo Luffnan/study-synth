@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { getNoteById } from '../../lib/store.js';
 import { tryGetUserId } from '../../lib/auth.js';
-import { yearLevelModifier } from '../../lib/year-level.js';
+import { yearLevelModifier } from '../lib/year-level.js';
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
