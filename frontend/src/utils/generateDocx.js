@@ -81,7 +81,7 @@ export async function generateDocx(notes) {
       new Paragraph({
         alignment: AlignmentType.RIGHT,
         children: [
-          new TextRun({ text: 'Brain Buffet  ·  Page ', size: 18, color: '94A3B8', font: 'Inter' }),
+          new TextRun({ text: 'Brain Box  ·  Page ', size: 18, color: '94A3B8', font: 'Inter' }),
           new TextRun({ children: [PageNumber.CURRENT], size: 18, color: '94A3B8', font: 'Inter' }),
         ],
       }),

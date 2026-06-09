@@ -12,7 +12,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
             <div className="w-8 h-8 rounded-xl bg-ink-900 flex items-center justify-center">
               <BrainLogo className="w-[18px] h-[18px] text-white" />
             </div>
-            <span className="text-[15px] font-700 tracking-tight text-ink-900">Brain Buffet</span>
+            <span className="text-[15px] font-700 tracking-tight text-ink-900">Brain Box</span>
           </div>
           <div className="ml-auto flex items-center gap-2">
             <button onClick={onLogin}
@@ -45,7 +45,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
 
         <p className="text-lg sm:text-xl text-ink-500 max-w-2xl mx-auto mb-8 leading-relaxed">
           Upload your textbooks, lecture slides, photos of notes, or paste a YouTube lecture.
-          Brain Buffet reads it and builds structured, quizzable notes — no hallucinations,
+          Brain Box reads it and builds structured, quizzable notes — no hallucinations,
           only what's actually in your material.
         </p>
 
@@ -73,10 +73,10 @@ export default function LandingPage({ onGetStarted, onLogin }) {
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-12">
             <h2 className="text-2xl sm:text-3xl font-800 text-ink-900 mb-3">
-              Why students choose Brain Buffet
+              Why students choose Brain Box
             </h2>
             <p className="text-ink-500 max-w-xl mx-auto">
-              Most AI tools make things up. Brain Buffet only summarises what's actually in your uploaded content — no invented facts, no hallucinations.
+              Most AI tools make things up. Brain Box only summarises what's actually in your uploaded content — no invented facts, no hallucinations.
             </p>
           </div>
 
@@ -215,7 +215,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
             <div className="w-6 h-6 rounded-lg bg-ink-900 flex items-center justify-center">
               <BrainLogo className="w-3.5 h-3.5 text-white" />
             </div>
-            <span className="text-sm font-600 text-ink-600">Brain Buffet</span>
+            <span className="text-sm font-600 text-ink-600">Brain Box</span>
           </div>
           <p className="text-xs text-ink-400">AI study notes — only from your source material</p>
         </div>

@@ -29,7 +29,7 @@ export default function AuthPage({ onBack }) {
           <div className="w-10 h-10 rounded-xl bg-ink-900 flex items-center justify-center shadow-md">
             <BrainLogo className="w-5 h-5 text-white" />
           </div>
-          <span className="text-xl font-800 text-ink-900 tracking-tight">Brain Buffet</span>
+          <span className="text-xl font-800 text-ink-900 tracking-tight">Brain Box</span>
         </div>
 
         {/* Card */}
@@ -106,7 +106,7 @@ function LoginForm({ onSwitch }) {
   return (
     <>
       <h1 className="text-xl font-800 text-ink-900 mb-1">Welcome back</h1>
-      <p className="text-ink-400 text-sm mb-6">Sign in to your Brain Buffet account</p>
+      <p className="text-ink-400 text-sm mb-6">Sign in to your Brain Box account</p>
 
       <GoogleButton loading={googleLoading} onClick={handleGoogleLogin} />
       <Divider />
