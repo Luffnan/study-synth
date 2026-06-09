@@ -1,6 +1,6 @@
 import { apiFetch } from '../lib/api.js';
 import { submitFiles } from '../lib/upload.js';
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { FileText, Image, X, Loader2, AlertCircle, ArrowLeft, ArrowUp, Youtube, Link } from 'lucide-react';
 import BrainLogo from '../components/BrainLogo.jsx';
 
@@ -103,6 +103,8 @@ function FilesPanel({ onNotes, yearLevel }) {
     }
   }
 
+  if (loading) return <ProcessingPanel />;
+
   return (
     <>
       {/* Drop zone */}
@@ -166,14 +168,70 @@ function FilesPanel({ onNotes, yearLevel }) {
             : 'bg-ink-200 text-ink-400 cursor-not-allowed'
           }`}
       >
-        {loading
-          ? <><Loader2 className="w-4 h-4 animate-spin" /> Analysing your notes…</>
-          : <><BrainLogo className="w-4 h-4" /> Generate Study Notes</>
-        }
+        <><BrainLogo className="w-4 h-4" /> Generate Study Notes</>
       </button>
-
-      {loading && <p className="text-center text-ink-400 text-sm mt-3">This may take 15–30 seconds</p>}
     </>
+  );
+}
+
+// ── Processing panel ──────────────────────────────────────────────────────────
+
+const PROCESSING_STEPS = [
+  'Reading your document…',
+  'Identifying key topics and concepts…',
+  'Extracting the important details…',
+  'Organising content into topics…',
+  'Writing your study notes…',
+  'Defining key terms and vocabulary…',
+  'Structuring subtopics and bullet points…',
+  'Checking coverage across all sections…',
+  'Putting the finishing touches on your notes…',
+  'Almost there — just reviewing everything…',
+];
+
+function ProcessingPanel() {
+  const [index, setIndex] = useState(0);
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setVisible(false);
+      setTimeout(() => {
+        setIndex(i => (i + 1) % PROCESSING_STEPS.length);
+        setVisible(true);
+      }, 400);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="flex flex-col items-center justify-center py-12 text-center animate-fade-in">
+      {/* Animated brain */}
+      <div className="relative mb-8">
+        <div className="w-20 h-20 rounded-2xl bg-ink-900 flex items-center justify-center shadow-xl">
+          <BrainLogo className="w-10 h-10 text-white" />
+        </div>
+        {/* Pulse rings */}
+        <div className="absolute inset-0 rounded-2xl bg-ink-900 opacity-20 animate-ping" />
+      </div>
+
+      <h2 className="text-xl font-800 text-ink-900 mb-2">Generating your notes</h2>
+
+      {/* Rotating status line */}
+      <p
+        className="text-ink-500 text-sm h-6 transition-opacity duration-400"
+        style={{ opacity: visible ? 1 : 0 }}
+      >
+        {PROCESSING_STEPS[index]}
+      </p>
+
+      {/* Progress bar */}
+      <div className="w-48 h-1 bg-ink-100 rounded-full mt-6 overflow-hidden">
+        <div className="h-full bg-ink-900 rounded-full animate-progress-indeterminate" />
+      </div>
+
+      <p className="text-ink-300 text-xs mt-4">This usually takes 15–45 seconds</p>
+    </div>
   );
 }
 

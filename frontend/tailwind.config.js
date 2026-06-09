@@ -33,10 +33,16 @@ export default {
       animation: {
         'fade-in': 'fadeIn 0.4s ease-out',
         'slide-up': 'slideUp 0.4s ease-out',
+        'progress-indeterminate': 'progressIndeterminate 1.6s ease-in-out infinite',
       },
       keyframes: {
         fadeIn: { from: { opacity: 0 }, to: { opacity: 1 } },
         slideUp: { from: { opacity: 0, transform: 'translateY(12px)' }, to: { opacity: 1, transform: 'translateY(0)' } },
+        progressIndeterminate: {
+          '0%':   { transform: 'translateX(-100%) scaleX(0.4)' },
+          '50%':  { transform: 'translateX(0%) scaleX(0.6)' },
+          '100%': { transform: 'translateX(200%) scaleX(0.4)' },
+        },
       }
     }
   },
