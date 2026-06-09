@@ -1,7 +1,17 @@
 import { apiFetch } from '../lib/api.js';
-import { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, ChevronDown, ChevronRight, Download, BookOpen, Hash, FileText, Zap, Layers, Youtube, CheckCircle, Loader2, FileDown } from 'lucide-react';
+import { submitFiles } from '../lib/upload.js';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { ArrowLeft, ChevronDown, ChevronRight, Download, BookOpen, Hash, FileText, Zap, Layers, Youtube, CheckCircle, Loader2, FileDown, Plus, ArrowUp, X, Link, AlertCircle, Image } from 'lucide-react';
 import { generateDocx } from '../utils/generateDocx.js';
+
+const ACCEPTED = {
+  'application/pdf': ['.pdf'],
+  'image/jpeg': ['.jpg', '.jpeg'],
+  'image/png': ['.png'],
+  'image/webp': ['.webp'],
+  'image/heic': ['.heic'],
+};
+const ACCEPTED_EXTS = Object.values(ACCEPTED).flat().join(',');
 
 export default function NotesPage({ notes: initialNotes, noteId, conciseNotesProp, onConciseNotes, onBack, onQuiz }) {
   const [mode, setMode] = useState('standard');
@@ -59,6 +69,7 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
   const [selected, setSelected] = useState(sidebarItems[0] ?? null);
   const [docxLoading, setDocxLoading] = useState(false);
   const [downloadModalOpen, setDownloadModalOpen] = useState(false);
+  const [addSourceOpen, setAddSourceOpen] = useState(false);
 
   // When mode switches, reset selected to first item
   useEffect(() => {
@@ -136,6 +147,31 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
     }
   }
 
+  async function handleIngestFiles(files) {
+    const res = await submitFiles(files, `/api/notes/${noteId}/ingest`);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Server error');
+    setLiveNotes(data.notes);
+    setVideoSources(data.notes.videoSources || []);
+    setConciseNotes(null);
+    conciseFetchedRef.current = false;
+  }
+
+  async function handleIngestYouTube(url) {
+    const res = await apiFetch('/api/youtube', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url, noteId }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Server error');
+    const newSources = data.notes?.videoSources || [];
+    setVideoSources(newSources);
+    // Switch sidebar to the newly added video
+    const newestVideo = newSources[newSources.length - 1];
+    if (newestVideo) setSelected({ type: 'video', videoId: newestVideo.videoId, label: newestVideo.title });
+  }
+
   if (!initialNotes) return null;
 
   // Rebuild sidebar every render (accounts for mode switch)
@@ -158,6 +194,14 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
             <ModeToggle mode={mode} loading={conciseLoading} onToggle={handleToggleConcise} />
           )}
           {conciseError && <span className="text-xs text-red-500">Failed — try again</span>}
+          {noteId && (
+            <button
+              onClick={() => setAddSourceOpen(true)}
+              className="flex items-center gap-1.5 bg-ink-100 hover:bg-ink-200 text-ink-700 px-3 py-2 rounded-xl text-sm font-medium transition-colors"
+            >
+              <Plus className="w-3.5 h-3.5" /> Add source
+            </button>
+          )}
           <button
             onClick={() => setDownloadModalOpen(true)}
             className="flex items-center gap-1.5 bg-ink-100 hover:bg-ink-200 text-ink-700 px-3 py-2 rounded-xl text-sm font-medium transition-colors"
@@ -171,6 +215,13 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
               docxLoading={docxLoading}
               onDownload={async (opts) => { await handleDownload(opts); setDownloadModalOpen(false); }}
               onClose={() => setDownloadModalOpen(false)}
+            />
+          )}
+          {addSourceOpen && (
+            <AddSourceModal
+              onIngestFiles={handleIngestFiles}
+              onIngestYouTube={handleIngestYouTube}
+              onClose={() => setAddSourceOpen(false)}
             />
           )}
           {noteId && onQuiz && (
@@ -706,6 +757,204 @@ function ConciseLoadingState({ onSwitchBack }) {
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+// ── Add Source modal ──────────────────────────────────────────────────────────
+
+function AddSourceModal({ onIngestFiles, onIngestYouTube, onClose }) {
+  const [tab, setTab] = useState('files');
+  const [files, setFiles] = useState([]);
+  const [dragging, setDragging] = useState(false);
+  const [url, setUrl] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [done, setDone] = useState(false);
+  const inputRef = useRef(null);
+
+  const addFiles = useCallback((incoming) => {
+    const valid = Array.from(incoming).filter(f => Object.keys(ACCEPTED).includes(f.type));
+    setFiles(prev => {
+      const names = new Set(prev.map(f => f.name));
+      return [...prev, ...valid.filter(f => !names.has(f.name))];
+    });
+  }, []);
+
+  const onDrop = useCallback((e) => {
+    e.preventDefault(); setDragging(false); addFiles(e.dataTransfer.files);
+  }, [addFiles]);
+
+  async function handleSubmitFiles() {
+    if (!files.length) return;
+    setLoading(true); setError(null);
+    try {
+      await onIngestFiles(files);
+      setDone(true);
+      setTimeout(onClose, 800);
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+    }
+  }
+
+  async function handleSubmitYouTube() {
+    if (!url.trim()) return;
+    setLoading(true); setError(null);
+    try {
+      await onIngestYouTube(url.trim());
+      setDone(true);
+      setTimeout(onClose, 800);
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+    }
+  }
+
+  function onBackdrop(e) { if (e.target === e.currentTarget && !loading) onClose(); }
+
+  return (
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onBackdrop}>
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-fade-in">
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-ink-100">
+          <div className="flex items-center gap-2.5">
+            <Plus className="w-4 h-4 text-ink-500" />
+            <span className="font-700 text-ink-900 text-base">Add source</span>
+          </div>
+          {!loading && (
+            <button onClick={onClose} className="text-ink-400 hover:text-ink-700 transition-colors text-lg leading-none">✕</button>
+          )}
+        </div>
+
+        {loading ? (
+          /* Processing state */
+          <div className="flex flex-col items-center justify-center py-12 gap-4 text-center px-6">
+            <div className="w-12 h-12 rounded-2xl bg-ink-900 flex items-center justify-center shadow-md">
+              {done
+                ? <CheckCircle className="w-6 h-6 text-green-400" />
+                : <Loader2 className="w-6 h-6 text-white animate-spin" />
+              }
+            </div>
+            <div>
+              <p className="font-700 text-ink-900 text-sm">
+                {done
+                  ? tab === 'files' ? 'Notes updated!' : 'Video added!'
+                  : tab === 'files' ? 'Merging into your notes…' : 'Processing video…'
+                }
+              </p>
+              <p className="text-xs text-ink-400 mt-1">
+                {done ? 'Done — closing…' : tab === 'files' ? 'This may take 20–40 seconds' : 'Extracting transcript and building timecoded notes…'}
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="px-6 py-5">
+            {/* Tabs */}
+            <div className="flex gap-1 bg-ink-100 rounded-xl p-1 mb-4">
+              {[
+                { id: 'files', label: 'Files', icon: <ArrowUp className="w-3.5 h-3.5" /> },
+                { id: 'youtube', label: 'YouTube', icon: <Youtube className="w-3.5 h-3.5" /> },
+              ].map(t => (
+                <button key={t.id} onClick={() => { setTab(t.id); setError(null); }}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-600 transition-all duration-200 ${
+                    tab === t.id ? 'bg-white text-ink-900 shadow-sm' : 'text-ink-400 hover:text-ink-600'
+                  }`}>
+                  {t.icon} {t.label}
+                </button>
+              ))}
+            </div>
+
+            {tab === 'files' ? (
+              <>
+                {/* Drop zone */}
+                <div
+                  onDrop={onDrop}
+                  onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+                  onDragLeave={() => setDragging(false)}
+                  onClick={() => inputRef.current?.click()}
+                  className={`relative border-2 border-dashed rounded-2xl p-5 text-center cursor-pointer transition-all duration-200
+                    ${dragging ? 'border-brand-500 bg-brand-50 scale-[1.01]' : 'border-ink-200 bg-white hover:border-brand-400 hover:bg-brand-50/40'}`}
+                >
+                  <input ref={inputRef} type="file" multiple accept={ACCEPTED_EXTS} className="hidden"
+                    onChange={e => addFiles(e.target.files)} />
+                  <div className={`w-7 h-7 rounded-lg mx-auto mb-2 flex items-center justify-center transition-colors ${dragging ? 'bg-brand-500' : 'bg-ink-100'}`}>
+                    <ArrowUp className={`w-3.5 h-3.5 ${dragging ? 'text-white' : 'text-ink-500'}`} />
+                  </div>
+                  <p className="font-600 text-ink-700 text-sm mb-0.5">{dragging ? 'Drop to add' : 'Drag & drop or tap to browse'}</p>
+                  <p className="text-ink-400 text-xs">PDF · JPG · PNG · WEBP</p>
+                </div>
+
+                {/* File list */}
+                {files.length > 0 && (
+                  <ul className="mt-3 space-y-1.5">
+                    {files.map(f => (
+                      <li key={f.name} className="flex items-center gap-3 bg-white border border-ink-200 rounded-xl px-3 py-2.5 shadow-sm">
+                        {f.type === 'application/pdf'
+                          ? <FileText className="w-4 h-4 text-red-400 flex-shrink-0" />
+                          : <Image className="w-4 h-4 text-brand-500 flex-shrink-0" />
+                        }
+                        <span className="text-sm text-ink-700 flex-1 truncate">{f.name}</span>
+                        <button onClick={() => setFiles(p => p.filter(x => x.name !== f.name))}
+                          className="text-ink-300 hover:text-red-400 transition-colors p-0.5 rounded flex-shrink-0">
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                {error && (
+                  <div className="mt-3 flex items-start gap-3 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <p>{error}</p>
+                  </div>
+                )}
+
+                <button onClick={handleSubmitFiles} disabled={!files.length}
+                  className={`mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl text-white font-600 text-sm transition-all duration-200
+                    ${files.length ? 'bg-ink-900 hover:bg-brand-600 shadow-sm' : 'bg-ink-200 text-ink-400 cursor-not-allowed'}`}>
+                  <Plus className="w-4 h-4" /> Merge into notes
+                </button>
+                <p className="text-xs text-ink-400 text-center mt-2">New content will be merged into your existing topics</p>
+              </>
+            ) : (
+              <>
+                <div className={`flex items-center gap-2 bg-white border-2 rounded-2xl px-4 transition-colors ${url ? 'border-brand-400' : 'border-ink-200'}`}>
+                  <Link className="w-4 h-4 text-ink-400 flex-shrink-0" />
+                  <input
+                    value={url}
+                    onChange={e => { setUrl(e.target.value); setError(null); }}
+                    onKeyDown={e => e.key === 'Enter' && handleSubmitYouTube()}
+                    placeholder="https://youtube.com/watch?v=..."
+                    className="flex-1 py-3.5 bg-transparent text-sm text-ink-800 placeholder-ink-400 focus:outline-none"
+                  />
+                  {url && (
+                    <button onClick={() => setUrl('')} className="text-ink-300 hover:text-ink-500 transition-colors">
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+
+                {error && (
+                  <div className="mt-3 flex items-start gap-3 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <p>{error}</p>
+                  </div>
+                )}
+
+                <button onClick={handleSubmitYouTube} disabled={!url.trim()}
+                  className={`mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl text-white font-600 text-sm transition-all duration-200
+                    ${url.trim() ? 'bg-red-500 hover:bg-red-600 shadow-sm' : 'bg-ink-200 text-ink-400 cursor-not-allowed'}`}>
+                  <Youtube className="w-4 h-4" /> Add video to topic
+                </button>
+                <p className="text-xs text-ink-400 text-center mt-2">Video appears in the sidebar — you choose when to merge its notes</p>
+              </>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
