@@ -1,4 +1,4 @@
-import { BookOpen, Zap, Youtube, Hash, Download, Brain, CheckCircle, ArrowRight, Sparkles, FileText, Image } from 'lucide-react';
+import { BookOpen, Zap, Youtube, Hash, Download, Brain, CheckCircle, ArrowRight, Utensils, FileText, Image } from 'lucide-react';
 import BrainLogo from '../components/BrainLogo.jsx';
 
 export default function LandingPage({ onGetStarted, onLogin }) {
@@ -28,9 +28,9 @@ export default function LandingPage({ onGetStarted, onLogin }) {
       {/* ── Hero ── */}
       <section className="max-w-5xl mx-auto px-4 sm:px-6 pt-20 pb-16 text-center">
 
-        <div className="inline-flex items-center gap-2 bg-brand-50 text-brand-700 text-xs font-600 px-3 py-1.5 rounded-full mb-6 border border-brand-200">
-          <Sparkles className="w-3.5 h-3.5" />
-          Build bite-sized brain food
+        <div className="inline-flex items-center gap-3 bg-brand-50 text-brand-700 text-sm font-600 px-6 py-3 rounded-full mb-6 border border-brand-200">
+          <Utensils className="w-5 h-5" />
+          Bite-sized brain food
         </div>
 
         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-800 text-ink-900 leading-tight mb-6">
