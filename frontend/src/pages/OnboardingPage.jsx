@@ -45,8 +45,8 @@ export default function OnboardingPage({ user, onComplete }) {
 
         {/* Logo */}
         <div className="flex items-center justify-center gap-2.5 mb-8">
-          <img src="/brain.png" alt="Brain Box" className="w-10 h-10" />
-          <span className="text-xl font-800 text-ink-900 tracking-tight">Brain Box</span>
+          <img src="/brain.png" alt="Brain Buffet" className="w-10 h-10" />
+          <span className="text-xl font-800 text-ink-900 tracking-tight">Brain Buffet</span>
         </div>
 
         {/* Progress dots */}

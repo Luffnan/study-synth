@@ -26,8 +26,8 @@ export default function AuthPage({ onBack }) {
 
         {/* Logo */}
         <div className="flex items-center justify-center gap-2.5 mb-8">
-          <img src="/brain.png" alt="Brain Box" className="w-10 h-10" />
-          <span className="text-xl font-800 text-ink-900 tracking-tight">Brain Box</span>
+          <img src="/brain.png" alt="Brain Buffet" className="w-10 h-10" />
+          <span className="text-xl font-800 text-ink-900 tracking-tight">Brain Buffet</span>
         </div>
 
         {/* Card */}
@@ -104,7 +104,7 @@ function LoginForm({ onSwitch }) {
   return (
     <>
       <h1 className="text-xl font-800 text-ink-900 mb-1">Welcome back</h1>
-      <p className="text-ink-400 text-sm mb-6">Sign in to your Brain Box account</p>
+      <p className="text-ink-400 text-sm mb-6">Sign in to your Brain Buffet account</p>
 
       <GoogleButton loading={googleLoading} onClick={handleGoogleLogin} />
       <Divider />
