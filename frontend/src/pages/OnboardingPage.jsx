@@ -48,7 +48,7 @@ export default function OnboardingPage({ user, onComplete }) {
           <div className="w-10 h-10 rounded-xl bg-ink-900 flex items-center justify-center shadow-md">
             <BrainLogo className="w-5 h-5 text-white" />
           </div>
-          <span className="text-xl font-800 text-ink-900 tracking-tight">StudySynth</span>
+          <span className="text-xl font-800 text-ink-900 tracking-tight">Brain Buffet</span>
         </div>
 
         {/* Progress dots */}

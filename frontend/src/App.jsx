@@ -193,7 +193,7 @@ function Header({ onLogoClick, onUploadClick, onProfileClick, view, user }) {
             <BrainLogo className="w-[18px] h-[18px] text-white" />
           </div>
           <span className="text-[15px] font-700 tracking-tight text-ink-900 group-hover:text-brand-600 transition-colors hidden sm:block">
-            StudySynth
+            Brain Buffet
           </span>
         </button>
 
