@@ -194,14 +194,6 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
             <ModeToggle mode={mode} loading={conciseLoading} onToggle={handleToggleConcise} />
           )}
           {conciseError && <span className="text-xs text-red-500">Failed — try again</span>}
-          {noteId && (
-            <button
-              onClick={() => setAddSourceOpen(true)}
-              className="flex items-center gap-1.5 bg-ink-100 hover:bg-ink-200 text-ink-700 px-3 py-2 rounded-xl text-sm font-medium transition-colors"
-            >
-              <Plus className="w-3.5 h-3.5" /> Add source
-            </button>
-          )}
           <button
             onClick={() => setDownloadModalOpen(true)}
             className="flex items-center gap-1.5 bg-ink-100 hover:bg-ink-200 text-ink-700 px-3 py-2 rounded-xl text-sm font-medium transition-colors"
@@ -273,6 +265,14 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
 
           {/* ── Sidebar ── */}
           <aside className="hidden sm:flex flex-col w-48 flex-shrink-0 sticky top-20">
+            {noteId && (
+              <button
+                onClick={() => setAddSourceOpen(true)}
+                className="flex items-center justify-center gap-1.5 w-full mb-3 px-3 py-2 rounded-xl border-2 border-dashed border-ink-200 text-ink-400 hover:border-brand-400 hover:text-brand-600 text-xs font-600 transition-colors"
+              >
+                <Plus className="w-3.5 h-3.5" /> Add source
+              </button>
+            )}
             <nav className="flex flex-col gap-0.5">
               {currentSidebarItems.map((item, i) => {
                 const isSelected = selected?.type === item.type &&
