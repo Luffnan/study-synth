@@ -8,10 +8,8 @@ export default function LandingPage({ onGetStarted, onLogin }) {
       {/* ── Nav ── */}
       <header className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-ink-100">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-3">
-          <div className="flex items-center gap-2.5 flex-shrink-0">
-            <div className="w-8 h-8 rounded-xl bg-ink-900 flex items-center justify-center">
-              <BrainLogo className="w-[18px] h-[18px] text-white" />
-            </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <img src="/brain.png" alt="Brain Box" className="w-7 h-7" />
             <span className="text-[15px] font-700 tracking-tight text-ink-900">Brain Box</span>
           </div>
           <div className="ml-auto flex items-center gap-2">

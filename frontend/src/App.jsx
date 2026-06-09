@@ -188,10 +188,8 @@ function Header({ onLogoClick, onUploadClick, onProfileClick, view, user }) {
   return (
     <header className="bg-white/80 backdrop-blur-md border-b border-ink-200/60 sticky top-0 z-20">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-3">
-        <button onClick={onLogoClick} className="flex items-center gap-2.5 group flex-shrink-0">
-          <div className="w-8 h-8 rounded-xl bg-ink-900 flex items-center justify-center group-hover:bg-brand-600 transition-colors duration-200">
-            <BrainLogo className="w-[18px] h-[18px] text-white" />
-          </div>
+        <button onClick={onLogoClick} className="flex items-center gap-2 group flex-shrink-0">
+          <img src="/brain.png" alt="Brain Box" className="w-7 h-7 opacity-90 group-hover:opacity-100 transition-opacity" />
           <span className="text-[15px] font-700 tracking-tight text-ink-900 group-hover:text-brand-600 transition-colors hidden sm:block">
             Brain Box
           </span>
