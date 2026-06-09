@@ -28,9 +28,7 @@ export default function UploadPage({ onNotes, onBack, yearLevel }) {
 
       {/* Hero */}
       <div className="text-center mb-6">
-        <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-ink-900 mb-3 shadow-md">
-          <BrainLogo className="w-[18px] h-[18px] text-white" />
-        </div>
+        <img src="/brain.png" alt="Brain Box" className="w-10 h-10 mb-3" />
         <h1 className="text-2xl sm:text-3xl font-800 text-ink-900 leading-tight mb-1.5">
           Create study notes
         </h1>
