@@ -42,9 +42,8 @@ export default function LandingPage({ onGetStarted, onLogin }) {
         </h1>
 
         <p className="text-lg sm:text-xl text-ink-500 max-w-2xl mx-auto mb-8 leading-relaxed">
-          Upload your textbooks, lecture slides, photos of notes, or paste a YouTube lecture.
-          Brain Buffet reads it and builds structured, quizzable notes — no hallucinations,
-          only what's actually in your material.
+          Upload your textbooks, lecture slides, photos of notes, or even paste a YouTube video.
+          Brain Buffet reads it and builds structured notes and quizzes to help you study smarter.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
