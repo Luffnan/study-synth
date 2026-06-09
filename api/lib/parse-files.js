@@ -10,6 +10,43 @@
  */
 import { IncomingForm } from 'formidable';
 import { readFileSync } from 'fs';
+import sharp from 'sharp';
+
+// Claude's hard limit for base64 image payloads
+const MAX_IMAGE_BYTES = 9 * 1024 * 1024; // 9 MB — leave 1 MB headroom below 10 MB
+
+/**
+ * Resizes + compresses an image buffer so it stays under MAX_IMAGE_BYTES.
+ * Progressively halves max dimension and lowers quality until it fits.
+ * Returns { buffer, mimeType } — always outputs JPEG for photos.
+ */
+async function compressImage(inputBuffer, originalMime) {
+  // HEIC needs converting; everything else → JPEG for consistent size control
+  let img = sharp(inputBuffer);
+  const meta = await img.metadata();
+
+  let maxDim = Math.max(meta.width || 2000, meta.height || 2000);
+  let quality = 85;
+
+  while (true) {
+    const resized = await sharp(inputBuffer)
+      .resize({ width: maxDim, height: maxDim, fit: 'inside', withoutEnlargement: true })
+      .jpeg({ quality })
+      .toBuffer();
+
+    if (resized.length <= MAX_IMAGE_BYTES) {
+      return { buffer: resized, mimeType: 'image/jpeg' };
+    }
+
+    // Still too big — reduce
+    if (quality > 60) {
+      quality -= 15;
+    } else {
+      maxDim = Math.round(maxDim * 0.75);
+      quality = 80;
+    }
+  }
+}
 
 export async function parseFilesFromRequest(req) {
   const contentType = req.headers['content-type'] || '';
@@ -38,13 +75,16 @@ function parseFormData(req) {
 
         for (const file of uploaded) {
           const mime = file.mimetype || '';
-          const base64 = readFileSync(file.filepath).toString('base64');
 
           if (mime === 'application/pdf') {
+            const base64 = readFileSync(file.filepath).toString('base64');
             contentBlocks.push({ type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: base64 } });
             contentBlocks.push({ type: 'text', text: `(Above document: ${file.originalFilename})` });
           } else if (mime.startsWith('image/')) {
-            contentBlocks.push({ type: 'image', source: { type: 'base64', media_type: mime, data: base64 } });
+            const rawBuffer = readFileSync(file.filepath);
+            const { buffer: compressed, mimeType: outMime } = await compressImage(rawBuffer, mime);
+            const imgBase64 = compressed.toString('base64');
+            contentBlocks.push({ type: 'image', source: { type: 'base64', media_type: outMime, data: imgBase64 } });
             contentBlocks.push({ type: 'text', text: `(Above image: ${file.originalFilename})` });
           } else {
             return reject(new Error(`Unsupported file type: ${mime}`));
@@ -85,7 +125,9 @@ async function parseStorageFiles(req) {
       contentBlocks.push({ type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: base64 } });
       contentBlocks.push({ type: 'text', text: `(Above document: ${fileName})` });
     } else if (mimeType.startsWith('image/')) {
-      contentBlocks.push({ type: 'image', source: { type: 'base64', media_type: mimeType, data: base64 } });
+      const { buffer: compressed, mimeType: outMime } = await compressImage(buffer, mimeType);
+      const imgBase64 = compressed.toString('base64');
+      contentBlocks.push({ type: 'image', source: { type: 'base64', media_type: outMime, data: imgBase64 } });
       contentBlocks.push({ type: 'text', text: `(Above image: ${fileName})` });
     } else {
       throw new Error(`Unsupported file type: ${mimeType}`);
