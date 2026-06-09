@@ -293,6 +293,41 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
   );
 }
 
+// ── Formula-aware point renderer ─────────────────────────────────────────────
+
+// Detects formula-like substrings (e.g. "Assets = Liabilities + Owner's Equity")
+// and renders them in a styled monospace chip, inline with any surrounding prose.
+const FORMULA_RE = /([A-Za-z][^\n=]{0,60}=[^\n=][^\n]{0,80}(?:[+\-–×÷/][^\n]{0,40})*)/;
+
+function renderPoint(text) {
+  // Split on ": " — prose intro before the colon, formula after
+  const colonIdx = text.indexOf(': ');
+  if (colonIdx !== -1) {
+    const intro = text.slice(0, colonIdx + 2);
+    const rest = text.slice(colonIdx + 2).trimEnd().replace(/\.$/, '');
+    if (rest.includes('=') && rest.length < 120) {
+      return (
+        <span>
+          {intro}
+          <span className="inline-block mt-1 font-mono text-[0.78rem] bg-brand-50 text-brand-700 border border-brand-200 rounded-lg px-2.5 py-1 leading-snug">
+            {rest}
+          </span>
+        </span>
+      );
+    }
+  }
+  // No colon pattern — check if the whole point is a short formula
+  if (text.includes('=') && text.length < 100 && !/[.]{2,}/.test(text)) {
+    const clean = text.trimEnd().replace(/\.$/, '');
+    return (
+      <span className="inline-block font-mono text-[0.78rem] bg-brand-50 text-brand-700 border border-brand-200 rounded-lg px-2.5 py-1 leading-snug">
+        {clean}
+      </span>
+    );
+  }
+  return text;
+}
+
 // ── Topic pane ────────────────────────────────────────────────────────────────
 
 function TopicPane({ topic, mode }) {
@@ -326,7 +361,7 @@ function TopicPane({ topic, mode }) {
                 {sub.points?.map((pt, pi) => (
                   <li key={pi} className="flex items-start gap-2.5 text-sm text-ink-600 leading-relaxed">
                     <span className="w-1.5 h-1.5 rounded-full bg-brand-400 mt-[7px] flex-shrink-0" />
-                    {pt}
+                    {renderPoint(pt)}
                   </li>
                 ))}
               </ul>
@@ -454,7 +489,7 @@ function VideoPane({ source, onToggleMerge, merging }) {
                       {section.points.map((pt, pi) => (
                         <li key={pi} className="flex items-start gap-2 text-sm text-ink-600">
                           <span className="w-1.5 h-1.5 rounded-full bg-red-300 mt-[7px] flex-shrink-0" />
-                          {pt}
+                          {renderPoint(pt)}
                         </li>
                       ))}
                     </ul>
