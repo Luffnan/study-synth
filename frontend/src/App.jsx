@@ -18,6 +18,7 @@ export default function App() {
   const [notes, setNotes] = useState(null);
   const [noteId, setNoteId] = useState(null);
   const [noteTitle, setNoteTitle] = useState(null);
+  const [conciseNotes, setConciseNotes] = useState(null);
   const [view, setView] = useState('dashboard');
 
   // Subject page state
@@ -63,6 +64,7 @@ export default function App() {
     setNotes(data.notes ?? data);
     setNoteId(data.id ?? null);
     setNoteTitle((data.notes ?? data).title ?? null);
+    setConciseNotes(null);
     setView('notes');
   }
 
@@ -70,6 +72,7 @@ export default function App() {
     setNotes(record.notes);
     setNoteId(record.id);
     setNoteTitle(record.notes.title);
+    setConciseNotes(null);
     setView('notes');
   }
 
@@ -81,6 +84,7 @@ export default function App() {
 
   function handleReset() {
     setNotes(null);
+    setConciseNotes(null);
     setView('dashboard');
   }
 
@@ -159,7 +163,7 @@ export default function App() {
           />
         )}
         {view === 'upload'   && <UploadPage onNotes={handleNotes} onBack={handleReset} yearLevel={yearLevel} />}
-        {view === 'notes'    && <NotesPage notes={notes} noteId={noteId} onBack={handleReset} onQuiz={() => handleStartQuiz(noteId, noteTitle)} />}
+        {view === 'notes'    && <NotesPage notes={notes} noteId={noteId} conciseNotesProp={conciseNotes} onConciseNotes={setConciseNotes} onBack={handleReset} onQuiz={() => handleStartQuiz(noteId, noteTitle)} />}
         {view === 'quiz'     && <QuizPage noteId={noteId} noteTitle={noteTitle} notes={notes} yearLevel={yearLevel} onBack={() => setView(notes ? 'notes' : 'dashboard')} />}
         {view === 'profile'  && (
           <ProfilePage

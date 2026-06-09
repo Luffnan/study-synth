@@ -3,12 +3,17 @@ import { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, ChevronDown, ChevronRight, Download, BookOpen, Hash, FileText, Zap, Layers, Youtube, CheckCircle, Loader2, FileDown } from 'lucide-react';
 import { generateDocx } from '../utils/generateDocx.js';
 
-export default function NotesPage({ notes: initialNotes, noteId, onBack, onQuiz }) {
+export default function NotesPage({ notes: initialNotes, noteId, conciseNotesProp, onConciseNotes, onBack, onQuiz }) {
   const [mode, setMode] = useState('standard');
-  const [conciseNotes, setConciseNotes] = useState(null);
+  const [conciseNotes, setConciseNotesLocal] = useState(conciseNotesProp ?? null);
   const [conciseLoading, setConciseLoading] = useState(false);
   const [conciseError, setConciseError] = useState(null);
-  const conciseFetchedRef = useRef(false);
+  const conciseFetchedRef = useRef(conciseNotesProp != null);
+
+  function setConciseNotes(val) {
+    setConciseNotesLocal(val);
+    onConciseNotes?.(val);
+  }
 
   // Live notes — updated after Claude merges/restores video content
   const [liveNotes, setLiveNotes] = useState(initialNotes);
@@ -650,7 +655,7 @@ function ConciseLoadingState({ onSwitchBack }) {
         <div className="w-4 h-4 border-2 border-brand-500 border-t-transparent rounded-full animate-spin flex-shrink-0" />
         <p className="text-sm text-ink-500">
           Generating concise notes…
-          <button onClick={onSwitchBack} className="ml-2 text-brand-600 hover:underline font-medium">Switch back to Standard</button>
+          <button onClick={onSwitchBack} className="ml-2 text-brand-600 hover:underline font-medium">View Standard notes</button>
         </p>
       </div>
       {[1, 2, 3].map(i => (
