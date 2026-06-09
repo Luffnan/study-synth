@@ -2,13 +2,13 @@ import { useState, useEffect, useRef } from 'react';
 import {
   FileText, Image, Trash2, BookOpen, Hash, AlertCircle, Zap, Pencil,
   Check, X, Plus, UploadCloud, Loader2, Youtube, Link, FolderPlus,
-  ChevronDown, ChevronRight, MoveRight, Folder,
+  ChevronRight, MoveRight, Folder,
 } from 'lucide-react';
 import BrainLogo from '../components/BrainLogo.jsx';
 
 // ── Colour palette for subjects ───────────────────────────────────────────────
 
-const COLORS = {
+export const COLORS = {
   indigo:  { from: 'from-indigo-600',  to: 'to-violet-700',  dot: 'bg-indigo-500',  ring: 'ring-indigo-400' },
   blue:    { from: 'from-blue-600',    to: 'to-cyan-600',    dot: 'bg-blue-500',    ring: 'ring-blue-400'   },
   emerald: { from: 'from-emerald-600', to: 'to-teal-600',    dot: 'bg-emerald-500', ring: 'ring-emerald-400'},
@@ -17,14 +17,13 @@ const COLORS = {
   slate:   { from: 'from-slate-700',   to: 'to-slate-900',   dot: 'bg-slate-500',   ring: 'ring-slate-400'  },
 };
 
-export default function DashboardPage({ onUpload, onOpenNote, onQuiz }) {
+export default function DashboardPage({ onUpload, onOpenNote, onQuiz, onOpenSubject }) {
   const [records, setRecords] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [deleting, setDeleting] = useState(null);
   const [ingestTarget, setIngestTarget] = useState(null);
-  const [expandedSubject, setExpandedSubject] = useState(null); // subject id
   const [newSubjectOpen, setNewSubjectOpen] = useState(false);
 
   useEffect(() => { fetchAll(); }, []);
@@ -77,7 +76,6 @@ export default function DashboardPage({ onUpload, onOpenNote, onQuiz }) {
         body: JSON.stringify({ subject_id: subjectId }),
       });
       setRecords(p => p.map(r => r.id === noteId ? { ...r, subject_id: subjectId } : r));
-      if (subjectId) setExpandedSubject(subjectId);
     } catch { setError('Failed to move topic'); }
   }
 
@@ -88,7 +86,7 @@ export default function DashboardPage({ onUpload, onOpenNote, onQuiz }) {
   function handleSubjectCreated(subject) {
     setSubjects(p => [...p, subject]);
     setNewSubjectOpen(false);
-    setExpandedSubject(subject.id);
+    onOpenSubject?.(subject);
   }
 
   async function handleDeleteSubject(subjectId) {
@@ -97,7 +95,6 @@ export default function DashboardPage({ onUpload, onOpenNote, onQuiz }) {
       await fetch(`/api/subjects/${subjectId}`, { method: 'DELETE' });
       setSubjects(p => p.filter(s => s.id !== subjectId));
       setRecords(p => p.map(r => r.subject_id === subjectId ? { ...r, subject_id: null } : r));
-      if (expandedSubject === subjectId) setExpandedSubject(null);
     } catch { setError('Failed to delete subject'); }
   }
 
@@ -158,40 +155,15 @@ export default function DashboardPage({ onUpload, onOpenNote, onQuiz }) {
               <div className="grid gap-4 sm:grid-cols-2">
                 {subjects.map(subject => {
                   const topics = records.filter(r => r.subject_id === subject.id);
-                  const isExpanded = expandedSubject === subject.id;
                   return (
-                    <div key={subject.id}>
-                      <SubjectCard
-                        subject={subject}
-                        topicCount={topics.length}
-                        isExpanded={isExpanded}
-                        onToggle={() => setExpandedSubject(isExpanded ? null : subject.id)}
-                        onDelete={() => handleDeleteSubject(subject.id)}
-                        onRename={updates => handleRenameSubject(subject.id, updates)}
-                      />
-                      {isExpanded && (
-                        <div className="mt-3 space-y-2 pl-2 border-l-2 border-ink-100 ml-3 animate-fade-in">
-                          {topics.length === 0 ? (
-                            <div className="py-6 text-center">
-                              <p className="text-ink-400 text-sm">No topics yet</p>
-                              <p className="text-ink-300 text-xs mt-1">Move an uncategorised topic into this subject below</p>
-                            </div>
-                          ) : (
-                            topics.map(r => (
-                              <TopicCard key={r.id} record={r}
-                                onClick={() => handleOpen(r)}
-                                onDelete={e => handleDelete(e, r.id)}
-                                onQuiz={onQuiz ? e => { e.stopPropagation(); onQuiz(r.id, r.title); } : null}
-                                onSaveEdit={updates => handleSaveEdit(r.id, updates)}
-                                onAddSource={e => { e.stopPropagation(); setIngestTarget({ id: r.id, title: r.title }); }}
-                                onRemoveFromSubject={() => handleRemoveFromSubject(r.id)}
-                                deleting={deleting === r.id}
-                              />
-                            ))
-                          )}
-                        </div>
-                      )}
-                    </div>
+                    <SubjectCard
+                      key={subject.id}
+                      subject={subject}
+                      topicCount={topics.length}
+                      onOpen={() => onOpenSubject?.(subject, records, subjects)}
+                      onDelete={() => handleDeleteSubject(subject.id)}
+                      onRename={updates => handleRenameSubject(subject.id, updates)}
+                    />
                   );
                 })}
               </div>
@@ -240,7 +212,7 @@ export default function DashboardPage({ onUpload, onOpenNote, onQuiz }) {
 
 // ── Subject card (big, bold, colorful) ────────────────────────────────────────
 
-function SubjectCard({ subject, topicCount, isExpanded, onToggle, onDelete, onRename }) {
+function SubjectCard({ subject, topicCount, onOpen, onDelete, onRename }) {
   const [editing, setEditing] = useState(false);
   const [titleVal, setTitleVal] = useState(subject.title);
   const inputRef = useRef(null);
@@ -256,7 +228,7 @@ function SubjectCard({ subject, topicCount, isExpanded, onToggle, onDelete, onRe
 
   return (
     <div
-      onClick={() => !editing && onToggle()}
+      onClick={() => !editing && onOpen()}
       className={`relative overflow-hidden rounded-2xl cursor-pointer group transition-all duration-200 hover:scale-[1.02] hover:shadow-xl bg-gradient-to-br ${c.from} ${c.to} shadow-md`}
       style={{ minHeight: '160px' }}
     >
@@ -303,10 +275,10 @@ function SubjectCard({ subject, topicCount, isExpanded, onToggle, onDelete, onRe
           </p>
         </div>
 
-        {/* Expand indicator */}
+        {/* Open arrow indicator */}
         <div className="flex items-center justify-end mt-3">
-          <div className={`flex items-center gap-1 text-white/70 text-xs font-500 transition-all ${isExpanded ? '' : 'group-hover:text-white'}`}>
-            {isExpanded ? <><ChevronDown className="w-4 h-4" /> Collapse</> : <><ChevronRight className="w-4 h-4" /> Open</>}
+          <div className="flex items-center gap-1 text-white/60 text-xs font-500 group-hover:text-white transition-colors">
+            <ChevronRight className="w-4 h-4" /> Open
           </div>
         </div>
       </div>
@@ -382,7 +354,7 @@ function NewSubjectModal({ onCreated, onClose }) {
 
 // ── Topic card (slimmer version of old NoteCard) ──────────────────────────────
 
-function TopicCard({ record, onClick, onDelete, onQuiz, onSaveEdit, onAddSource, onMoveToSubject, onRemoveFromSubject, subjects = [], deleting }) {
+export function TopicCard({ record, onClick, onDelete, onQuiz, onSaveEdit, onAddSource, onMoveToSubject, onRemoveFromSubject, subjects = [], deleting }) {
   const [sourcesOpen, setSourcesOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(record.title || '');
@@ -531,7 +503,7 @@ function TopicCard({ record, onClick, onDelete, onQuiz, onSaveEdit, onAddSource,
 
 // ── Move to subject menu ──────────────────────────────────────────────────────
 
-function MoveMenu({ subjects, onMove, onClose }) {
+export function MoveMenu({ subjects, onMove, onClose }) {
   const ref = useRef(null);
   useEffect(() => {
     function handleClick(e) { if (ref.current && !ref.current.contains(e.target)) onClose(); }
@@ -558,7 +530,7 @@ function MoveMenu({ subjects, onMove, onClose }) {
 
 // ── Add Sources Modal ─────────────────────────────────────────────────────────
 
-function AddSourcesModal({ target, onDone, onClose }) {
+export function AddSourcesModal({ target, onDone, onClose }) {
   const [tab, setTab] = useState('files');
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">

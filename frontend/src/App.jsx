@@ -2,6 +2,7 @@ import { useState } from 'react';
 import UploadPage from './pages/UploadPage.jsx';
 import NotesPage from './pages/NotesPage.jsx';
 import DashboardPage from './pages/DashboardPage.jsx';
+import SubjectPage from './pages/SubjectPage.jsx';
 import QuizPage from './pages/QuizPage.jsx';
 import BrainLogo from './components/BrainLogo.jsx';
 
@@ -10,6 +11,11 @@ export default function App() {
   const [noteId, setNoteId] = useState(null);
   const [noteTitle, setNoteTitle] = useState(null);
   const [view, setView] = useState('dashboard');
+
+  // Subject page state
+  const [currentSubject, setCurrentSubject] = useState(null);
+  const [allRecords, setAllRecords] = useState([]);
+  const [allSubjects, setAllSubjects] = useState([]);
 
   function handleNotes(data) {
     setNotes(data.notes ?? data);
@@ -36,11 +42,36 @@ export default function App() {
     setView('dashboard');
   }
 
+  function handleOpenSubject(subject, records, subjects) {
+    setCurrentSubject(subject);
+    setAllRecords(records || []);
+    setAllSubjects(subjects || []);
+    setView('subject');
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-ink-50">
       <Header onLogoClick={handleReset} onUploadClick={() => setView('upload')} view={view} />
       <main className="flex-1">
-        {view === 'dashboard' && <DashboardPage onUpload={() => setView('upload')} onOpenNote={handleOpenNote} onQuiz={handleStartQuiz} />}
+        {view === 'dashboard' && (
+          <DashboardPage
+            onUpload={() => setView('upload')}
+            onOpenNote={handleOpenNote}
+            onQuiz={handleStartQuiz}
+            onOpenSubject={handleOpenSubject}
+          />
+        )}
+        {view === 'subject' && currentSubject && (
+          <SubjectPage
+            subject={currentSubject}
+            allRecords={allRecords}
+            subjects={allSubjects}
+            onBack={handleReset}
+            onOpenNote={handleOpenNote}
+            onQuiz={handleStartQuiz}
+            onRecordsChange={setAllRecords}
+          />
+        )}
         {view === 'upload'    && <UploadPage onNotes={handleNotes} onBack={handleReset} />}
         {view === 'notes'     && <NotesPage notes={notes} noteId={noteId} onBack={handleReset} onQuiz={() => handleStartQuiz(noteId, noteTitle)} />}
         {view === 'quiz'      && <QuizPage noteId={noteId} noteTitle={noteTitle} notes={notes} onBack={() => setView(notes ? 'notes' : 'dashboard')} />}
