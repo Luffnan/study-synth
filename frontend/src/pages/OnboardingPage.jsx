@@ -1,16 +1,23 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { Search, X, ChevronRight, Loader2, School, GraduationCap, CheckCircle } from 'lucide-react';
+import { useState, useRef, useCallback } from 'react';
+import { Search, X, ChevronRight, Loader2, School, GraduationCap, CheckCircle, MapPin } from 'lucide-react';
 import BrainLogo from '../components/BrainLogo.jsx';
 import { YEAR_LEVELS, searchSchools, saveProfile } from '../lib/profile.js';
 
-/**
- * Post-registration onboarding — shown once after first login.
- * Two steps: (1) school, (2) year level.
- * Both steps are optional — users can skip either.
- */
+const STATES = [
+  { code: 'NSW', label: 'NSW' },
+  { code: 'VIC', label: 'VIC' },
+  { code: 'QLD', label: 'QLD' },
+  { code: 'WA',  label: 'WA'  },
+  { code: 'SA',  label: 'SA'  },
+  { code: 'TAS', label: 'TAS' },
+  { code: 'ACT', label: 'ACT' },
+  { code: 'NT',  label: 'NT'  },
+];
+
 export default function OnboardingPage({ user, onComplete }) {
-  const [step, setStep] = useState(1); // 1 = school, 2 = year level
-  const [school, setSchool] = useState(null);      // { id, name, suburb, state } or null
+  const [step, setStep] = useState(1);       // 1 = state, 2 = school, 3 = year level
+  const [state, setState] = useState(null);  // e.g. 'NSW'
+  const [school, setSchool] = useState(null);
   const [schoolCustom, setSchoolCustom] = useState('');
   const [yearLevel, setYearLevel] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -28,7 +35,6 @@ export default function OnboardingPage({ user, onComplete }) {
       onComplete({ yearLevel: selectedYear, school });
     } catch (e) {
       console.error('Profile save failed', e);
-      // Don't block the user — complete anyway
       onComplete({ yearLevel: selectedYear, school });
     }
   }
@@ -47,7 +53,7 @@ export default function OnboardingPage({ user, onComplete }) {
 
         {/* Progress dots */}
         <div className="flex items-center justify-center gap-2 mb-8">
-          {[1, 2].map(s => (
+          {[1, 2, 3].map(s => (
             <div key={s} className={`rounded-full transition-all duration-300 ${
               s === step ? 'w-6 h-2 bg-ink-900' : s < step ? 'w-2 h-2 bg-brand-500' : 'w-2 h-2 bg-ink-200'
             }`} />
@@ -56,17 +62,25 @@ export default function OnboardingPage({ user, onComplete }) {
 
         <div className="bg-white rounded-2xl shadow-xl border border-ink-100 p-8">
           {step === 1 && (
-            <SchoolStep
+            <StateStep
               displayName={displayName}
-              school={school}
-              schoolCustom={schoolCustom}
-              onSchoolChange={setSchool}
-              onCustomChange={setSchoolCustom}
-              onNext={() => setStep(2)}
+              selected={state}
+              onSelect={s => { setState(s); setStep(2); }}
               onSkip={() => setStep(2)}
             />
           )}
           {step === 2 && (
+            <SchoolStep
+              state={state}
+              school={school}
+              schoolCustom={schoolCustom}
+              onSchoolChange={setSchool}
+              onCustomChange={setSchoolCustom}
+              onNext={() => setStep(3)}
+              onSkip={() => setStep(3)}
+            />
+          )}
+          {step === 3 && (
             <YearStep
               yearLevel={yearLevel}
               saving={saving}
@@ -80,9 +94,47 @@ export default function OnboardingPage({ user, onComplete }) {
   );
 }
 
-// ── Step 1: School ────────────────────────────────────────────────────────────
+// ── Step 1: State ─────────────────────────────────────────────────────────────
 
-function SchoolStep({ displayName, school, schoolCustom, onSchoolChange, onCustomChange, onNext, onSkip }) {
+function StateStep({ displayName, selected, onSelect, onSkip }) {
+  return (
+    <>
+      <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-ink-100 mx-auto mb-4">
+        <MapPin className="w-6 h-6 text-ink-700" />
+      </div>
+      <h1 className="text-xl font-800 text-ink-900 text-center mb-1">
+        Hey {displayName}! What state are you in?
+      </h1>
+      <p className="text-sm text-ink-400 text-center mb-6">
+        We'll use this to find your school
+      </p>
+
+      <div className="grid grid-cols-4 gap-2 mb-4">
+        {STATES.map(s => (
+          <button
+            key={s.code}
+            onClick={() => onSelect(s.code)}
+            className={`py-3 rounded-xl border-2 text-sm font-700 transition-all ${
+              selected === s.code
+                ? 'border-brand-500 bg-brand-50 text-brand-700'
+                : 'border-ink-200 hover:border-brand-400 hover:bg-brand-50/40 text-ink-700'
+            }`}
+          >
+            {s.label}
+          </button>
+        ))}
+      </div>
+
+      <button onClick={onSkip} className="w-full text-center text-xs text-ink-400 hover:text-ink-600 transition-colors mt-1">
+        Skip for now
+      </button>
+    </>
+  );
+}
+
+// ── Step 2: School ────────────────────────────────────────────────────────────
+
+function SchoolStep({ state, school, schoolCustom, onSchoolChange, onCustomChange, onNext, onSkip }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
@@ -93,12 +145,11 @@ function SchoolStep({ displayName, school, schoolCustom, onSchoolChange, onCusto
     if (q.length < 2) { setResults([]); return; }
     setSearching(true);
     try {
-      const data = await searchSchools(q);
-      setResults(data);
+      setResults(await searchSchools(q, state));
     } finally {
       setSearching(false);
     }
-  }, []);
+  }, [state]);
 
   function handleQuery(val) {
     setQuery(val);
@@ -126,15 +177,17 @@ function SchoolStep({ displayName, school, schoolCustom, onSchoolChange, onCusto
         <School className="w-6 h-6 text-ink-700" />
       </div>
       <h1 className="text-xl font-800 text-ink-900 text-center mb-1">
-        Hey {displayName}! What school do you go to?
+        What school do you go to?
       </h1>
       <p className="text-sm text-ink-400 text-center mb-6">
-        This helps us understand who's using StudySynth
+        {state ? `Showing schools in ${state}` : 'Search all Australian schools'}
       </p>
 
       {/* Search input */}
       <div className="relative mb-2">
-        <div className={`flex items-center gap-2 border-2 rounded-xl px-3 transition-colors ${query && !school ? 'border-brand-400' : school ? 'border-green-400' : 'border-ink-200'}`}>
+        <div className={`flex items-center gap-2 border-2 rounded-xl px-3 transition-colors ${
+          school ? 'border-green-400' : query ? 'border-brand-400' : 'border-ink-200'
+        }`}>
           {school
             ? <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
             : <Search className="w-4 h-4 text-ink-400 flex-shrink-0" />
@@ -143,19 +196,20 @@ function SchoolStep({ displayName, school, schoolCustom, onSchoolChange, onCusto
             value={query}
             onChange={e => handleQuery(e.target.value)}
             placeholder="Start typing your school name…"
+            autoFocus
             className="flex-1 py-3 bg-transparent text-sm text-ink-800 placeholder-ink-400 focus:outline-none"
           />
           {searching && <Loader2 className="w-4 h-4 animate-spin text-ink-300 flex-shrink-0" />}
-          {(query && !searching) && (
+          {query && !searching && (
             <button onClick={clearSchool} className="text-ink-300 hover:text-ink-500 transition-colors">
               <X className="w-4 h-4" />
             </button>
           )}
         </div>
 
-        {/* Dropdown results */}
+        {/* Dropdown */}
         {results.length > 0 && !school && (
-          <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-ink-200 rounded-xl shadow-lg z-10 overflow-hidden">
+          <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-ink-200 rounded-xl shadow-lg z-10 overflow-hidden max-h-56 overflow-y-auto">
             {results.map(s => (
               <button
                 key={s.id}
@@ -170,25 +224,22 @@ function SchoolStep({ displayName, school, schoolCustom, onSchoolChange, onCusto
         )}
       </div>
 
-      {/* Can't find school? */}
       {!school && (
         <button
           onClick={() => setShowCustom(c => !c)}
-          className="text-xs text-ink-400 hover:text-ink-600 transition-colors mb-4"
+          className="text-xs text-ink-400 hover:text-ink-600 transition-colors mb-3"
         >
           Can't find your school? Enter it manually
         </button>
       )}
 
       {showCustom && !school && (
-        <div className="mb-4">
-          <input
-            value={schoolCustom}
-            onChange={e => onCustomChange(e.target.value)}
-            placeholder="Type your school name"
-            className="w-full px-3 py-2.5 rounded-xl border-2 border-ink-200 focus:border-brand-400 focus:outline-none text-sm text-ink-800 placeholder-ink-400 transition-colors"
-          />
-        </div>
+        <input
+          value={schoolCustom}
+          onChange={e => onCustomChange(e.target.value)}
+          placeholder="Type your school name"
+          className="w-full px-3 py-2.5 rounded-xl border-2 border-ink-200 focus:border-brand-400 focus:outline-none text-sm text-ink-800 placeholder-ink-400 transition-colors mb-3"
+        />
       )}
 
       {school && (
@@ -220,7 +271,7 @@ function SchoolStep({ displayName, school, schoolCustom, onSchoolChange, onCusto
   );
 }
 
-// ── Step 2: Year level ────────────────────────────────────────────────────────
+// ── Step 3: Year level ────────────────────────────────────────────────────────
 
 function YearStep({ yearLevel, saving, onSelect, onSkip }) {
   return (
@@ -232,7 +283,7 @@ function YearStep({ yearLevel, saving, onSelect, onSkip }) {
         What year are you in?
       </h1>
       <p className="text-sm text-ink-400 text-center mb-6">
-        We'll tailor the language and difficulty of your notes and quizzes to match your level
+        We'll tailor your notes and quizzes to match your level
       </p>
 
       <div className="space-y-2 mb-4">

@@ -41,15 +41,17 @@ export async function saveProfile(userId, { schoolId, schoolNameCustom, yearLeve
   return data;
 }
 
-/** Search schools by name (used in onboarding / profile page). */
-export async function searchSchools(query) {
+/** Search schools by name, optionally filtered by state. */
+export async function searchSchools(query, state = null) {
   if (!query || query.trim().length < 2) return [];
-  const { data, error } = await supabase
+  let q = supabase
     .from('schools')
     .select('id, name, suburb, state, sector')
     .ilike('name', `%${query.trim()}%`)
     .order('name')
     .limit(8);
+  if (state) q = q.eq('state', state);
+  const { data, error } = await q;
   if (error) throw error;
   return data || [];
 }
