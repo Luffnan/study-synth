@@ -68,12 +68,14 @@ export default async function handler(req, res) {
 
     contentBlocks.push({ type: 'text', text: 'Please summarise the above study material into structured notes as instructed.' });
 
-    const response = await client.messages.create({
+    const stream = client.messages.stream({
       model: 'claude-opus-4-7',
       max_tokens: 32000,
       system: yearLevelModifier(yearLevel) + SUMMARISE_PROMPT,
       messages: [{ role: 'user', content: contentBlocks }]
     });
+
+    const response = await stream.finalMessage();
 
     if (response.stop_reason === 'max_tokens') {
       return res.status(422).json({ error: 'This document is too large to process in one pass. Try splitting it into smaller sections.' });
