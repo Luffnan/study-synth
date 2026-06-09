@@ -416,7 +416,7 @@ export function TopicCard({ record, onClick, onDelete, onQuiz, onSaveEdit, onAdd
 
   return (
     <div onClick={onClick}
-      className={`bg-white border border-ink-200 rounded-2xl shadow-sm hover:shadow-md hover:border-ink-300 transition-all duration-200 cursor-pointer group overflow-hidden ${deleting ? 'opacity-50' : ''}`}>
+      className={`bg-white border border-ink-200 rounded-2xl shadow-sm hover:shadow-md hover:border-ink-300 transition-all duration-200 cursor-pointer group ${deleting ? 'opacity-50' : ''}`}>
 
       {/* Card body */}
       <div className="p-4">
@@ -464,7 +464,7 @@ export function TopicCard({ record, onClick, onDelete, onQuiz, onSaveEdit, onAdd
       </div>
 
       {/* Bottom action bar — slides in on hover */}
-      <div className="border-t border-ink-100 bg-ink-50 px-3 py-2 flex items-center gap-0.5
+      <div className="border-t border-ink-100 bg-ink-50 px-3 py-2 flex items-center gap-0.5 rounded-b-2xl
                       opacity-0 group-hover:opacity-100 transition-opacity duration-150">
         {/* Left: primary actions */}
         <div className="flex items-center gap-0.5 flex-1">
