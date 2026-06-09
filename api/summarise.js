@@ -24,8 +24,18 @@ EXCLUDE — do not summarise or include:
 - Instructions about how to use the material
 - Question types or marking criteria
 - Anything that is about studying/exams rather than the actual subject content
+- Activity and exercise instructions — any content framed as a student task (e.g. "Step 1: Record each transaction...", "Complete the following table...", "Fill in the worksheet...", "Use the source below to answer...")
+- Worked examples or practice problems presented as things the student must do
+- Source documents, extracts, or reference materials included purely as exercise inputs (e.g. newspaper articles, financial statements, case studies provided for the student to analyse) — these are practice resources, not curriculum knowledge
+- Any section whose primary purpose is to give the student something to practise rather than something to learn
 
-If a section is purely exam technique or methodology with no subject content, skip it entirely.
+IMPORTANT DISTINCTION — activities vs knowledge:
+If a section contains activity instructions BUT the underlying concept is real curriculum knowledge, extract the concept as a factual statement instead. Do NOT copy the task instructions.
+- BAD: "Step 1: Record each transaction in a table showing the date, account name, type, DR/CR..."
+- GOOD: "Each transaction is recorded with the date, account name, account type, DR/CR classification, and dollar amount."
+The test: would a student need to memorise this, or just follow it during a task? If they just follow it, skip it or restate it as the underlying concept.
+
+If a section is purely activity/exercise content with no extractable subject-matter knowledge, skip it entirely.
 
 Rules:
 1. Identify the main topics and subtopics of the SUBJECT CONTENT only

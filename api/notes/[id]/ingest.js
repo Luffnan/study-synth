@@ -18,7 +18,8 @@ Your task is to produce a single MERGED notes JSON that combines the existing an
 
 Merge rules:
 - INCLUDE all subject-matter knowledge from the new sources (facts, concepts, definitions, dates, processes)
-- EXCLUDE exam technique advice, study tips, marking criteria — same rules as when building notes from scratch
+- EXCLUDE exam technique advice, study tips, marking criteria, activity/exercise instructions, and source documents included as exercise inputs — same rules as when building notes from scratch
+- If a section contains activity instructions but the underlying concept is real curriculum knowledge, extract the concept as a factual statement instead of copying the task steps (e.g. restate "Step 1: Record each transaction..." as "Each transaction is recorded with date, account name, type, DR/CR, and dollar amount")
 - If the new material covers a topic that already exists: add new subtopics or bullet points under that topic — do NOT duplicate points already there
 - If the new material covers a brand new topic: add it as a new topic at the end
 - If new key terms appear: add them; do not duplicate existing ones
