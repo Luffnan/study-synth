@@ -70,10 +70,14 @@ export default async function handler(req, res) {
 
     const response = await client.messages.create({
       model: 'claude-opus-4-7',
-      max_tokens: 8192,
+      max_tokens: 32000,
       system: yearLevelModifier(yearLevel) + MERGE_PROMPT,
       messages: [{ role: 'user', content: contentBlocks }],
     });
+
+    if (response.stop_reason === 'max_tokens') {
+      return res.status(422).json({ error: 'This document is too large to merge in one pass. Try splitting it into smaller sections.' });
+    }
 
     const raw = response.content[0].text;
     const jsonMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/) || [null, raw];

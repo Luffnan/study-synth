@@ -152,6 +152,13 @@ function FilesPanel({ onNotes, yearLevel }) {
         </ul>
       )}
 
+      {files.some(f => f.size > 20 * 1024 * 1024) && (
+        <div className="mt-3 flex items-start gap-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl px-4 py-3 text-sm">
+          <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-amber-500" />
+          <p>Large files may take longer to process. If you have trouble, try splitting the document into smaller sections.</p>
+        </div>
+      )}
+
       {error && (
         <div className="mt-4 flex items-start gap-3 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
           <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
