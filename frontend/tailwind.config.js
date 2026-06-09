@@ -5,7 +5,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 const THEME = {
   // Font — swap this string to change the site font (update index.html too)
-  fontSans: ['Nunito', 'system-ui', 'sans-serif'],
+  fontSans: ['Space Grotesk', 'system-ui', 'sans-serif'],
 
   // Primary brand colour (buttons, active states, highlights)
   brand: {
