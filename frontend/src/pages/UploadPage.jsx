@@ -16,6 +16,9 @@ const ACCEPTED_EXTS = Object.values(ACCEPTED).flat().join(',');
 export default function UploadPage({ onNotes, onBack, yearLevel }) {
   const [tab, setTab] = useState('files'); // 'files' | 'youtube'
   const [loading, setLoading] = useState(false);
+  // Lifted so state survives the ProcessingPanel swap (FilesPanel would remount otherwise)
+  const [files, setFiles] = useState([]);
+  const [fileError, setFileError] = useState(null);
 
   if (loading) {
     return (
@@ -67,7 +70,8 @@ export default function UploadPage({ onNotes, onBack, yearLevel }) {
       </div>
 
       {tab === 'files'
-        ? <FilesPanel onNotes={onNotes} yearLevel={yearLevel} onLoading={setLoading} />
+        ? <FilesPanel onNotes={onNotes} yearLevel={yearLevel} onLoading={setLoading}
+            files={files} setFiles={setFiles} error={fileError} setError={setFileError} />
         : <YouTubePanel onNotes={onNotes} onLoading={setLoading} />
       }
     </div>
@@ -76,10 +80,8 @@ export default function UploadPage({ onNotes, onBack, yearLevel }) {
 
 // ── Files panel ───────────────────────────────────────────────────────────────
 
-function FilesPanel({ onNotes, yearLevel, onLoading }) {
-  const [files, setFiles] = useState([]);
+function FilesPanel({ onNotes, yearLevel, onLoading, files, setFiles, error, setError }) {
   const [dragging, setDragging] = useState(false);
-  const [error, setError] = useState(null);
   const inputRef = useRef(null);
 
   const addFiles = useCallback((incoming) => {
