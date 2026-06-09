@@ -15,6 +15,15 @@ const ACCEPTED_EXTS = Object.values(ACCEPTED).flat().join(',');
 
 export default function UploadPage({ onNotes, onBack, yearLevel }) {
   const [tab, setTab] = useState('files'); // 'files' | 'youtube'
+  const [loading, setLoading] = useState(false);
+
+  if (loading) {
+    return (
+      <div className="max-w-lg mx-auto px-4 sm:px-6 py-6 sm:py-10 animate-fade-in">
+        <ProcessingPanel />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-lg mx-auto px-4 sm:px-6 py-6 sm:py-10 animate-fade-in">
@@ -58,8 +67,8 @@ export default function UploadPage({ onNotes, onBack, yearLevel }) {
       </div>
 
       {tab === 'files'
-        ? <FilesPanel onNotes={onNotes} yearLevel={yearLevel} />
-        : <YouTubePanel onNotes={onNotes} />
+        ? <FilesPanel onNotes={onNotes} yearLevel={yearLevel} onLoading={setLoading} />
+        : <YouTubePanel onNotes={onNotes} onLoading={setLoading} />
       }
     </div>
   );
@@ -67,10 +76,9 @@ export default function UploadPage({ onNotes, onBack, yearLevel }) {
 
 // ── Files panel ───────────────────────────────────────────────────────────────
 
-function FilesPanel({ onNotes, yearLevel }) {
+function FilesPanel({ onNotes, yearLevel, onLoading }) {
   const [files, setFiles] = useState([]);
   const [dragging, setDragging] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const inputRef = useRef(null);
 
@@ -88,20 +96,17 @@ function FilesPanel({ onNotes, yearLevel }) {
 
   async function handleSubmit() {
     if (!files.length) return;
-    setLoading(true); setError(null);
+    onLoading(true); setError(null);
     try {
       const res = await submitFiles(files, '/api/summarise', yearLevel ? { yearLevel } : {});
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Server error');
       onNotes(data);
     } catch (err) {
+      onLoading(false);
       setError(err.message);
-    } finally {
-      setLoading(false);
     }
   }
-
-  if (loading) return <ProcessingPanel />;
 
   return (
     <>
@@ -166,9 +171,9 @@ function FilesPanel({ onNotes, yearLevel }) {
 
       <button
         onClick={handleSubmit}
-        disabled={!files.length || loading}
+        disabled={!files.length}
         className={`mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl text-white font-600 text-sm transition-all duration-200
-          ${files.length && !loading
+          ${files.length
             ? 'bg-ink-900 hover:bg-brand-600 shadow-md hover:shadow-lg active:scale-[0.98]'
             : 'bg-ink-200 text-ink-400 cursor-not-allowed'
           }`}
@@ -242,14 +247,13 @@ function ProcessingPanel() {
 
 // ── YouTube panel ─────────────────────────────────────────────────────────────
 
-function YouTubePanel({ onNotes }) {
+function YouTubePanel({ onNotes, onLoading }) {
   const [url, setUrl] = useState('');
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   async function handleSubmit() {
-    if (!url.trim() || loading) return;
-    setLoading(true); setError(null);
+    if (!url.trim()) return;
+    onLoading(true); setError(null);
     try {
       const res = await apiFetch('/api/youtube', {
         method: 'POST',
@@ -260,9 +264,8 @@ function YouTubePanel({ onNotes }) {
       if (!res.ok) throw new Error(data.error || 'Server error');
       onNotes(data); // { notes, id }
     } catch (err) {
+      onLoading(false);
       setError(err.message);
-    } finally {
-      setLoading(false);
     }
   }
 
@@ -287,10 +290,9 @@ function YouTubePanel({ onNotes }) {
           onChange={e => { setUrl(e.target.value); setError(null); }}
           onKeyDown={e => e.key === 'Enter' && handleSubmit()}
           placeholder="https://youtube.com/watch?v=..."
-          disabled={loading}
           className="flex-1 py-4 bg-transparent text-sm text-ink-800 placeholder-ink-400 focus:outline-none"
         />
-        {url && !loading && (
+        {url && (
           <button onClick={() => setUrl('')} className="text-ink-300 hover:text-ink-500 transition-colors">
             <X className="w-4 h-4" />
           </button>
@@ -308,26 +310,16 @@ function YouTubePanel({ onNotes }) {
         </div>
       )}
 
-      {loading && (
-        <div className="mt-4 flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
-          <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" />
-          Fetching transcript and generating notes… this may take 30–45 seconds
-        </div>
-      )}
-
       <button
         onClick={handleSubmit}
-        disabled={!url.trim() || loading}
+        disabled={!url.trim()}
         className={`mt-5 w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl text-white font-600 text-base transition-all duration-200
-          ${url.trim() && !loading
+          ${url.trim()
             ? 'bg-red-500 hover:bg-red-600 shadow-md hover:shadow-lg active:scale-[0.98]'
             : 'bg-ink-200 text-ink-400 cursor-not-allowed'
           }`}
       >
-        {loading
-          ? <><Loader2 className="w-4 h-4 animate-spin" /> Processing video…</>
-          : <><Youtube className="w-4 h-4" /> Generate from Video</>
-        }
+        <><Youtube className="w-4 h-4" /> Generate from Video</>
       </button>
     </>
   );
