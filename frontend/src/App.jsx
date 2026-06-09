@@ -134,6 +134,7 @@ export default function App() {
 
 function Header({ onLogoClick, onUploadClick, onProfileClick, view, user }) {
   const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || '';
+  const initials = displayName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
   const avatarUrl = user?.user_metadata?.avatar_url;
 
   return (
@@ -179,10 +180,10 @@ function Header({ onLogoClick, onUploadClick, onProfileClick, view, user }) {
               <img src={avatarUrl} alt={displayName} className="w-7 h-7 rounded-full object-cover" />
             ) : (
               <div className="w-7 h-7 rounded-full bg-brand-600 flex items-center justify-center flex-shrink-0">
-                <span className="text-white text-xs font-700">{displayName[0]?.toUpperCase() || '?'}</span>
+                <span className="text-white text-xs font-700">{initials}</span>
               </div>
             )}
-            <span className="text-sm font-500 text-ink-700 hidden sm:block max-w-[100px] truncate">{displayName}</span>
+            <span className="text-sm font-600 text-ink-700 hidden sm:block">{initials}</span>
           </button>
         </div>
       </div>
