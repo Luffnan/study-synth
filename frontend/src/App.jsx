@@ -7,11 +7,14 @@ import QuizPage from './pages/QuizPage.jsx';
 import LandingPage from './pages/LandingPage.jsx';
 import AuthPage from './pages/AuthPage.jsx';
 import ProfilePage from './pages/ProfilePage.jsx';
+import OnboardingPage from './pages/OnboardingPage.jsx';
 import BrainLogo from './components/BrainLogo.jsx';
 import { supabase } from './lib/supabase.js';
+import { getProfile } from './lib/profile.js';
 
 export default function App() {
   const [session, setSession] = useState(undefined); // undefined = loading, null = logged out
+  const [profile, setProfile] = useState(undefined); // undefined = loading, null = no profile yet
   const [notes, setNotes] = useState(null);
   const [noteId, setNoteId] = useState(null);
   const [noteTitle, setNoteTitle] = useState(null);
@@ -22,22 +25,38 @@ export default function App() {
   const [allRecords, setAllRecords] = useState([]);
   const [allSubjects, setAllSubjects] = useState([]);
 
+  // Convenience: the student's year level (null if not set)
+  const yearLevel = profile?.year_level ?? null;
+
   // ── Auth: listen for session changes ────────────────────────────────────────
   useEffect(() => {
-    // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
+      if (session) loadProfile(session.user.id);
+      else setProfile(null);
     });
 
-    // Listen for login/logout/token refresh
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      // After login, always go to dashboard
-      if (session) setView('dashboard');
+      if (session) {
+        setView('dashboard');
+        loadProfile(session.user.id);
+      } else {
+        setProfile(null);
+      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  async function loadProfile(userId) {
+    try {
+      const p = await getProfile(userId);
+      setProfile(p); // null means no profile row yet → show onboarding
+    } catch {
+      setProfile(null);
+    }
+  }
 
   // ── App navigation ───────────────────────────────────────────────────────────
   function handleNotes(data) {
@@ -79,7 +98,7 @@ export default function App() {
   }
 
   // ── Loading state ────────────────────────────────────────────────────────────
-  if (session === undefined) {
+  if (session === undefined || (session && profile === undefined)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-ink-50">
         <div className="w-6 h-6 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
@@ -91,6 +110,20 @@ export default function App() {
   if (!session) {
     if (view === 'auth') return <AuthPage onBack={() => setView('landing')} />;
     return <LandingPage onGetStarted={() => setView('auth')} onLogin={() => setView('auth')} />;
+  }
+
+  // ── Onboarding (first login — no profile row yet) ────────────────────────────
+  if (profile === null) {
+    return (
+      <OnboardingPage
+        user={session.user}
+        onComplete={({ yearLevel: yl, school }) => {
+          // Optimistically set profile state so we don't re-show onboarding
+          setProfile({ year_level: yl, school_id: school?.id ?? null, schools: school ?? null });
+          setView('dashboard');
+        }}
+      />
+    );
   }
 
   // ── Authenticated ────────────────────────────────────────────────────────────
@@ -110,6 +143,7 @@ export default function App() {
             onOpenNote={handleOpenNote}
             onQuiz={handleStartQuiz}
             onOpenSubject={handleOpenSubject}
+            yearLevel={yearLevel}
           />
         )}
         {view === 'subject' && currentSubject && (
@@ -121,12 +155,21 @@ export default function App() {
             onOpenNote={handleOpenNote}
             onQuiz={handleStartQuiz}
             onRecordsChange={setAllRecords}
+            yearLevel={yearLevel}
           />
         )}
-        {view === 'upload'   && <UploadPage onNotes={handleNotes} onBack={handleReset} />}
+        {view === 'upload'   && <UploadPage onNotes={handleNotes} onBack={handleReset} yearLevel={yearLevel} />}
         {view === 'notes'    && <NotesPage notes={notes} noteId={noteId} onBack={handleReset} onQuiz={() => handleStartQuiz(noteId, noteTitle)} />}
-        {view === 'quiz'     && <QuizPage noteId={noteId} noteTitle={noteTitle} notes={notes} onBack={() => setView(notes ? 'notes' : 'dashboard')} />}
-        {view === 'profile'  && <ProfilePage user={session.user} onBack={handleReset} onSignOut={handleSignOut} />}
+        {view === 'quiz'     && <QuizPage noteId={noteId} noteTitle={noteTitle} notes={notes} yearLevel={yearLevel} onBack={() => setView(notes ? 'notes' : 'dashboard')} />}
+        {view === 'profile'  && (
+          <ProfilePage
+            user={session.user}
+            profile={profile}
+            onBack={handleReset}
+            onSignOut={handleSignOut}
+            onProfileSaved={p => setProfile(p)}
+          />
+        )}
       </main>
     </div>
   );

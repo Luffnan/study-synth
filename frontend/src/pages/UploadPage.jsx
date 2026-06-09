@@ -1,4 +1,5 @@
 import { apiFetch } from '../lib/api.js';
+import { submitFiles } from '../lib/upload.js';
 import { useState, useRef, useCallback } from 'react';
 import { FileText, Image, X, Loader2, AlertCircle, ArrowLeft, ArrowUp, Youtube, Link } from 'lucide-react';
 import BrainLogo from '../components/BrainLogo.jsx';
@@ -12,7 +13,7 @@ const ACCEPTED = {
 };
 const ACCEPTED_EXTS = Object.values(ACCEPTED).flat().join(',');
 
-export default function UploadPage({ onNotes, onBack }) {
+export default function UploadPage({ onNotes, onBack, yearLevel }) {
   const [tab, setTab] = useState('files'); // 'files' | 'youtube'
 
   return (
@@ -59,7 +60,7 @@ export default function UploadPage({ onNotes, onBack }) {
       </div>
 
       {tab === 'files'
-        ? <FilesPanel onNotes={onNotes} />
+        ? <FilesPanel onNotes={onNotes} yearLevel={yearLevel} />
         : <YouTubePanel onNotes={onNotes} />
       }
     </div>
@@ -68,7 +69,7 @@ export default function UploadPage({ onNotes, onBack }) {
 
 // ── Files panel ───────────────────────────────────────────────────────────────
 
-function FilesPanel({ onNotes }) {
+function FilesPanel({ onNotes, yearLevel }) {
   const [files, setFiles] = useState([]);
   const [dragging, setDragging] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -91,9 +92,7 @@ function FilesPanel({ onNotes }) {
     if (!files.length) return;
     setLoading(true); setError(null);
     try {
-      const form = new FormData();
-      files.forEach(f => form.append('files', f));
-      const res = await apiFetch('/api/summarise', { method: 'POST', body: form });
+      const res = await submitFiles(files, '/api/summarise', yearLevel ? { yearLevel } : {});
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Server error');
       onNotes(data);

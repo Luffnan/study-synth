@@ -2,7 +2,7 @@ import { apiFetch } from '../lib/api.js';
 import { useState, useEffect } from 'react';
 import { ArrowLeft, ArrowRight, CheckCircle, XCircle, Loader2, RotateCcw, Trophy, ChevronDown, ChevronUp, Hash, Youtube, Zap } from 'lucide-react';
 
-export default function QuizPage({ noteId, noteTitle, notes, onBack }) {
+export default function QuizPage({ noteId, noteTitle, notes, onBack, yearLevel }) {
   // If no notes were passed (launched from dashboard), skip straight to generating
   const [state, setState] = useState(() => (!notes || !notes.topics?.length) ? 'loading' : 'pick');
   const [questions, setQuestions] = useState([]);
@@ -63,7 +63,7 @@ export default function QuizPage({ noteId, noteTitle, notes, onBack }) {
       const res = await apiFetch('/api/quiz/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ noteId, filteredNotes }),
+        body: JSON.stringify({ noteId, filteredNotes, yearLevel }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -265,7 +265,7 @@ export default function QuizPage({ noteId, noteTitle, notes, onBack }) {
         {q.type === 'mcq' && <MCQInput question={q} answered={isAnswered} thisAnswer={thisAnswer} onAnswer={r => recordAnswer(current, r)} />}
         {q.type === 'true_false' && <TrueFalseInput question={q} answered={isAnswered} thisAnswer={thisAnswer} onAnswer={r => recordAnswer(current, r)} />}
         {q.type === 'fill_blank' && <FillBlankInput question={q} answered={isAnswered} thisAnswer={thisAnswer} onAnswer={r => recordAnswer(current, r)} />}
-        {q.type === 'short_answer' && <ShortAnswerInput question={q} onAnswer={r => recordAnswer(current, r)} />}
+        {q.type === 'short_answer' && <ShortAnswerInput question={q} yearLevel={yearLevel} onAnswer={r => recordAnswer(current, r)} />}
 
         {isAnswered && q.type !== 'short_answer' && (
           <div className={`mt-4 rounded-xl px-4 py-3 text-sm ${thisAnswer.correct ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
@@ -392,7 +392,7 @@ function FillBlankInput({ question, answered, thisAnswer, onAnswer }) {
   );
 }
 
-function ShortAnswerInput({ question, onAnswer }) {
+function ShortAnswerInput({ question, yearLevel, onAnswer }) {
   const [attempts, setAttempts] = useState([]);
   const [val, setVal] = useState('');
   const [marking, setMarking] = useState(false);
@@ -406,7 +406,7 @@ function ShortAnswerInput({ question, onAnswer }) {
       const res = await apiFetch('/api/quiz/mark', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: question.question, modelAnswer: question.modelAnswer, studentAnswer: val.trim() }),
+        body: JSON.stringify({ question: question.question, modelAnswer: question.modelAnswer, studentAnswer: val.trim(), yearLevel }),
       });
       const data = await res.json();
       const attempt = { value: val.trim(), score: data.score, feedback: data.feedback };

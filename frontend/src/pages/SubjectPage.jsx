@@ -16,6 +16,7 @@ export default function SubjectPage({
   onOpenNote,      // (record) => void
   onQuiz,          // (id, title) => void
   onRecordsChange, // (newRecords) => void — propagate mutations upward
+  yearLevel,
 }) {
   const [error, setError] = useState(null);
   const [deleting, setDeleting] = useState(null);
@@ -157,6 +158,7 @@ export default function SubjectPage({
       {ingestTarget && (
         <AddSourcesModal
           target={ingestTarget}
+          yearLevel={yearLevel}
           onDone={updated => handleIngestDone(ingestTarget.id, updated)}
           onClose={() => setIngestTarget(null)}
         />

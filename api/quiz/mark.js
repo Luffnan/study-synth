@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { yearLevelModifier } from '../../lib/year-level.js';
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -36,7 +37,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { question, modelAnswer, studentAnswer } = req.body;
+    const { question, modelAnswer, studentAnswer, yearLevel } = req.body;
     if (!question || !modelAnswer || !studentAnswer) {
       return res.status(400).json({ error: 'question, modelAnswer, and studentAnswer are required' });
     }
@@ -44,7 +45,7 @@ export default async function handler(req, res) {
     const response = await client.messages.create({
       model: 'claude-haiku-4-5',
       max_tokens: 256,
-      system: MARK_PROMPT,
+      system: yearLevelModifier(yearLevel) + MARK_PROMPT,
       messages: [{
         role: 'user',
         content: `Question: ${question}\n\nModel answer: ${modelAnswer}\n\nStudent's answer: ${studentAnswer}`

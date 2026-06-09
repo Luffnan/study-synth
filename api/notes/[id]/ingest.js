@@ -1,8 +1,8 @@
-import { IncomingForm } from 'formidable';
-import { readFileSync } from 'fs';
 import Anthropic from '@anthropic-ai/sdk';
 import { getNoteById, updateNoteContent } from '../../../lib/store.js';
 import { tryGetUserId } from '../../../lib/auth.js';
+import { parseFilesFromRequest } from '../../../lib/parse-files.js';
+import { yearLevelModifier } from '../../../lib/year-level.js';
 
 export const config = { api: { bodyParser: false } };
 
@@ -42,16 +42,6 @@ Return ONLY valid JSON in this exact structure (no markdown fences):
   ]
 }`;
 
-function parseForm(req) {
-  return new Promise((resolve, reject) => {
-    const form = new IncomingForm({ multiples: true, maxFileSize: 50 * 1024 * 1024 });
-    form.parse(req, (err, fields, files) => {
-      if (err) reject(err);
-      else resolve({ fields, files });
-    });
-  });
-}
-
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
@@ -63,45 +53,25 @@ export default async function handler(req, res) {
   if (authErr) return res.status(401).json({ error: 'Unauthorized' });
 
   try {
-    const [record, { files }] = await Promise.all([
+    const [record, { contentBlocks: fileBlocks, fileNames: newFileNames, yearLevel }] = await Promise.all([
       getNoteById(id, userId),
-      parseForm(req),
+      parseFilesFromRequest(req),
     ]);
-
-    const uploaded = Array.isArray(files.files) ? files.files : [files.files].filter(Boolean);
-    if (!uploaded.length) return res.status(400).json({ error: 'No files uploaded' });
-
-    const newFileNames = uploaded.map(f => f.originalFilename || f.newFilename);
 
     const contentBlocks = [
       {
         type: 'text',
         text: `Here are the existing study notes:\n\n${JSON.stringify(record.notes, null, 2)}\n\nNow here are the new source documents to merge in:`,
       },
+      ...fileBlocks,
     ];
-
-    for (const file of uploaded) {
-      const mime = file.mimetype || '';
-      const buffer = readFileSync(file.filepath);
-      const base64 = buffer.toString('base64');
-
-      if (mime === 'application/pdf') {
-        contentBlocks.push({ type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: base64 } });
-        contentBlocks.push({ type: 'text', text: `(Above document: ${file.originalFilename})` });
-      } else if (mime.startsWith('image/')) {
-        contentBlocks.push({ type: 'image', source: { type: 'base64', media_type: mime, data: base64 } });
-        contentBlocks.push({ type: 'text', text: `(Above image: ${file.originalFilename})` });
-      } else {
-        return res.status(400).json({ error: `Unsupported file type: ${mime}` });
-      }
-    }
 
     contentBlocks.push({ type: 'text', text: 'Please merge the new source material into the existing notes as instructed. Return only the merged JSON.' });
 
     const response = await client.messages.create({
       model: 'claude-opus-4-7',
       max_tokens: 8192,
-      system: MERGE_PROMPT,
+      system: yearLevelModifier(yearLevel) + MERGE_PROMPT,
       messages: [{ role: 'user', content: contentBlocks }],
     });
 

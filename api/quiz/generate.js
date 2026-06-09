@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { getNoteById } from '../../lib/store.js';
 import { tryGetUserId } from '../../lib/auth.js';
+import { yearLevelModifier } from '../../lib/year-level.js';
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -69,7 +70,7 @@ export default async function handler(req, res) {
   if (authErr) return res.status(401).json({ error: 'Unauthorized' });
 
   try {
-    const { noteId, filteredNotes } = req.body;
+    const { noteId, filteredNotes, yearLevel } = req.body;
     if (!noteId) return res.status(400).json({ error: 'noteId required' });
 
     const record = await getNoteById(noteId, userId);
@@ -86,7 +87,7 @@ export default async function handler(req, res) {
     const response = await client.messages.create({
       model: 'claude-opus-4-7',
       max_tokens: 4096,
-      system: buildPrompt(counts),
+      system: yearLevelModifier(yearLevel) + buildPrompt(counts),
       messages: [{ role: 'user', content: `Generate a quiz based on these study notes:\n\n${notesText}` }]
     });
 

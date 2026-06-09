@@ -6,7 +6,9 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
     "@supabase/supabase-js": "^2.47.0",
+    "dotenv": "^17.4.2",
     "formidable": "^3.5.2",
+    "xlsx": "^0.18.5",
     "youtube-transcript": "^1.2.1"
   }
 }

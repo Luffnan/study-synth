@@ -1,4 +1,5 @@
 import { apiFetch } from '../lib/api.js';
+import { submitFiles } from '../lib/upload.js';
 import { useState, useEffect, useRef } from 'react';
 import {
   FileText, Image, Trash2, BookOpen, Hash, AlertCircle, Zap, Pencil,
@@ -18,7 +19,7 @@ export const COLORS = {
   slate:   { from: 'from-slate-700',   to: 'to-slate-900',   dot: 'bg-slate-500',   ring: 'ring-slate-400'  },
 };
 
-export default function DashboardPage({ onUpload, onOpenNote, onQuiz, onOpenSubject }) {
+export default function DashboardPage({ onUpload, onOpenNote, onQuiz, onOpenSubject, yearLevel }) {
   const [records, setRecords] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -203,6 +204,7 @@ export default function DashboardPage({ onUpload, onOpenNote, onQuiz, onOpenSubj
       {ingestTarget && (
         <AddSourcesModal
           target={ingestTarget}
+          yearLevel={yearLevel}
           onDone={updated => handleIngestDone(ingestTarget.id, updated)}
           onClose={() => setIngestTarget(null)}
         />
@@ -539,7 +541,7 @@ export function MoveMenu({ subjects, onMove, onClose }) {
 
 // ── Add Sources Modal ─────────────────────────────────────────────────────────
 
-export function AddSourcesModal({ target, onDone, onClose }) {
+export function AddSourcesModal({ target, yearLevel, onDone, onClose }) {
   const [tab, setTab] = useState('files');
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -560,13 +562,13 @@ export function AddSourcesModal({ target, onDone, onClose }) {
             </button>
           ))}
         </div>
-        {tab === 'files' ? <FilesTab target={target} onDone={onDone} onClose={onClose} /> : <YouTubeTab target={target} onDone={onDone} onClose={onClose} />}
+        {tab === 'files' ? <FilesTab target={target} yearLevel={yearLevel} onDone={onDone} onClose={onClose} /> : <YouTubeTab target={target} onDone={onDone} onClose={onClose} />}
       </div>
     </div>
   );
 }
 
-function FilesTab({ target, onDone, onClose }) {
+function FilesTab({ target, yearLevel, onDone, onClose }) {
   const [files, setFiles] = useState([]);
   const [dragging, setDragging] = useState(false);
   const [processing, setProcessing] = useState(false);
@@ -582,9 +584,7 @@ function FilesTab({ target, onDone, onClose }) {
     if (!files.length) return;
     setProcessing(true); setError(null);
     try {
-      const form = new FormData();
-      files.forEach(f => form.append('files', f));
-      const res = await apiFetch(`/api/notes/${target.id}/ingest`, { method: 'POST', body: form });
+      const res = await submitFiles(files, `/api/notes/${target.id}/ingest`, yearLevel ? { yearLevel } : {});
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed');
       onDone({ file_names: data.record.file_names, topic_count: data.record.topic_count, key_term_count: data.record.key_term_count });
