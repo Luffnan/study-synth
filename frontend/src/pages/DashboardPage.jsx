@@ -523,7 +523,7 @@ export function MoveMenu({ subjects, onMove, onClose }) {
   }, [onClose]);
 
   return (
-    <div ref={ref} className="absolute right-0 top-full mt-1 w-44 bg-white border border-ink-200 rounded-xl shadow-lg z-20 overflow-hidden">
+    <div ref={ref} className="absolute right-0 bottom-full mb-1 w-44 bg-white border border-ink-200 rounded-xl shadow-lg z-20 overflow-hidden">
       <p className="text-[10px] font-600 text-ink-400 uppercase tracking-wider px-3 py-2 border-b border-ink-100">Move to subject</p>
       {subjects.map(s => {
         const c = COLORS[s.color] || COLORS.indigo;
