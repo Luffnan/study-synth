@@ -4,7 +4,7 @@
  * POST { url, noteId }     → ingest video into existing note
  */
 import Anthropic from '@anthropic-ai/sdk';
-import { fetchTranscript } from './lib/youtube-transcript.js';
+import { fetchTranscript } from './_lib/youtube-transcript.js';
 import { saveNote, getNoteById, addVideoSource } from '../lib/store.js';
 import { tryGetUserId } from '../lib/auth.js';
 
