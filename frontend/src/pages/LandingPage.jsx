@@ -11,6 +11,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
           <div className="flex items-center gap-2 flex-shrink-0">
             <img src="/brain.png" alt="Brain Buffet" className="w-7 h-7" />
             <span className="text-[15px] font-700 tracking-tight text-ink-900">Brain Buffet</span>
+            <span className="text-[11px] font-600 text-brand-700 bg-brand-50 border border-brand-200 px-2 py-0.5 rounded-full">beta</span>
           </div>
           <div className="ml-auto flex items-center gap-2">
             <button onClick={onLogin}
