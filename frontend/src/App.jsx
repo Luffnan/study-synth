@@ -10,7 +10,7 @@ import ProfilePage from './pages/ProfilePage.jsx';
 import OnboardingPage from './pages/OnboardingPage.jsx';
 import BrainLogo from './components/BrainLogo.jsx';
 import { supabase } from './lib/supabase.js';
-import { getProfile } from './lib/profile.js';
+import { getProfile, YEAR_LEVELS } from './lib/profile.js';
 
 export default function App() {
   const [session, setSession] = useState(undefined); // undefined = loading, null = logged out
@@ -139,6 +139,7 @@ export default function App() {
         onProfileClick={() => setView('profile')}
         view={view}
         user={session.user}
+        yearLevel={yearLevel}
       />
       <main className="flex-1">
         {view === 'dashboard' && (
@@ -179,10 +180,9 @@ export default function App() {
   );
 }
 
-function Header({ onLogoClick, onUploadClick, onProfileClick, view, user }) {
+function Header({ onLogoClick, onUploadClick, onProfileClick, view, user, yearLevel }) {
   const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || '';
   const initials = displayName.split(' ')[0] || '?';
-
   const avatarUrl = user?.user_metadata?.avatar_url;
 
   return (
@@ -229,7 +229,14 @@ function Header({ onLogoClick, onUploadClick, onProfileClick, view, user }) {
                 <span className="text-white text-xs font-700">{initials[0]?.toUpperCase()}</span>
               </div>
             )}
-            <span className="text-sm font-600 text-ink-700 hidden sm:block">{initials}</span>
+            <div className="hidden sm:flex flex-col items-start leading-none">
+              <span className="text-sm font-600 text-ink-700">{initials}</span>
+              {yearLevel && (
+                <span className="text-[10px] text-ink-400 mt-0.5">
+                  {YEAR_LEVELS.find(y => y.value === yearLevel)?.label}
+                </span>
+              )}
+            </div>
           </button>
         </div>
       </div>
