@@ -65,8 +65,16 @@ export function hasDiagrams(notes) {
 
 // ── Internal ──────────────────────────────────────────────────────────────────
 
+// Claude's bounding boxes are approximate — pad each side so the diagram is
+// never clipped, at the cost of a slightly looser crop.
+const BOX_PADDING = 0.05;
+
 async function cropAndUpload(file, boundingBox, noteId) {
-  const { top, left, width, height } = boundingBox;
+  // Expand the box by BOX_PADDING on every side, clamped to the image bounds
+  const left = Math.max(0, boundingBox.left - BOX_PADDING);
+  const top = Math.max(0, boundingBox.top - BOX_PADDING);
+  const width = Math.min(1 - left, boundingBox.width + BOX_PADDING * 2);
+  const height = Math.min(1 - top, boundingBox.height + BOX_PADDING * 2);
 
   // createImageBitmap is not supported for HEIC in most browsers — will throw
   let bitmap;
