@@ -191,7 +191,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
             <BrainLogo className="w-7 h-7 text-white" />
           </div>
           <h2 className="font-display text-2xl sm:text-3xl font-600 text-white mb-4">
-            Ready to feed your brain <span className="italic">properly?</span>
+            Ready to feed your <span className="italic">brain?</span>
           </h2>
           <p className="text-ink-300 mb-8 text-base">
             Create your free account and turn your first set of notes into a full study spread in under a minute.
