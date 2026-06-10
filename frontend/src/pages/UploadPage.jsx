@@ -1,5 +1,6 @@
 import { apiFetch } from '../lib/api.js';
 import { submitFiles } from '../lib/upload.js';
+import { processDiagrams } from '../lib/diagrams.js';
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { FileText, Image, X, Loader2, AlertCircle, ArrowLeft, ArrowUp, Youtube, Link } from 'lucide-react';
 import BrainLogo from '../components/BrainLogo.jsx';
@@ -103,6 +104,27 @@ function FilesPanel({ onNotes, yearLevel, onLoading, files, setFiles, error, set
       const res = await submitFiles(files, '/api/summarise', yearLevel ? { yearLevel } : {});
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Server error');
+
+      // After notes are generated, attempt to extract any diagrams Claude identified
+      // (non-fatal — if it fails the notes still display fine without images)
+      const imageFiles = files.filter(f => f.type.startsWith('image/'));
+      if (imageFiles.length && data.notes && data.id) {
+        try {
+          const processedNotes = await processDiagrams(data.notes, imageFiles, data.id);
+          if (processedNotes !== data.notes) {
+            // Save the diagram URLs into the DB
+            await apiFetch(`/api/notes/${data.id}/diagrams`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ notes: processedNotes }),
+            });
+            data.notes = processedNotes;
+          }
+        } catch (diagramErr) {
+          console.warn('[Diagrams] Non-fatal extraction error:', diagramErr.message);
+        }
+      }
+
       onNotes(data);
     } catch (err) {
       onLoading(false);

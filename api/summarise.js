@@ -47,6 +47,18 @@ Rules:
 7. Preserve definitions, formulas, dates, and named concepts exactly as they appear
 8. Do NOT add information that isn't in the source material
 
+DIAGRAM DETECTION (image inputs only):
+If any input image contains a clearly identifiable visual element — such as a labelled scientific diagram, graph, chart, map, flowchart, or annotated figure — that provides meaningful information beyond what can be captured in text alone, you MAY include an optional "diagram" field on the most relevant subtopic.
+
+Rules:
+- At most ONE diagram per subtopic
+- Only include diagrams when the visual genuinely adds value that text cannot replicate
+- Reference images by their [Image N] labels from the input
+- The bounding box values are fractions of the full image dimensions (0.0 = top/left edge, 1.0 = bottom/right edge)
+- Include the full diagram area: labels, axes, captions, and any surrounding annotation
+- Do NOT include diagrams for plain text content, simple text tables, or decorative images
+- If no useful diagrams are present, omit all "diagram" fields entirely
+
 Return your response as valid JSON in this exact format:
 {
   "title": "inferred subject/topic title",
@@ -56,7 +68,12 @@ Return your response as valid JSON in this exact format:
       "subtopics": [
         {
           "name": "Subtopic Name",
-          "points": ["key point 1", "key point 2", ...]
+          "points": ["key point 1", "key point 2"],
+          "diagram": {
+            "description": "concise description of what the diagram shows",
+            "sourceImageIndex": 0,
+            "boundingBox": { "top": 0.10, "left": 0.05, "width": 0.90, "height": 0.40 }
+          }
         }
       ]
     }
@@ -64,7 +81,9 @@ Return your response as valid JSON in this exact format:
   "keyTerms": [
     { "term": "term name", "definition": "brief definition" }
   ]
-}`;
+}
+
+The "diagram" field is optional — omit it on subtopics that have no relevant diagram.`;
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });

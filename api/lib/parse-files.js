@@ -73,6 +73,7 @@ function parseFormData(req) {
         const fileNames = uploaded.map(f => f.originalFilename || f.newFilename);
         const contentBlocks = [];
 
+        let imageIndex = 0;
         for (const file of uploaded) {
           const mime = file.mimetype || '';
 
@@ -84,8 +85,10 @@ function parseFormData(req) {
             const rawBuffer = readFileSync(file.filepath);
             const { buffer: compressed, mimeType: outMime } = await compressImage(rawBuffer, mime);
             const imgBase64 = compressed.toString('base64');
+            contentBlocks.push({ type: 'text', text: `[Image ${imageIndex}]` });
             contentBlocks.push({ type: 'image', source: { type: 'base64', media_type: outMime, data: imgBase64 } });
-            contentBlocks.push({ type: 'text', text: `(Above image: ${file.originalFilename})` });
+            contentBlocks.push({ type: 'text', text: `(Above is input image ${imageIndex}: ${file.originalFilename})` });
+            imageIndex++;
           } else {
             return reject(new Error(`Unsupported file type: ${mime}`));
           }
@@ -114,6 +117,7 @@ async function parseStorageFiles(req) {
   const fileNames = storageFiles.map(f => f.fileName);
   const contentBlocks = [];
 
+  let imageIndex = 0;
   for (const { signedUrl, fileName, mimeType } of storageFiles) {
     const res = await fetch(signedUrl);
     if (!res.ok) throw new Error(`Failed to download ${fileName} from storage`);
@@ -127,8 +131,10 @@ async function parseStorageFiles(req) {
     } else if (mimeType.startsWith('image/')) {
       const { buffer: compressed, mimeType: outMime } = await compressImage(buffer, mimeType);
       const imgBase64 = compressed.toString('base64');
+      contentBlocks.push({ type: 'text', text: `[Image ${imageIndex}]` });
       contentBlocks.push({ type: 'image', source: { type: 'base64', media_type: outMime, data: imgBase64 } });
-      contentBlocks.push({ type: 'text', text: `(Above image: ${fileName})` });
+      contentBlocks.push({ type: 'text', text: `(Above is input image ${imageIndex}: ${fileName})` });
+      imageIndex++;
     } else {
       throw new Error(`Unsupported file type: ${mimeType}`);
     }

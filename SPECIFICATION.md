@@ -42,7 +42,7 @@ Brain Buffet is a web application that helps students turn their study material 
 | AI | Anthropic Claude API (`claude-opus-4-7`, `max_tokens: 32000`, streaming) |
 | Database | Supabase Postgres |
 | Auth | Supabase Auth (email/password + Google OAuth) |
-| File storage | Supabase Storage (`temp-uploads` bucket for large files) |
+| File storage | Supabase Storage (`temp-uploads` bucket for large files, `diagrams` bucket for extracted diagram images) |
 
 ### Infrastructure
 | Service | Purpose |
@@ -317,7 +317,7 @@ npx vercel dev
 |---|---|
 | Email verification | Supabase built-in SMTP rate-limited. Set up **Resend** SMTP for production email delivery (verification, password reset) |
 | KaTeX / LaTeX equation rendering | Basic formula detection + monospace chip exists. Full KaTeX rendering deferred post-launch |
-| Diagram extraction | Spec exists in git history. Detect + crop diagrams from PDFs and embed in notes. Deferred |
+| Diagram extraction (Phase 2) | Phase 1 (images) is live. Phase 2: extend to PDFs via pdf.js page rendering |
 | Sharing | Generate shareable read-only link for a notes session. Not yet built |
 | PDF export | Export notes as PDF (currently .docx and .md only) |
 

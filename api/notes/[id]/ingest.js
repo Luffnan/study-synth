@@ -27,6 +27,18 @@ Merge rules:
 - The title should remain the same unless the new material clearly belongs to a broader subject, in which case you may generalise it slightly
 - Aim for 30–35% compression of new material (same standard as the original notes), with complete contextual sentences not bare labels
 
+DIAGRAM DETECTION (new image sources only):
+If any of the NEW source images contain a clearly identifiable visual element — such as a labelled scientific diagram, graph, chart, map, flowchart, or annotated figure — that provides meaningful information beyond what can be captured in text alone, you MAY include an optional "diagram" field on the most relevant new or updated subtopic.
+
+Rules:
+- At most ONE diagram per subtopic; only add to subtopics that contain content from the new images
+- Reference images by their [Image N] labels (these refer to the new source images only)
+- The bounding box values are fractions of the full image dimensions (0.0 = edge, 1.0 = opposite edge)
+- Include the full diagram area: labels, axes, captions, and any surrounding annotation
+- Do NOT include diagrams for plain text, simple tables, or decorative images
+- Preserve any existing "diagram" fields already present on existing subtopics (copy them through unchanged)
+- If no useful diagrams are present in the new material, omit all new "diagram" fields
+
 Return ONLY valid JSON in this exact structure (no markdown fences):
 {
   "title": "...",
@@ -34,14 +46,24 @@ Return ONLY valid JSON in this exact structure (no markdown fences):
     {
       "name": "Topic Name",
       "subtopics": [
-        { "name": "Subtopic Name", "points": ["point 1", "point 2"] }
+        {
+          "name": "Subtopic Name",
+          "points": ["point 1", "point 2"],
+          "diagram": {
+            "description": "concise description of what the diagram shows",
+            "sourceImageIndex": 0,
+            "boundingBox": { "top": 0.10, "left": 0.05, "width": 0.90, "height": 0.40 }
+          }
+        }
       ]
     }
   ],
   "keyTerms": [
     { "term": "term", "definition": "definition" }
   ]
-}`;
+}
+
+The "diagram" field is optional — omit it on subtopics that have no relevant diagram.`;
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
