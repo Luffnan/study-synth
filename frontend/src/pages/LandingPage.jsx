@@ -115,15 +115,15 @@ export default function LandingPage({ onGetStarted, onLogin }) {
           <p className="text-ink-500">From raw material to revision-ready notes in under a minute</p>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-6">
           {[
             { step: '1', tile: 'bg-accent-teal',       icon: <FileText className="w-6 h-6 text-ink-900" />, title: 'Upload your content', body: 'PDFs, images of handwritten notes, lecture slides, or paste a YouTube URL' },
             { step: '2', tile: 'bg-accent-lightGreen', icon: <BrainLogo className="w-6 h-6 text-ink-900" />, title: 'Extracts and structures', body: 'Brain Buffet extracts the subject knowledge, organises it into topics and subtopics, and identifies key terms' },
             { step: '3', tile: 'bg-accent-yellow',     icon: <BookOpen className="w-6 h-6 text-ink-900" />, title: 'Review your notes', body: 'Browse structured notes, switch between standard and concise views, download as Word or Markdown' },
             { step: '4', tile: 'bg-accent-green',      icon: <Zap className="w-6 h-6 text-ink-900" />, title: 'Test yourself', body: 'Generate a custom quiz from your chosen topics and get instant feedback on your answers' },
           ].map(s => (
-            <div key={s.step} className="text-center px-2">
-              <div className="relative inline-flex mb-4">
+            <div key={s.step} className="flex sm:flex-col sm:text-center items-start sm:items-center gap-4 sm:gap-0 px-2">
+              <div className="relative inline-flex flex-shrink-0 mb-0 sm:mb-4">
                 <div className={`w-14 h-14 rounded-2xl border-2 border-ink-900 shadow-hard-sm flex items-center justify-center ${s.tile}`}>
                   {s.icon}
                 </div>
@@ -131,8 +131,10 @@ export default function LandingPage({ onGetStarted, onLogin }) {
                   {s.step}
                 </span>
               </div>
-              <h3 className="font-700 text-ink-900 mb-1.5 text-sm">{s.title}</h3>
-              <p className="text-xs text-ink-500 leading-relaxed">{s.body}</p>
+              <div className="max-w-[260px] sm:max-w-none">
+                <h3 className="font-700 text-ink-900 mb-1 text-[15px] sm:text-sm sm:mb-1.5">{s.title}</h3>
+                <p className="text-[13px] sm:text-xs text-ink-500 leading-relaxed">{s.body}</p>
+              </div>
             </div>
           ))}
         </div>
