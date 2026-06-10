@@ -28,8 +28,8 @@ export default function LandingPage({ onGetStarted, onLogin }) {
       {/* ── Hero ── */}
       <section className="max-w-5xl mx-auto px-4 sm:px-6 pt-20 pb-16 text-center">
 
-        <div className="inline-flex items-center gap-3 bg-brand-50 text-brand-700 text-sm font-600 px-6 py-3 rounded-full mb-6 border border-brand-200">
-          <img src="/fork.png" alt="fork" className="w-10 h-10" />
+        <div className="inline-flex items-center gap-1.5 bg-brand-50 text-brand-700 text-sm font-600 px-6 py-3 rounded-full mb-6 border border-brand-200">
+          <img src="/fork.png" alt="fork" className="w-10 h-10 [filter:invert(22%)_sepia(96%)_saturate(2000%)_hue-rotate(340deg)_brightness(85%)]" />
           Generating snackable bite-sized food for your brain
         </div>
 
