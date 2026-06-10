@@ -187,20 +187,17 @@ function ProfileTab({ user, profile, onSaved }) {
         <label className="block text-xs font-600 text-ink-600 mb-2 flex items-center gap-1.5">
           <GraduationCap className="w-3.5 h-3.5" /> Year level
         </label>
-        <div className="grid grid-cols-1 gap-1.5">
+        <select
+          value={yearLevel ?? ''}
+          onChange={e => setYearLevel(e.target.value || null)}
+          className="w-full px-3 py-2.5 rounded-xl border-2 border-ink-200 focus:border-brand-400 focus:outline-none text-sm text-ink-800 bg-white transition-colors appearance-none cursor-pointer"
+        >
+          <option value="">Select year level…</option>
           {YEAR_LEVELS.map(y => (
-            <button key={y.value} type="button" onClick={() => setYearLevel(y.value)}
-              className={`flex items-center justify-between px-4 py-3 rounded-xl border-2 text-left transition-all ${
-                yearLevel === y.value ? 'border-brand-500 bg-brand-50 text-brand-700' : 'border-ink-200 hover:border-brand-300 hover:bg-ink-50'
-              }`}>
-              <div>
-                <p className="text-sm font-700">{y.label}</p>
-                <p className="text-xs text-ink-400">{y.detail}</p>
-              </div>
-              {yearLevel === y.value && <CheckCircle className="w-4 h-4 text-brand-500 flex-shrink-0" />}
-            </button>
+            <option key={y.value} value={y.value}>{y.label}</option>
           ))}
-        </div>
+        </select>
+        <p className="text-xs text-ink-400 mt-1.5">Affects the language and depth of future notes you generate</p>
       </div>
 
       {error && <ErrorBanner message={error} />}
