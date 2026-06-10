@@ -192,10 +192,10 @@ export default function LandingPage({ onGetStarted, onLogin }) {
             <BrainLogo className="w-7 h-7 text-white" />
           </div>
           <h2 className="text-2xl sm:text-3xl font-800 text-white mb-4">
-            Ready to study smarter?
+            Ready to feed your brain properly?
           </h2>
           <p className="text-ink-300 mb-8 text-base">
-            Create your free account and transform your first set of notes in under a minute.
+            Create your free account and turn your first set of notes into a full study spread in under a minute.
           </p>
           <button onClick={onGetStarted}
             className="inline-flex items-center gap-2 bg-white hover:bg-ink-100 text-ink-900 px-7 py-3.5 rounded-2xl text-base font-700 transition-colors shadow-lg">
