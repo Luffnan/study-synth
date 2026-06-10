@@ -48,9 +48,9 @@ export default function LandingPage({ onGetStarted, onLogin }) {
         <div className="flex flex-col items-center justify-center gap-2">
           <button onClick={onGetStarted}
             className="flex items-center gap-2 bg-ink-900 hover:bg-brand-600 text-white px-7 py-3.5 rounded-2xl text-base font-700 transition-colors">
-            Create free account <ArrowRight className="w-4 h-4" />
+            Create Account <ArrowRight className="w-4 h-4" />
           </button>
-          <p className="text-sm text-ink-400">Free for a limited time</p>
+          <p className="text-sm text-accent-green font-500">Free for a limited time</p>
         </div>
 
         {/* Social proof */}
