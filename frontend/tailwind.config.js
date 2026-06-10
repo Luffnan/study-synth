@@ -4,43 +4,44 @@
 // THEME CONFIG — change these values to restyle the entire site
 // ─────────────────────────────────────────────────────────────────────────────
 const THEME = {
-  // Font — swap this string to change the site font (update index.html too)
-  fontSans: ['Space Grotesk', 'system-ui', 'sans-serif'],
+  // Fonts — body sans + serif display face (update index.html too)
+  fontSans:    ['Inter', 'system-ui', 'sans-serif'],
+  fontDisplay: ['Fraunces', 'Georgia', 'serif'],
 
-  // Primary brand colour (buttons, active states, highlights)
+  // Primary brand colour (buttons, active states, highlights) — coral red
   brand: {
-    50:  '#fff5f5',
-    100: '#ffe0e0',
-    200: '#ffbaba',
-    400: '#e96060',
-    500: '#E22028',  // Flavour United Red
-    600: '#c41b22',
-    700: '#a0161c',
-    900: '#6b0e12',
+    50:  '#FEF1EE',
+    100: '#FDDFD9',
+    200: '#FAC0B4',
+    400: '#F58269',
+    500: '#F2654E',  // Coral
+    600: '#DC4A33',
+    700: '#B83A27',
+    900: '#7A2418',
   },
 
-  // Neutral / text colours — ink-900 is the dark button/header colour
+  // Neutral / text colours — warm black on cream, ink-900 is the dark button colour
   ink: {
-    50:  '#f8fafc',
-    100: '#f1f5f9',
-    200: '#e2e8f0',
-    300: '#cbd5e1',
-    400: '#94a3b8',
-    500: '#64748b',
-    600: '#475569',
-    700: '#334155',
-    800: '#1e293b',
-    900: '#1E4380',  // Flavour United Navy
+    50:  '#F2EFE9',  // Cream page background
+    100: '#EAE6DD',
+    200: '#DCD7CB',
+    300: '#C2BCAD',
+    400: '#8F8A7E',
+    500: '#6E6A60',
+    600: '#4D4A43',
+    700: '#33312C',
+    800: '#222019',
+    900: '#141310',  // Near black
   },
 
-  // Accent colours (available as Tailwind utilities: bg-accent-yellow etc.)
+  // Accent colours — playful tile palette (bg-accent-yellow etc.)
   accent: {
-    yellow:      '#FBBA16',
-    navy:        '#1E4380',
-    teal:        '#9BCCD0',
-    green:       '#00492C',
-    lightGreen:  '#B1D8B8',
-    pink:        '#E2B2B4',
+    yellow:      '#FFD43B',
+    navy:        '#141310',
+    teal:        '#2E90FA',
+    green:       '#1DB870',
+    lightGreen:  '#9B6DFF', // purple (key kept for backwards compat)
+    pink:        '#F2654E',
   },
 };
 // ─────────────────────────────────────────────────────────────────────────────
@@ -56,6 +57,12 @@ export default {
       },
       fontFamily: {
         sans: THEME.fontSans,
+        display: THEME.fontDisplay,
+      },
+      boxShadow: {
+        'hard':    '4px 4px 0 0 #141310',
+        'hard-sm': '3px 3px 0 0 #141310',
+        'hard-lg': '6px 6px 0 0 #141310',
       },
       fontWeight: {
         500: '500',
