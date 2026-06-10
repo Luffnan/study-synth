@@ -11,11 +11,11 @@ export default function LandingPage({ onGetStarted, onLogin }) {
           <div className="flex items-center gap-2 flex-shrink-0">
             <img src="/brain.png" alt="Brain Buffet" className="w-7 h-7" />
             <span className="text-[15px] font-700 tracking-tight text-ink-900">Brain Buffet</span>
-            <span className="text-[11px] font-600 text-ink-900 bg-accent-yellow border border-ink-900 px-2 py-0.5 rounded-full">beta</span>
+            <span className="hidden sm:inline text-[11px] font-600 text-ink-900 bg-accent-yellow border border-ink-900 px-2 py-0.5 rounded-full">beta</span>
           </div>
           <div className="ml-auto flex items-center gap-2">
             <button onClick={onLogin}
-              className="px-4 py-2 rounded-xl text-sm font-600 text-ink-600 hover:text-ink-900 hover:bg-ink-100 transition-colors">
+              className="hidden sm:block px-4 py-2 rounded-xl text-sm font-600 text-ink-600 hover:text-ink-900 hover:bg-ink-100 transition-colors">
               Sign in
             </button>
             <button onClick={onGetStarted}
@@ -62,7 +62,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
               </svg>
             ))}
           </div>
-          <span className="text-sm text-ink-500">Suitable for students from Year 7 right up to University degrees</span>
+          <span className="text-sm text-ink-500">Suitable for students from Year 7 right<br />up to University degrees</span>
         </div>
       </section>
 
@@ -115,14 +115,14 @@ export default function LandingPage({ onGetStarted, onLogin }) {
           <p className="text-ink-500">From raw material to revision-ready notes in under a minute</p>
         </div>
 
-        <div className="grid sm:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
           {[
             { step: '1', tile: 'bg-accent-teal',       icon: <FileText className="w-6 h-6 text-ink-900" />, title: 'Upload your content', body: 'PDFs, images of handwritten notes, lecture slides, or paste a YouTube URL' },
             { step: '2', tile: 'bg-accent-lightGreen', icon: <BrainLogo className="w-6 h-6 text-ink-900" />, title: 'Extracts and structures', body: 'Brain Buffet extracts the subject knowledge, organises it into topics and subtopics, and identifies key terms' },
             { step: '3', tile: 'bg-accent-yellow',     icon: <BookOpen className="w-6 h-6 text-ink-900" />, title: 'Review your notes', body: 'Browse structured notes, switch between standard and concise views, download as Word or Markdown' },
             { step: '4', tile: 'bg-accent-green',      icon: <Zap className="w-6 h-6 text-ink-900" />, title: 'Test yourself', body: 'Generate a custom quiz from your chosen topics and get instant feedback on your answers' },
           ].map(s => (
-            <div key={s.step} className="text-center">
+            <div key={s.step} className="text-center px-2">
               <div className="relative inline-flex mb-4">
                 <div className={`w-14 h-14 rounded-2xl border-2 border-ink-900 shadow-hard-sm flex items-center justify-center ${s.tile}`}>
                   {s.icon}

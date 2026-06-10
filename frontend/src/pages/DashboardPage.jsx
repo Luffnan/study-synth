@@ -24,17 +24,26 @@ const TIPS = [
 ];
 
 function TipBanner() {
-  const tip = useMemo(() => TIPS[Math.floor(Math.random() * TIPS.length)], []);
+  const startIndex = useMemo(() => Math.floor(Math.random() * TIPS.length), []);
+  const [index, setIndex] = useState(startIndex);
+  const tip = TIPS[index];
   return (
-    <div className="rounded-2xl border-2 border-ink-900 bg-accent-yellow shadow-hard-sm p-4 flex items-start gap-3 mb-8">
-      <div className="flex-shrink-0 mt-0.5">
-        <span className="text-lg">⚡</span>
+    <div className="rounded-2xl border-2 border-ink-900 bg-accent-yellow shadow-hard-sm p-4 flex items-center gap-3 mb-8">
+      <div className="flex-shrink-0">
+        <img src="/brain.png" alt="Brain Buffet" className="w-8 h-8" />
       </div>
-      <div>
+      <div className="flex-1 min-w-0">
         <p className="text-[11px] font-700 text-ink-900 uppercase tracking-wider mb-0.5">Hot tip</p>
         <p className="text-sm font-700 text-ink-900">{tip.lead}</p>
         <p className="text-sm text-ink-700 mt-0.5">{tip.body}</p>
       </div>
+      <button
+        onClick={() => setIndex(i => (i + 1) % TIPS.length)}
+        className="flex-shrink-0 w-7 h-7 rounded-full border-2 border-ink-900 bg-white/60 hover:bg-white flex items-center justify-center transition-colors"
+        title="Next tip"
+      >
+        <ChevronRight className="w-4 h-4 text-ink-900" />
+      </button>
     </div>
   );
 }
