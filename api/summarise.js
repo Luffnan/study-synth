@@ -55,7 +55,10 @@ Rules:
 - Only include diagrams when the visual genuinely adds value that text cannot replicate
 - Reference images by their [Image N] labels from the input
 - The bounding box values are fractions of the full image dimensions (0.0 = top/left edge, 1.0 = bottom/right edge)
-- Include the full diagram area: labels, axes, captions, and any surrounding annotation
+- The bounding box must be TIGHT around only the visual element itself — chart area, map border, graph axes, or diagram frame
+- Do NOT extend the bounding box into adjacent paragraph text columns, even if they appear beside the diagram
+- If the diagram has a visible border or box, crop just inside or along those borders
+- You may include a short title directly above the diagram or a short caption directly below it, but exclude any flowing paragraph text to the left or right
 - Do NOT include diagrams for plain text content, simple text tables, or decorative images
 - If no useful diagrams are present, omit all "diagram" fields entirely
 

@@ -34,7 +34,10 @@ Rules:
 - At most ONE diagram per subtopic; only add to subtopics that contain content from the new images
 - Reference images by their [Image N] labels (these refer to the new source images only)
 - The bounding box values are fractions of the full image dimensions (0.0 = edge, 1.0 = opposite edge)
-- Include the full diagram area: labels, axes, captions, and any surrounding annotation
+- The bounding box must be TIGHT around only the visual element itself — chart area, map border, graph axes, or diagram frame
+- Do NOT extend the bounding box into adjacent paragraph text columns, even if they appear beside the diagram
+- If the diagram has a visible border or box, crop just inside or along those borders
+- You may include a short title directly above the diagram or a short caption directly below it, but exclude any flowing paragraph text to the left or right
 - Do NOT include diagrams for plain text, simple tables, or decorative images
 - Preserve any existing "diagram" fields already present on existing subtopics (copy them through unchanged)
 - If no useful diagrams are present in the new material, omit all new "diagram" fields
