@@ -119,7 +119,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
         <div className="grid sm:grid-cols-4 gap-6">
           {[
             { step: '1', icon: <FileText className="w-6 h-6" />, title: 'Upload your content', body: 'PDFs, images of handwritten notes, lecture slides, or paste a YouTube URL' },
-            { step: '2', icon: <BrainLogo className="w-6 h-6" />, title: 'Brain Buffet reads and structures', body: 'Brain Buffet extracts the subject knowledge, organises it into topics and subtopics, and identifies key terms' },
+            { step: '2', icon: <BrainLogo className="w-6 h-6" />, title: 'Extracts and structures', body: 'Brain Buffet extracts the subject knowledge, organises it into topics and subtopics, and identifies key terms' },
             { step: '3', icon: <BookOpen className="w-6 h-6" />, title: 'Review your notes', body: 'Browse structured notes, switch between standard and concise views, download as Word or Markdown' },
             { step: '4', icon: <Zap className="w-6 h-6" />, title: 'Test yourself', body: 'Generate a custom quiz from your chosen topics and get instant feedback on your answers' },
           ].map((s, i) => (
