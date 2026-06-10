@@ -30,10 +30,10 @@ function TipBanner() {
   return (
     <div className="rounded-2xl border-2 border-ink-900 bg-accent-yellow shadow-hard-sm p-4 flex items-center gap-3 mb-8">
       <div className="flex-shrink-0">
-        <Zap className="w-8 h-8 text-ink-900" strokeWidth={2.5} />
+        <Zap className="w-[38px] h-[38px] text-ink-900 fill-ink-900" strokeWidth={0} />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[11px] font-700 text-ink-900 uppercase tracking-wider mb-0.5">Hot tip</p>
+        <p className="text-[15px] font-700 text-ink-900 uppercase tracking-wider mb-0.5">Big Brain Tip</p>
         <p className="text-sm font-700 text-ink-900">{tip.lead}</p>
         <p className="text-sm text-ink-700 mt-0.5">{tip.body}</p>
       </div>
