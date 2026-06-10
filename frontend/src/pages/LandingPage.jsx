@@ -26,7 +26,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
       </header>
 
       {/* ── Hero ── */}
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 pt-20 pb-16 text-center">
+      <section className="max-w-5xl mx-auto px-4 sm:px-6 pt-12 pb-10 text-center">
 
         <div className="inline-flex items-center gap-0 bg-brand-50 text-brand-700 text-sm font-600 px-5 py-1.5 rounded-full mb-6 border border-brand-200">
           <img src="/fork.png" alt="fork" className="w-10 h-10 [filter:invert(22%)_sepia(96%)_saturate(2000%)_hue-rotate(340deg)_brightness(85%)]" />
@@ -68,11 +68,11 @@ export default function LandingPage({ onGetStarted, onLogin }) {
       </section>
 
       {/* ── What makes it different ── */}
-      <section className="bg-ink-50 py-16">
+      <section className="bg-ink-50 py-10">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-12">
+          <div className="text-center mb-8">
             <h2 className="text-2xl sm:text-3xl font-800 text-ink-900 mb-3">
-              Why choose?
+              Why choose Brain Buffet?
             </h2>
           </div>
 
@@ -110,8 +110,8 @@ export default function LandingPage({ onGetStarted, onLogin }) {
       </section>
 
       {/* ── How it works ── */}
-      <section className="py-16 max-w-5xl mx-auto px-4 sm:px-6">
-        <div className="text-center mb-12">
+      <section className="py-10 max-w-5xl mx-auto px-4 sm:px-6">
+        <div className="text-center mb-8">
           <h2 className="text-2xl sm:text-3xl font-800 text-ink-900 mb-3">How it works</h2>
           <p className="text-ink-500">From raw material to revision-ready notes in under a minute</p>
         </div>
@@ -140,9 +140,9 @@ export default function LandingPage({ onGetStarted, onLogin }) {
       </section>
 
       {/* ── Source types ── */}
-      <section className="bg-ink-50 py-16">
+      <section className="bg-ink-50 py-10">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-10">
+          <div className="text-center mb-8">
             <h2 className="text-2xl sm:text-3xl font-800 text-ink-900 mb-3">
               Works with anything you study from
             </h2>
@@ -165,8 +165,8 @@ export default function LandingPage({ onGetStarted, onLogin }) {
       </section>
 
       {/* ── Feature list ── */}
-      <section className="py-16 max-w-5xl mx-auto px-4 sm:px-6">
-        <div className="grid sm:grid-cols-2 gap-x-12 gap-y-5">
+      <section className="py-10 max-w-5xl mx-auto px-4 sm:px-6">
+        <div className="grid sm:grid-cols-2 gap-x-12 gap-y-4">
           {[
             'Structured notes with topics, subtopics, and key terms',
             'Standard + concise note modes for different study phases',
@@ -186,7 +186,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
       </section>
 
       {/* ── CTA ── */}
-      <section className="py-16 bg-ink-900">
+      <section className="py-10 bg-ink-900">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 text-center">
           <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center mx-auto mb-6">
             <BrainLogo className="w-7 h-7 text-white" />
