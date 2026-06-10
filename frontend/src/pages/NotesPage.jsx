@@ -214,7 +214,7 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
           )}
           {noteId && onQuiz && (
             <button onClick={onQuiz} className="flex items-center gap-1.5 bg-ink-900 hover:bg-brand-600 text-white px-3 py-2 rounded-xl text-sm font-medium transition-colors shadow-sm">
-              <Zap className="w-3.5 h-3.5" /> Quiz
+              <Zap className="w-3.5 h-3.5" /> Quiz me!
             </button>
           )}
         </div>

@@ -233,7 +233,7 @@ function Header({ onLogoClick, onUploadClick, onProfileClick, view, user, yearLe
             <div className="hidden sm:flex flex-col items-start leading-none">
               <span className="text-sm font-600 text-ink-700">{initials}</span>
               {yearLevel && yearLevelLabel(yearLevel) && (
-                <span className="text-[10px] text-ink-400 mt-0.5">{yearLevelLabel(yearLevel)}</span>
+                <span className="text-[12.5px] text-ink-400 mt-0.5">{yearLevelLabel(yearLevel)}</span>
               )}
             </div>
           </button>
