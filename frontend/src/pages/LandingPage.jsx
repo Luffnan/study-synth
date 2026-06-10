@@ -29,7 +29,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
       {/* ── Hero ── */}
       <section className="max-w-5xl mx-auto px-4 sm:px-6 pt-12 pb-10 text-center">
 
-        <div className="inline-flex items-center gap-0 text-brand-500 text-sm font-600 mb-6">
+        <div className="inline-flex items-center gap-0 text-brand-500 text-sm font-600 mb-2">
           <img src="/fork.png" alt="fork" className="w-8 h-8 [filter:invert(55%)_sepia(48%)_saturate(2100%)_hue-rotate(335deg)_brightness(98%)]" />
           Serving up snackable bite-sized brain food
         </div>
