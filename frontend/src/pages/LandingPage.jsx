@@ -30,7 +30,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
 
         <div className="inline-flex items-center gap-0 bg-brand-50 text-brand-700 text-sm font-600 px-5 py-1.5 rounded-full mb-6 border border-brand-200">
           <img src="/fork.png" alt="fork" className="w-10 h-10 [filter:invert(22%)_sepia(96%)_saturate(2000%)_hue-rotate(340deg)_brightness(85%)]" />
-          Serving snackable bite-sized food for your brain
+          Serving up snackable bite-sized brain food
         </div>
 
         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-800 text-ink-900 leading-tight mb-6">
