@@ -151,7 +151,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
             {[
               { icon: <FileText className="w-6 h-6 text-blue-600" />, bg: 'bg-blue-50 border-blue-200', label: 'PDF Textbooks', sub: 'School or university textbooks, lecture handouts' },
               { icon: <Image className="w-6 h-6 text-purple-600" />, bg: 'bg-purple-50 border-purple-200', label: 'Photos & Screenshots', sub: 'Handwritten notes, whiteboard snaps, slide screenshots' },
-              { icon: <Youtube className="w-6 h-6 text-red-600" />, bg: 'bg-red-50 border-red-200', label: 'YouTube Lectures', sub: 'Crash Course, university lectures, documentaries' },
+              { icon: <Youtube className="w-6 h-6 text-red-600" />, bg: 'bg-red-50 border-red-200', label: 'YouTube Lectures', sub: 'Documentaries, subject explainers, lectures and crash courses' },
               { icon: <Hash className="w-6 h-6 text-amber-600" />, bg: 'bg-amber-50 border-amber-200', label: 'Any subject, any level', sub: 'GCSE, A-level, university, professional exams' },
             ].map(s => (
               <div key={s.label} className={`rounded-2xl border p-5 ${s.bg}`}>
