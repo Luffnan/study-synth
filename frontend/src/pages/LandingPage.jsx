@@ -75,7 +75,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
               Why students choose Brain Buffet
             </h2>
             <p className="text-ink-500 max-w-xl mx-auto">
-              Your textbook, your notes, your words — Brain Buffet turns the material you already have into structured notes and quizzes, so nothing gets lost and nothing gets made up.
+              Your textbook, your notes, your words. Brain Buffet turns the material you already have into structured notes and quizzes, so nothing gets lost and nothing gets made up.
             </p>
           </div>
 
@@ -85,19 +85,19 @@ export default function LandingPage({ onGetStarted, onLogin }) {
                 icon: <CheckCircle className="w-5 h-5" />,
                 color: 'text-emerald-600 bg-emerald-100',
                 title: 'Only what you uploaded',
-                body: 'Every bullet point comes directly from your own material — your textbook, your slides, your notes. Nothing is added, invented, or assumed.',
+                body: 'Every bullet point comes directly from your own material: your textbook, your slides, your notes. Nothing is added, invented, or assumed.',
               },
               {
                 icon: <Zap className="w-5 h-5" />,
                 color: 'text-amber-600 bg-amber-100',
                 title: 'Quiz yourself in seconds',
-                body: 'Instantly generate a quiz from any combination of your topics. Multiple choice, true/false, fill-in-the-blank, and short answer — auto-marked.',
+                body: 'Instantly generate a quiz from any combination of your topics. Multiple choice, true/false, fill-in-the-blank, and short answer, all auto-marked.',
               },
               {
                 icon: <BookOpen className="w-5 h-5" />,
                 color: 'text-blue-600 bg-blue-100',
                 title: 'Organised by subject',
-                body: 'Group your topics into subjects — History, Biology, Economics. Everything you need for each subject in one place.',
+                body: 'Group your topics into subjects like History, Biology or Economics. Everything you need for each subject in one place.',
               },
             ].map(f => (
               <div key={f.title} className="bg-white rounded-2xl p-6 shadow-sm border border-ink-100">
@@ -121,7 +121,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
 
         <div className="grid sm:grid-cols-4 gap-6">
           {[
-            { step: '1', icon: <FileText className="w-6 h-6" />, title: 'Upload your content', body: 'PDFs, images of handwritten notes, lecture slides — or paste a YouTube URL' },
+            { step: '1', icon: <FileText className="w-6 h-6" />, title: 'Upload your content', body: 'PDFs, images of handwritten notes, lecture slides, or paste a YouTube URL' },
             { step: '2', icon: <BrainLogo className="w-6 h-6" />, title: 'Brain Buffet reads and structures', body: 'Brain Buffet extracts the subject knowledge, organises it into topics and subtopics, and identifies key terms' },
             { step: '3', icon: <BookOpen className="w-6 h-6" />, title: 'Review your notes', body: 'Browse structured notes, switch between standard and concise views, download as Word or Markdown' },
             { step: '4', icon: <Zap className="w-6 h-6" />, title: 'Test yourself', body: 'Generate a custom quiz from your chosen topics and get instant feedback on your answers' },
@@ -175,7 +175,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
             'Standard + concise note modes for different study phases',
             'YouTube video panel with timecoded navigation',
             'Merge video content into existing topic notes with one click',
-            'Custom quiz generation — pick exactly which topics to test',
+            'Custom quiz generation: pick exactly which topics to test',
             'Download as Word (.docx) or Markdown',
             'Organise topics into colour-coded subjects',
             'Quiz scoring tracked over time per topic',
@@ -216,7 +216,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
             </div>
             <span className="text-sm font-600 text-ink-600">Brain Buffet</span>
           </div>
-          <p className="text-xs text-ink-400">Study notes — only from your source material</p>
+          <p className="text-xs text-ink-400">Study notes, only from your source material</p>
         </div>
       </footer>
 
