@@ -73,7 +73,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
               Why students choose Brain Buffet
             </h2>
             <p className="text-ink-500 max-w-xl mx-auto">
-              Most AI tools make things up. Brain Buffet only summarises what's actually in your uploaded content — no invented facts, no hallucinations.
+              Your textbook, your notes, your words — Brain Buffet turns the material you already have into structured notes and quizzes, so nothing gets lost and nothing gets made up.
             </p>
           </div>
 
@@ -82,8 +82,8 @@ export default function LandingPage({ onGetStarted, onLogin }) {
               {
                 icon: <CheckCircle className="w-5 h-5" />,
                 color: 'text-emerald-600 bg-emerald-100',
-                title: 'Source-faithful only',
-                body: 'Every bullet point comes directly from your uploaded material. Zero hallucination — if it wasn\'t in your textbook, it won\'t be in your notes.',
+                title: 'Only what you uploaded',
+                body: 'Every bullet point comes directly from your own material — your textbook, your slides, your notes. Nothing is added, invented, or assumed.',
               },
               {
                 icon: <Zap className="w-5 h-5" />,
@@ -120,9 +120,9 @@ export default function LandingPage({ onGetStarted, onLogin }) {
         <div className="grid sm:grid-cols-4 gap-6">
           {[
             { step: '1', icon: <FileText className="w-6 h-6" />, title: 'Upload your content', body: 'PDFs, images of handwritten notes, lecture slides — or paste a YouTube URL' },
-            { step: '2', icon: <BrainLogo className="w-6 h-6" />, title: 'AI reads and structures', body: 'Brain Buffet extracts the subject knowledge, organises it into topics and subtopics, and identifies key terms' },
+            { step: '2', icon: <BrainLogo className="w-6 h-6" />, title: 'Brain Buffet reads and structures', body: 'Brain Buffet extracts the subject knowledge, organises it into topics and subtopics, and identifies key terms' },
             { step: '3', icon: <BookOpen className="w-6 h-6" />, title: 'Review your notes', body: 'Browse structured notes, switch between standard and concise views, download as Word or Markdown' },
-            { step: '4', icon: <Zap className="w-6 h-6" />, title: 'Test yourself', body: 'Generate a custom quiz from your chosen topics and get instant AI feedback on your answers' },
+            { step: '4', icon: <Zap className="w-6 h-6" />, title: 'Test yourself', body: 'Generate a custom quiz from your chosen topics and get instant feedback on your answers' },
           ].map((s, i) => (
             <div key={s.step} className="text-center">
               <div className="relative inline-flex mb-4">
@@ -214,7 +214,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
             </div>
             <span className="text-sm font-600 text-ink-600">Brain Buffet</span>
           </div>
-          <p className="text-xs text-ink-400">AI study notes — only from your source material</p>
+          <p className="text-xs text-ink-400">Study notes — only from your source material</p>
         </div>
       </footer>
 
