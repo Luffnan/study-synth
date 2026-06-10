@@ -122,7 +122,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
             { step: '3', tile: 'bg-accent-yellow',     icon: <BookOpen className="w-6 h-6 text-ink-900" />, title: 'Review your notes', body: 'Browse structured notes, switch between standard and concise views, download as Word or Markdown' },
             { step: '4', tile: 'bg-accent-green',      icon: <Zap className="w-6 h-6 text-ink-900" />, title: 'Test yourself', body: 'Generate a custom quiz from your chosen topics and get instant feedback on your answers' },
           ].map(s => (
-            <div key={s.step} className="flex sm:flex-col sm:text-center items-start sm:items-center gap-4 sm:gap-0 px-2">
+            <div key={s.step} className="flex flex-col items-center text-center gap-3 px-4">
               <div className="relative inline-flex flex-shrink-0 mb-0 sm:mb-4">
                 <div className={`w-14 h-14 rounded-2xl border-2 border-ink-900 shadow-hard-sm flex items-center justify-center ${s.tile}`}>
                   {s.icon}
