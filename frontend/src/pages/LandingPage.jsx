@@ -80,7 +80,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
               {
                 icon: <CheckCircle className="w-5 h-5 text-ink-900" />,
                 tile: 'bg-accent-green',
-                title: 'Made from your own ingredients',
+                title: 'Your own ingredients',
                 body: 'Every note and quiz starts with the content you upload. No mystery meat. Just your material, organised properly.',
               },
               {
