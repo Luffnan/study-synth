@@ -29,8 +29,8 @@ export default function LandingPage({ onGetStarted, onLogin }) {
       {/* ── Hero ── */}
       <section className="max-w-5xl mx-auto px-4 sm:px-6 pt-12 pb-10 text-center">
 
-        <div className="inline-flex items-center gap-0 bg-white text-brand-600 text-sm font-600 px-5 py-1.5 rounded-full mb-6 border-2 border-ink-900 shadow-hard-sm">
-          <img src="/fork.png" alt="fork" className="w-10 h-10 [filter:invert(22%)_sepia(96%)_saturate(2000%)_hue-rotate(340deg)_brightness(85%)]" />
+        <div className="inline-flex items-center gap-0 text-brand-600 text-sm font-600 px-5 py-0.5 rounded-full mb-6 border-2 border-ink-900">
+          <img src="/fork.png" alt="fork" className="w-8 h-8 [filter:invert(22%)_sepia(96%)_saturate(2000%)_hue-rotate(340deg)_brightness(85%)]" />
           Serving up snackable bite-sized brain food
         </div>
 
@@ -67,7 +67,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
       </section>
 
       {/* ── What makes it different ── */}
-      <section className="py-10">
+      <section className="pt-2 pb-10">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-8">
             <h2 className="font-display text-2xl sm:text-3xl font-600 text-ink-900 mb-3">

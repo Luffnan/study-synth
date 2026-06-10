@@ -127,7 +127,7 @@ export default function DashboardPage({ onUpload, onOpenNote, onQuiz, onOpenSubj
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="font-display text-2xl sm:text-3xl font-600 text-ink-900">My Study Notes</h1>
+          <h1 className="text-2xl sm:text-3xl font-800 text-ink-900">My Study Notes</h1>
           <p className="text-ink-400 text-sm mt-1">
             {subjects.length > 0
               ? `${subjects.length} subject${subjects.length !== 1 ? 's' : ''} · ${records.length} topic${records.length !== 1 ? 's' : ''}`

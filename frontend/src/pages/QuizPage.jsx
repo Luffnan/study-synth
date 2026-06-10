@@ -486,7 +486,7 @@ function ResultsScreen({ questions, answers, earnedMarks, totalMarks, pct, onRet
         <div className="w-16 h-16 rounded-2xl bg-ink-900 flex items-center justify-center mx-auto mb-4">
           <Trophy className="w-8 h-8 text-white" />
         </div>
-        <h1 className="font-display text-2xl font-600 text-ink-900 mb-1">{noteTitle}</h1>
+        <h1 className="text-2xl font-800 text-ink-900 mb-1">{noteTitle}</h1>
         <p className="text-ink-400 text-sm mb-6">Quiz complete</p>
         <div className="text-6xl font-800 text-ink-900 mb-1">{pct}%</div>
         <div className={`inline-block px-4 py-1 rounded-full text-sm font-semibold mb-4 ${grade.colour} ${grade.bg}`}>{grade.label}</div>

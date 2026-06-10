@@ -41,7 +41,7 @@ export default function UploadPage({ onNotes, onBack, yearLevel }) {
       {/* Hero */}
       <div className="text-center mb-6">
         <img src="/brain.png" alt="Brain Buffet" className="w-10 h-10 mb-3" />
-        <h1 className="font-display text-2xl sm:text-3xl font-600 text-ink-900 leading-tight mb-1.5">
+        <h1 className="text-2xl sm:text-3xl font-800 text-ink-900 leading-tight mb-1.5">
           Create study notes
         </h1>
         <p className="text-ink-400 text-sm max-w-xs mx-auto">
@@ -227,7 +227,7 @@ function ProcessingPanel() {
         <div className="absolute inset-0 rounded-2xl bg-ink-900 opacity-20 animate-ping" />
       </div>
 
-      <h2 className="font-display text-xl font-600 text-ink-900 mb-2">Generating your notes</h2>
+      <h2 className="text-xl font-800 text-ink-900 mb-2">Generating your notes</h2>
 
       {/* Rotating status line */}
       <p

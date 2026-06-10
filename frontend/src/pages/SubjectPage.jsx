@@ -102,7 +102,7 @@ export default function SubjectPage({
             <BrainLogo className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="font-display text-2xl font-600 text-white leading-tight">{subject.title}</h1>
+            <h1 className="text-2xl font-800 text-white leading-tight">{subject.title}</h1>
             <p className="text-white/60 text-sm mt-0.5">
               {topics.length === 0
                 ? 'No topics yet'

@@ -190,10 +190,6 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
           <ArrowLeft className="w-4 h-4" /> Dashboard
         </button>
         <div className="flex items-center gap-2">
-          {noteId && (
-            <ModeToggle mode={mode} loading={conciseLoading} onToggle={handleToggleConcise} />
-          )}
-          {conciseError && <span className="text-xs text-red-500">Failed — try again</span>}
           <button
             onClick={() => setDownloadModalOpen(true)}
             className="flex items-center gap-1.5 bg-ink-100 hover:bg-ink-200 text-ink-700 px-3 py-2 rounded-xl text-sm font-medium transition-colors"
@@ -225,13 +221,21 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
       </div>
 
       {/* Title */}
-      <div className="mb-5">
-        <h1 className="font-display text-xl sm:text-2xl font-600 text-ink-900 leading-tight">{initialNotes.title || 'Study Notes'}</h1>
-        <p className="text-ink-400 text-sm mt-1">
-          {activeNotes.topics?.length || 0} topics · {activeNotes.topics?.reduce((a, t) => a + (t.subtopics?.length || 0), 0) || 0} subtopics
-          {activeNotes.keyTerms?.length > 0 && ` · ${activeNotes.keyTerms.length} key terms`}
-          {videoSources.length > 0 && ` · ${videoSources.length} video${videoSources.length > 1 ? 's' : ''}`}
-        </p>
+      <div className="mb-5 flex items-end justify-between gap-4">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-800 text-ink-900 leading-tight">{initialNotes.title || 'Study Notes'}</h1>
+          <p className="text-ink-400 text-sm mt-1">
+            {activeNotes.topics?.length || 0} topics · {activeNotes.topics?.reduce((a, t) => a + (t.subtopics?.length || 0), 0) || 0} subtopics
+            {activeNotes.keyTerms?.length > 0 && ` · ${activeNotes.keyTerms.length} key terms`}
+            {videoSources.length > 0 && ` · ${videoSources.length} video${videoSources.length > 1 ? 's' : ''}`}
+          </p>
+        </div>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {conciseError && <span className="text-xs text-red-500">Failed — try again</span>}
+          {noteId && (
+            <ModeToggle mode={mode} loading={conciseLoading} onToggle={handleToggleConcise} />
+          )}
+        </div>
       </div>
 
       {mode === 'concise' && conciseLoading ? (
@@ -348,7 +352,16 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
 
 // Detects formula-like substrings (e.g. "Assets = Liabilities + Owner's Equity")
 // and renders them in a styled monospace chip, inline with any surrounding prose.
-const FORMULA_RE = /([A-Za-z][^\n=]{0,60}=[^\n=][^\n]{0,80}(?:[+\-–×÷/][^\n]{0,40})*)/;
+// A string only counts as a formula if, beyond the '=', it contains actual maths:
+// an operator (+ − × ÷ / %) or digits. This stops definitional sentences like
+// "Household sector = consumers who hold resources" from being chipped.
+function looksLikeFormula(s) {
+  if (!s.includes('=')) return false;
+  if (!/[+\-–−×÷*/%]|\d/.test(s.replace(/=/g, ''))) return false;
+  // Reject prose: connective words signal a sentence, not an equation
+  if (/\b(who|which|that|where|when|the|a|an|of|are|is|to|and)\b/i.test(s)) return false;
+  return true;
+}
 
 function renderPoint(text) {
   // Split on ": " — prose intro before the colon, formula after
@@ -356,7 +369,7 @@ function renderPoint(text) {
   if (colonIdx !== -1) {
     const intro = text.slice(0, colonIdx + 2);
     const rest = text.slice(colonIdx + 2).trimEnd().replace(/\.$/, '');
-    if (rest.includes('=') && rest.length < 120) {
+    if (looksLikeFormula(rest) && rest.length < 120) {
       return (
         <span>
           {intro}
@@ -368,7 +381,7 @@ function renderPoint(text) {
     }
   }
   // No colon pattern — check if the whole point is a short formula
-  if (text.includes('=') && text.length < 100 && !/[.]{2,}/.test(text)) {
+  if (looksLikeFormula(text) && text.length < 100 && !/[.]{2,}/.test(text)) {
     const clean = text.trimEnd().replace(/\.$/, '');
     return (
       <span className="inline-block font-mono text-[0.78rem] bg-brand-50 text-brand-700 border border-brand-200 rounded-lg px-2.5 py-1 leading-snug">
