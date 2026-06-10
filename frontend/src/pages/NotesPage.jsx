@@ -1,6 +1,5 @@
 import { apiFetch } from '../lib/api.js';
 import { submitFiles } from '../lib/upload.js';
-import { processDiagrams, hasDiagrams } from '../lib/diagrams.js';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { ArrowLeft, ChevronDown, ChevronRight, Download, BookOpen, Hash, FileText, Zap, Layers, Youtube, CheckCircle, Loader2, FileDown, Plus, ArrowUp, X, Link, AlertCircle, Image } from 'lucide-react';
 import { generateDocx } from '../utils/generateDocx.js';
@@ -123,7 +122,7 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
     }
   }
 
-  async function handleDownload({ dlMode, selectedTopicIndices, includeKeyTerms, includeDiagrams, format }) {
+  async function handleDownload({ dlMode, selectedTopicIndices, includeKeyTerms, format }) {
     // Pick the right notes source
     const sourceNotes = dlMode === 'concise' && conciseNotes ? conciseNotes : liveNotes;
     // Build filtered notes
@@ -133,13 +132,6 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
       keyTerms: includeKeyTerms ? (sourceNotes.keyTerms || []) : [],
       videoSources: [],
     };
-    // Strip diagrams if not included
-    if (!includeDiagrams) {
-      filteredNotes.topics = filteredNotes.topics.map(t => ({
-        ...t,
-        subtopics: (t.subtopics || []).map(s => { const { diagram: _d, ...rest } = s; return rest; }),
-      }));
-    }
     const label = `${sourceNotes.title || 'notes'}${dlMode === 'concise' ? '-concise' : ''}`;
     if (format === 'md') {
       const blob = new Blob([buildMarkdown(filteredNotes)], { type: 'text/markdown' });
@@ -148,7 +140,7 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
     } else {
       setDocxLoading(true);
       try {
-        const blob = await generateDocx(filteredNotes, { includeDiagrams: !!includeDiagrams });
+        const blob = await generateDocx(filteredNotes);
         const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: `${label}.docx` });
         a.click(); URL.revokeObjectURL(a.href);
       } finally { setDocxLoading(false); }
@@ -159,28 +151,8 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
     const res = await submitFiles(files, `/api/notes/${noteId}/ingest`);
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Server error');
-
-    // Extract any diagrams Claude found in the new images (non-fatal)
-    let finalNotes = data.notes;
-    const imageFiles = files.filter(f => f.type.startsWith('image/'));
-    if (imageFiles.length && noteId) {
-      try {
-        const processedNotes = await processDiagrams(data.notes, imageFiles, noteId);
-        if (processedNotes !== data.notes) {
-          await apiFetch(`/api/notes/${noteId}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ notes: processedNotes }),
-          });
-          finalNotes = processedNotes;
-        }
-      } catch (diagramErr) {
-        console.warn('[Diagrams] Non-fatal ingest extraction error:', diagramErr.message);
-      }
-    }
-
-    setLiveNotes(finalNotes);
-    setVideoSources(finalNotes.videoSources || []);
+    setLiveNotes(data.notes);
+    setVideoSources(data.notes.videoSources || []);
     setConciseNotes(null);
     conciseFetchedRef.current = false;
   }
@@ -436,29 +408,14 @@ function TopicPane({ topic, mode }) {
               {isOpen ? <ChevronDown className="w-4 h-4 text-ink-400" /> : <ChevronRight className="w-4 h-4 text-ink-400" />}
             </button>
             {isOpen && (
-              <div className="border-t border-ink-100">
-                <ul className="px-5 pt-3 pb-3 space-y-2">
-                  {sub.points?.map((pt, pi) => (
-                    <li key={pi} className="flex items-start gap-2.5 text-sm text-ink-600 leading-relaxed">
-                      <span className="w-1.5 h-1.5 rounded-full bg-brand-400 mt-[7px] flex-shrink-0" />
-                      {renderPoint(pt)}
-                    </li>
-                  ))}
-                </ul>
-                {sub.diagram?.url && (
-                  <div className="px-5 pb-4">
-                    <img
-                      src={sub.diagram.url}
-                      alt={sub.diagram.description || 'Diagram'}
-                      className="rounded-xl border border-ink-200 max-w-full w-full object-contain"
-                      loading="lazy"
-                    />
-                    {sub.diagram.description && (
-                      <p className="text-xs text-ink-400 italic mt-1.5">{sub.diagram.description}</p>
-                    )}
-                  </div>
-                )}
-              </div>
+              <ul className="px-5 pb-4 space-y-2 border-t border-ink-100 pt-3">
+                {sub.points?.map((pt, pi) => (
+                  <li key={pi} className="flex items-start gap-2.5 text-sm text-ink-600 leading-relaxed">
+                    <span className="w-1.5 h-1.5 rounded-full bg-brand-400 mt-[7px] flex-shrink-0" />
+                    {renderPoint(pt)}
+                  </li>
+                ))}
+              </ul>
             )}
           </div>
         );
@@ -605,10 +562,8 @@ function DownloadModal({ notes, conciseNotes, docxLoading, onDownload, onClose }
   const [format, setFormat] = useState('docx');
   const topicCount = notes?.topics?.length || 0;
   const hasKeyTerms = (notes?.keyTerms?.length || 0) > 0;
-  const notesHaveDiagrams = hasDiagrams(notes);
   const [selectedTopics, setSelectedTopics] = useState(() => new Set(Array.from({ length: topicCount }, (_, i) => i)));
   const [includeKeyTerms, setIncludeKeyTerms] = useState(true);
-  const [includeDiagrams, setIncludeDiagrams] = useState(true);
 
   const allTopicsSelected = selectedTopics.size === topicCount;
   const noneSelected = selectedTopics.size === 0 && !includeKeyTerms;
@@ -698,14 +653,6 @@ function DownloadModal({ notes, conciseNotes, docxLoading, onDownload, onClose }
                   <span className="text-sm text-ink-700 flex-1">Key Terms</span>
                 </label>
               )}
-              {notesHaveDiagrams && format === 'docx' && (
-                <label onClick={() => setIncludeDiagrams(v => !v)}
-                  className="flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-ink-50 cursor-pointer transition-colors group">
-                  <Checkbox checked={includeDiagrams} />
-                  <Image className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
-                  <span className="text-sm text-ink-700 flex-1">Include diagrams</span>
-                </label>
-              )}
             </div>
           </div>
 
@@ -735,7 +682,7 @@ function DownloadModal({ notes, conciseNotes, docxLoading, onDownload, onClose }
         {/* Footer */}
         <div className="px-6 pb-5">
           <button
-            onClick={() => onDownload({ dlMode, selectedTopicIndices: [...selectedTopics], includeKeyTerms, includeDiagrams, format })}
+            onClick={() => onDownload({ dlMode, selectedTopicIndices: [...selectedTopics], includeKeyTerms, format })}
             disabled={noneSelected || docxLoading}
             className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-600 transition-all ${
               noneSelected || docxLoading
