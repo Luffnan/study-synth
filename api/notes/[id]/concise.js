@@ -35,15 +35,21 @@ export default async function handler(req, res) {
       return res.status(200).json({ conciseNotes: record.concise_notes });
     }
 
-    const response = await client.messages.create({
+    const stream = client.messages.stream({
       model: 'claude-opus-4-7',
-      max_tokens: 4096,
+      max_tokens: 16000,
       system: CONCISE_PROMPT,
       messages: [{
         role: 'user',
         content: `Here are the standard study notes to compress into concise format:\n\n${JSON.stringify(record.notes, null, 2)}\n\nReturn only the JSON — no other text.`
       }]
     });
+
+    const response = await stream.finalMessage();
+
+    if (response.stop_reason === 'max_tokens') {
+      return res.status(422).json({ error: 'These notes are too large to compress in one pass.' });
+    }
 
     const raw = response.content[0].text;
     const jsonMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/) || [null, raw];

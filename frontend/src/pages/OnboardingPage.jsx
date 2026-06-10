@@ -100,7 +100,7 @@ function StateStep({ displayName, selected, onSelect, onSkip }) {
       <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-ink-100 mx-auto mb-4">
         <MapPin className="w-6 h-6 text-ink-700" />
       </div>
-      <h1 className="text-xl font-800 text-ink-900 text-center mb-1">
+      <h1 className="font-display text-xl font-600 text-ink-900 text-center mb-1">
         Hey {displayName}! What state are you in?
       </h1>
       <p className="text-sm text-ink-400 text-center mb-6">
@@ -174,7 +174,7 @@ function SchoolStep({ state, school, schoolCustom, onSchoolChange, onCustomChang
       <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-ink-100 mx-auto mb-4">
         <School className="w-6 h-6 text-ink-700" />
       </div>
-      <h1 className="text-xl font-800 text-ink-900 text-center mb-1">
+      <h1 className="font-display text-xl font-600 text-ink-900 text-center mb-1">
         What school do you go to?
       </h1>
       <p className="text-sm text-ink-400 text-center mb-6">
@@ -277,7 +277,7 @@ function YearStep({ yearLevel, saving, onSelect, onSkip }) {
       <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-ink-100 mx-auto mb-4">
         <GraduationCap className="w-6 h-6 text-ink-700" />
       </div>
-      <h1 className="text-xl font-800 text-ink-900 text-center mb-1">
+      <h1 className="font-display text-xl font-600 text-ink-900 text-center mb-1">
         What year are you in?
       </h1>
       <p className="text-sm text-ink-400 text-center mb-6">

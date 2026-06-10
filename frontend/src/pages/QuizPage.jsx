@@ -124,7 +124,7 @@ export default function QuizPage({ noteId, noteTitle, notes, onBack, yearLevel }
           <ArrowLeft className="w-4 h-4" /> Back to notes
         </button>
 
-        <div className="bg-white rounded-2xl border border-ink-200 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl border-2 border-ink-900 overflow-hidden">
           {/* Header */}
           <div className="px-6 py-5 border-b border-ink-100">
             <div className="flex items-center gap-3 mb-1">
@@ -251,7 +251,7 @@ export default function QuizPage({ noteId, noteTitle, notes, onBack, yearLevel }
           style={{ width: `${((current + 1) / questions.length) * 100}%` }} />
       </div>
 
-      <div className="bg-white rounded-2xl border border-ink-200 shadow-sm p-6 mb-4 animate-slide-up" key={current}>
+      <div className="bg-white rounded-2xl border-2 border-ink-900 p-6 mb-4 animate-slide-up" key={current}>
         <div className="flex items-center gap-2 mb-4">
           <TypeBadge type={q.type} />
           <span className="text-xs text-ink-400">Question {current + 1} of {questions.length}</span>
@@ -482,11 +482,11 @@ function ResultsScreen({ questions, answers, earnedMarks, totalMarks, pct, onRet
       <button onClick={onBack} className="flex items-center gap-1.5 text-ink-400 hover:text-ink-700 text-sm font-medium transition-colors mb-8">
         <ArrowLeft className="w-4 h-4" /> Back to notes
       </button>
-      <div className="bg-white rounded-2xl border border-ink-200 shadow-sm p-8 text-center mb-6">
+      <div className="bg-white rounded-2xl border-2 border-ink-900 p-8 text-center mb-6">
         <div className="w-16 h-16 rounded-2xl bg-ink-900 flex items-center justify-center mx-auto mb-4">
           <Trophy className="w-8 h-8 text-white" />
         </div>
-        <h1 className="text-2xl font-800 text-ink-900 mb-1">{noteTitle}</h1>
+        <h1 className="font-display text-2xl font-600 text-ink-900 mb-1">{noteTitle}</h1>
         <p className="text-ink-400 text-sm mb-6">Quiz complete</p>
         <div className="text-6xl font-800 text-ink-900 mb-1">{pct}%</div>
         <div className={`inline-block px-4 py-1 rounded-full text-sm font-semibold mb-4 ${grade.colour} ${grade.bg}`}>{grade.label}</div>
@@ -523,7 +523,7 @@ function ResultsScreen({ questions, answers, earnedMarks, totalMarks, pct, onRet
           const correct = marks === maxMarks;
           const partial = marks > 0 && marks < maxMarks;
           return (
-            <div key={i} className="bg-white rounded-xl border border-ink-200 overflow-hidden">
+            <div key={i} className="bg-white rounded-xl border-2 border-ink-900 overflow-hidden">
               <button onClick={() => setExpanded(expanded === i ? null : i)}
                 className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-ink-50 transition-colors">
                 <span className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${correct ? 'bg-green-100' : partial ? 'bg-amber-100' : 'bg-red-100'}`}>

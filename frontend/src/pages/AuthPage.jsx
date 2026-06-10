@@ -103,7 +103,7 @@ function LoginForm({ onSwitch }) {
 
   return (
     <>
-      <h1 className="text-xl font-800 text-ink-900 mb-1">Welcome back</h1>
+      <h1 className="font-display text-xl font-600 text-ink-900 mb-1">Welcome back</h1>
       <p className="text-ink-400 text-sm mb-6">Sign in to your Brain Buffet account</p>
 
       <GoogleButton loading={googleLoading} onClick={handleGoogleLogin} />
@@ -191,7 +191,7 @@ function RegisterForm({ onSwitch }) {
 
   return (
     <>
-      <h1 className="text-xl font-800 text-ink-900 mb-1">Create account</h1>
+      <h1 className="font-display text-xl font-600 text-ink-900 mb-1">Create account</h1>
       <p className="text-ink-400 text-sm mb-6">Start studying smarter — it's free</p>
 
       <GoogleButton loading={googleLoading} onClick={handleGoogleLogin} />
@@ -264,7 +264,7 @@ function ForgotForm({ onSwitch }) {
         className="flex items-center gap-1.5 text-ink-400 hover:text-ink-700 text-xs font-500 mb-5 transition-colors">
         <ArrowLeft className="w-3.5 h-3.5" /> Back to sign in
       </button>
-      <h1 className="text-xl font-800 text-ink-900 mb-1">Reset password</h1>
+      <h1 className="font-display text-xl font-600 text-ink-900 mb-1">Reset password</h1>
       <p className="text-ink-400 text-sm mb-6">
         Enter your email and we'll send you a reset link.
       </p>

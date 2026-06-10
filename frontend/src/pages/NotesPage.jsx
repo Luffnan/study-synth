@@ -226,7 +226,7 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
 
       {/* Title */}
       <div className="mb-5">
-        <h1 className="text-xl sm:text-2xl font-800 text-ink-900 leading-tight">{initialNotes.title || 'Study Notes'}</h1>
+        <h1 className="font-display text-xl sm:text-2xl font-600 text-ink-900 leading-tight">{initialNotes.title || 'Study Notes'}</h1>
         <p className="text-ink-400 text-sm mt-1">
           {activeNotes.topics?.length || 0} topics · {activeNotes.topics?.reduce((a, t) => a + (t.subtopics?.length || 0), 0) || 0} subtopics
           {activeNotes.keyTerms?.length > 0 && ` · ${activeNotes.keyTerms.length} key terms`}
@@ -393,14 +393,14 @@ function TopicPane({ topic, mode }) {
 
   return (
     <div className="space-y-2">
-      <div className="bg-white rounded-2xl border border-ink-200 shadow-sm px-5 py-4 mb-3">
+      <div className="bg-white rounded-2xl border-2 border-ink-900 px-5 py-4 mb-3">
         <h2 className="font-700 text-ink-900 text-lg">{topic.name}</h2>
         <p className="text-ink-400 text-sm mt-0.5">{topic.subtopics?.length || 0} subtopics</p>
       </div>
       {topic.subtopics?.map((sub, si) => {
         const isOpen = openSubs[si] !== false;
         return (
-          <div key={si} className="bg-white rounded-2xl border border-ink-200 shadow-sm overflow-hidden">
+          <div key={si} className="bg-white rounded-2xl border-2 border-ink-900 overflow-hidden">
             <button onClick={() => setOpenSubs(p => ({ ...p, [si]: !p[si] }))}
               className="w-full flex items-center gap-3 px-5 py-3.5 text-left hover:bg-ink-50 transition-colors">
               <span className="w-1 h-4 rounded-full bg-brand-500 flex-shrink-0" />
@@ -428,7 +428,7 @@ function TopicPane({ topic, mode }) {
 
 function TermsPane({ keyTerms }) {
   return (
-    <div className="bg-white rounded-2xl border border-ink-200 shadow-sm overflow-hidden">
+    <div className="bg-white rounded-2xl border-2 border-ink-900 overflow-hidden">
       <div className="flex items-center gap-3 px-5 py-4 border-b border-ink-100">
         <span className="w-6 h-6 rounded-lg bg-amber-400 flex items-center justify-center flex-shrink-0">
           <Hash className="w-3.5 h-3.5 text-white" />
@@ -473,7 +473,7 @@ function VideoPane({ source, onToggleMerge, merging }) {
   return (
     <div className="space-y-3">
       {/* Video embed */}
-      <div className="bg-white rounded-2xl border border-ink-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border-2 border-ink-900 overflow-hidden">
         <div className="flex items-center gap-3 px-5 py-3.5 border-b border-ink-100">
           <span className="w-6 h-6 rounded-lg bg-red-500 flex items-center justify-center flex-shrink-0">
             <Youtube className="w-3.5 h-3.5 text-white" />
@@ -491,7 +491,7 @@ function VideoPane({ source, onToggleMerge, merging }) {
       </div>
 
       {/* Merge toggle */}
-      <div className="bg-white rounded-2xl border border-ink-200 shadow-sm px-5 py-4 flex items-center gap-3">
+      <div className="bg-white rounded-2xl border-2 border-ink-900 px-5 py-4 flex items-center gap-3">
         <div className="flex-1">
           <p className="text-sm font-600 text-ink-800">Include notes in subject</p>
           <p className="text-xs text-ink-400 mt-0.5">
@@ -516,7 +516,7 @@ function VideoPane({ source, onToggleMerge, merging }) {
 
       {/* Timecoded notes */}
       {source.notes?.length > 0 && (
-        <div className="bg-white rounded-2xl border border-ink-200 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl border-2 border-ink-900 overflow-hidden">
           <div className="px-5 py-3.5 border-b border-ink-100">
             <p className="text-xs font-600 text-ink-500 uppercase tracking-wider">Video Notes — click a timecode to jump</p>
           </div>
@@ -745,7 +745,7 @@ function ConciseLoadingState({ onSwitchBack }) {
         </p>
       </div>
       {[1, 2, 3].map(i => (
-        <div key={i} className="bg-white rounded-2xl border border-ink-200 shadow-sm p-5 animate-pulse">
+        <div key={i} className="bg-white rounded-2xl border-2 border-ink-900 p-5 animate-pulse">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-6 h-6 rounded-lg bg-ink-200" />
             <div className="h-4 bg-ink-200 rounded w-1/3" />

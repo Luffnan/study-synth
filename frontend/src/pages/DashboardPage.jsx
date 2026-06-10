@@ -10,13 +10,14 @@ import BrainLogo from '../components/BrainLogo.jsx';
 
 // ── Colour palette for subjects ───────────────────────────────────────────────
 
+// Flat tile colours (from/to identical, so the existing gradient classes render as solid fills)
 export const COLORS = {
-  indigo:  { from: 'from-indigo-600',  to: 'to-violet-700',  dot: 'bg-indigo-500',  ring: 'ring-indigo-400' },
-  blue:    { from: 'from-blue-600',    to: 'to-cyan-600',    dot: 'bg-blue-500',    ring: 'ring-blue-400'   },
-  emerald: { from: 'from-emerald-600', to: 'to-teal-600',    dot: 'bg-emerald-500', ring: 'ring-emerald-400'},
-  amber:   { from: 'from-amber-500',   to: 'to-orange-600',  dot: 'bg-amber-500',   ring: 'ring-amber-400'  },
-  rose:    { from: 'from-rose-600',    to: 'to-pink-600',    dot: 'bg-rose-500',    ring: 'ring-rose-400'   },
-  slate:   { from: 'from-slate-700',   to: 'to-slate-900',   dot: 'bg-slate-500',   ring: 'ring-slate-400'  },
+  indigo:  { from: 'from-[#9B6DFF]', to: 'to-[#9B6DFF]', dot: 'bg-[#9B6DFF]', ring: 'ring-[#9B6DFF]' },
+  blue:    { from: 'from-[#2E90FA]', to: 'to-[#2E90FA]', dot: 'bg-[#2E90FA]', ring: 'ring-[#2E90FA]' },
+  emerald: { from: 'from-[#1DB870]', to: 'to-[#1DB870]', dot: 'bg-[#1DB870]', ring: 'ring-[#1DB870]' },
+  amber:   { from: 'from-[#E8A300]', to: 'to-[#E8A300]', dot: 'bg-[#E8A300]', ring: 'ring-[#E8A300]' },
+  rose:    { from: 'from-[#F2654E]', to: 'to-[#F2654E]', dot: 'bg-[#F2654E]', ring: 'ring-[#F2654E]' },
+  slate:   { from: 'from-[#141310]', to: 'to-[#141310]', dot: 'bg-[#141310]', ring: 'ring-[#141310]' },
 };
 
 export default function DashboardPage({ onUpload, onOpenNote, onQuiz, onOpenSubject, yearLevel }) {
@@ -126,7 +127,7 @@ export default function DashboardPage({ onUpload, onOpenNote, onQuiz, onOpenSubj
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-800 text-ink-900">My Study Notes</h1>
+          <h1 className="font-display text-2xl sm:text-3xl font-600 text-ink-900">My Study Notes</h1>
           <p className="text-ink-400 text-sm mt-1">
             {subjects.length > 0
               ? `${subjects.length} subject${subjects.length !== 1 ? 's' : ''} · ${records.length} topic${records.length !== 1 ? 's' : ''}`
@@ -135,7 +136,7 @@ export default function DashboardPage({ onUpload, onOpenNote, onQuiz, onOpenSubj
           </p>
         </div>
         <button onClick={() => setNewSubjectOpen(true)}
-          className="flex items-center gap-1.5 bg-ink-100 hover:bg-ink-200 text-ink-600 px-3 py-1.5 rounded-xl text-sm font-600 transition-colors flex-shrink-0">
+          className="flex items-center gap-1.5 bg-white hover:bg-ink-100 text-ink-900 border-2 border-ink-900 px-3 py-1.5 rounded-xl text-sm font-600 transition-colors flex-shrink-0 shadow-hard-sm">
           <FolderPlus className="w-3.5 h-3.5" /> New Subject
         </button>
       </div>
@@ -232,7 +233,7 @@ function SubjectCard({ subject, topicCount, onOpen, onDelete, onRename }) {
   return (
     <div
       onClick={() => !editing && onOpen()}
-      className={`relative overflow-hidden rounded-2xl cursor-pointer group transition-all duration-200 hover:scale-[1.02] hover:shadow-xl bg-gradient-to-br ${c.from} ${c.to} shadow-md`}
+      className={`relative overflow-hidden rounded-2xl cursor-pointer group transition-all duration-200 hover:-translate-y-0.5 bg-gradient-to-br ${c.from} ${c.to} border-2 border-ink-900 shadow-hard`}
       style={{ minHeight: '160px' }}
     >
       {/* Brain logo watermark */}
@@ -416,7 +417,7 @@ export function TopicCard({ record, onClick, onDelete, onQuiz, onSaveEdit, onAdd
 
   return (
     <div onClick={onClick}
-      className={`bg-white border border-ink-200 rounded-2xl shadow-sm hover:shadow-md hover:border-ink-300 transition-all duration-200 cursor-pointer group ${deleting ? 'opacity-50' : ''}`}>
+      className={`bg-white border-2 border-ink-900 rounded-2xl shadow-hard-sm hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group ${deleting ? 'opacity-50' : ''}`}>
 
       {/* Card body */}
       <div className="p-4">

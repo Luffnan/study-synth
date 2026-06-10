@@ -25,7 +25,7 @@ export default function ProfilePage({ user, profile, onBack, onSignOut, onProfil
           </div>
         )}
         <div>
-          <h1 className="text-xl font-800 text-ink-900">{displayName}</h1>
+          <h1 className="font-display text-xl font-600 text-ink-900">{displayName}</h1>
           <p className="text-sm text-ink-400">{user?.email}</p>
           {(schoolDisplay || profile?.year_level) && (
             <p className="text-xs text-ink-400 mt-0.5">
