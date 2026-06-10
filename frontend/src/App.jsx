@@ -196,7 +196,7 @@ function Header({ onLogoClick, onUploadClick, onProfileClick, view, user, yearLe
           </span>
         </button>
 
-        <nav className="flex items-center ml-2">
+        <nav className="flex items-center ml-[18px]">
           <button
             onClick={onLogoClick}
             className={`px-4 py-2 rounded-xl text-sm font-600 transition-colors ${
