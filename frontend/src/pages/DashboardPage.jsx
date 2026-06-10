@@ -234,7 +234,7 @@ function SubjectCard({ subject, topicCount, onOpen, onDelete, onRename }) {
     <div
       onClick={() => !editing && onOpen()}
       className={`relative overflow-hidden rounded-2xl cursor-pointer group transition-all duration-200 hover:-translate-y-0.5 bg-gradient-to-br ${c.from} ${c.to} border-2 border-ink-900 shadow-hard`}
-      style={{ minHeight: '120px' }}
+      style={{ minHeight: '90px' }}
     >
       {/* Brain logo watermark */}
       <div className="absolute bottom-0 right-0 translate-x-4 translate-y-4 opacity-10 pointer-events-none">
@@ -242,7 +242,7 @@ function SubjectCard({ subject, topicCount, onOpen, onDelete, onRename }) {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 p-4 flex flex-col h-full" style={{ minHeight: '120px' }}>
+      <div className="relative z-10 p-4 flex flex-col h-full" style={{ minHeight: '90px' }}>
         {/* Top row: icon + actions */}
         <div className="flex items-start justify-between mb-auto">
           <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
