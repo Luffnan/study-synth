@@ -59,7 +59,16 @@ export async function searchSchools(query, state = null) {
   return data || [];
 }
 
-/** Human-readable label for a year_level value. */
+// Legacy values stored before the individual-year migration
+const LEGACY_LABELS = {
+  'year7-8':  'Year 7 – 8',
+  'year9-10': 'Year 9 – 10',
+  'year11-12':'Year 11 – 12',
+};
+
+/** Human-readable label for a year_level value (handles old and new formats). */
 export function yearLevelLabel(value) {
-  return YEAR_LEVELS.find(y => y.value === value)?.label ?? value ?? 'Not set';
+  return YEAR_LEVELS.find(y => y.value === value)?.label
+    ?? LEGACY_LABELS[value]
+    ?? null;
 }

@@ -10,7 +10,7 @@ import ProfilePage from './pages/ProfilePage.jsx';
 import OnboardingPage from './pages/OnboardingPage.jsx';
 import BrainLogo from './components/BrainLogo.jsx';
 import { supabase } from './lib/supabase.js';
-import { getProfile, YEAR_LEVELS } from './lib/profile.js';
+import { getProfile, yearLevelLabel } from './lib/profile.js';
 
 export default function App() {
   const [session, setSession] = useState(undefined); // undefined = loading, null = logged out
@@ -231,10 +231,8 @@ function Header({ onLogoClick, onUploadClick, onProfileClick, view, user, yearLe
             )}
             <div className="hidden sm:flex flex-col items-start leading-none">
               <span className="text-sm font-600 text-ink-700">{initials}</span>
-              {yearLevel && (
-                <span className="text-[10px] text-ink-400 mt-0.5">
-                  {YEAR_LEVELS.find(y => y.value === yearLevel)?.label}
-                </span>
+              {yearLevel && yearLevelLabel(yearLevel) && (
+                <span className="text-[10px] text-ink-400 mt-0.5">{yearLevelLabel(yearLevel)}</span>
               )}
             </div>
           </button>
