@@ -72,11 +72,8 @@ export default function LandingPage({ onGetStarted, onLogin }) {
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-12">
             <h2 className="text-2xl sm:text-3xl font-800 text-ink-900 mb-3">
-              Why students choose Brain Buffet
+              Why choose?
             </h2>
-            <p className="text-ink-500 max-w-xl mx-auto">
-              Your textbook, your notes, your words. Brain Buffet turns the material you already have into structured notes and quizzes, so nothing gets lost and nothing gets made up.
-            </p>
           </div>
 
           <div className="grid sm:grid-cols-3 gap-5">
@@ -84,20 +81,20 @@ export default function LandingPage({ onGetStarted, onLogin }) {
               {
                 icon: <CheckCircle className="w-5 h-5" />,
                 color: 'text-emerald-600 bg-emerald-100',
-                title: 'Only what you uploaded',
-                body: 'Every bullet point comes directly from your own material: your textbook, your slides, your notes. Nothing is added, invented, or assumed.',
+                title: 'Made from your own ingredients',
+                body: 'Every note and quiz starts with the content you upload. No mystery meat. Just your material, organised properly.',
               },
               {
                 icon: <Zap className="w-5 h-5" />,
                 color: 'text-amber-600 bg-amber-100',
-                title: 'Quiz yourself in seconds',
-                body: 'Instantly generate a quiz from any combination of your topics. Multiple choice, true/false, fill-in-the-blank, and short answer, all auto-marked.',
+                title: 'Quick quizzes, served fresh',
+                body: 'Generate a quiz from any topic in seconds. Multiple choice, true or false, fill-in-the-blank and short answer, with instant marking to help you spot what needs more attention.',
               },
               {
                 icon: <BookOpen className="w-5 h-5" />,
                 color: 'text-blue-600 bg-blue-100',
-                title: 'Organised by subject',
-                body: 'Group your topics into subjects like History, Biology or Economics. Everything you need for each subject in one place.',
+                title: 'Everything on the right plate',
+                body: 'Group your work into subjects, topics and subtopics, from History to Biology to Economics. Your study content stays neat, searchable and ready when you need it.',
               },
             ].map(f => (
               <div key={f.title} className="bg-white rounded-2xl p-6 shadow-sm border border-ink-100">
