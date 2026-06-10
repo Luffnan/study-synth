@@ -50,19 +50,23 @@ export default function UploadPage({ onNotes, onBack, yearLevel }) {
       </div>
 
       {/* Tab switcher */}
-      <div className="flex gap-1 bg-ink-100 rounded-xl p-1 mb-4">
+      <div className="flex gap-2 mb-4">
         <button
           onClick={() => setTab('files')}
-          className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-600 transition-all duration-200 ${
-            tab === 'files' ? 'bg-white text-ink-900 shadow-sm' : 'text-ink-400 hover:text-ink-600'
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-600 border-2 transition-all duration-200 ${
+            tab === 'files'
+              ? 'bg-ink-900 border-ink-900 text-white shadow-hard-sm'
+              : 'bg-white border-ink-900 text-ink-600 hover:bg-ink-50'
           }`}
         >
           <ArrowUp className="w-4 h-4" /> Files
         </button>
         <button
           onClick={() => setTab('youtube')}
-          className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-600 transition-all duration-200 ${
-            tab === 'youtube' ? 'bg-white text-ink-900 shadow-sm' : 'text-ink-400 hover:text-ink-600'
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-600 border-2 transition-all duration-200 ${
+            tab === 'youtube'
+              ? 'bg-ink-900 border-ink-900 text-white shadow-hard-sm'
+              : 'bg-white border-ink-900 text-ink-600 hover:bg-ink-50'
           }`}
         >
           <Youtube className="w-4 h-4" /> YouTube
@@ -119,19 +123,19 @@ function FilesPanel({ onNotes, yearLevel, onLoading, files, setFiles, error, set
         onDragLeave={() => setDragging(false)}
         onClick={() => inputRef.current?.click()}
         className={`
-          relative border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all duration-200
+          relative border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all duration-200
           ${dragging
             ? 'border-brand-500 bg-brand-50 scale-[1.01]'
-            : 'border-ink-200 bg-white hover:border-brand-400 hover:bg-brand-50/40'
+            : 'border-ink-300 bg-white hover:border-ink-900 hover:bg-ink-50'
           }
         `}
       >
         <input ref={inputRef} type="file" multiple accept={ACCEPTED_EXTS} className="hidden"
           onChange={e => addFiles(e.target.files)} />
-        <div className={`w-8 h-8 rounded-lg mx-auto mb-2 flex items-center justify-center transition-colors ${dragging ? 'bg-brand-500' : 'bg-ink-100'}`}>
-          <ArrowUp className={`w-4 h-4 ${dragging ? 'text-white' : 'text-ink-500'}`} />
+        <div className={`w-10 h-10 rounded-xl border-2 border-ink-900 mx-auto mb-3 flex items-center justify-center transition-colors ${dragging ? 'bg-ink-900' : 'bg-accent-yellow'}`}>
+          <ArrowUp className={`w-5 h-5 ${dragging ? 'text-white' : 'text-ink-900'}`} />
         </div>
-        <p className="font-600 text-ink-700 text-sm mb-0.5">
+        <p className="font-700 text-ink-900 text-sm mb-1">
           {dragging ? 'Drop to add' : 'Drag & drop or tap to browse'}
         </p>
         <p className="text-ink-400 text-xs">PDF · JPG · PNG · WEBP — up to 50 MB each</p>
@@ -174,10 +178,10 @@ function FilesPanel({ onNotes, yearLevel, onLoading, files, setFiles, error, set
       <button
         onClick={handleSubmit}
         disabled={!files.length}
-        className={`mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl text-white font-600 text-sm transition-all duration-200
+        className={`mt-4 w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-700 text-sm border-2 transition-all duration-200
           ${files.length
-            ? 'bg-ink-900 hover:bg-brand-600 shadow-md hover:shadow-lg active:scale-[0.98]'
-            : 'bg-ink-200 text-ink-400 cursor-not-allowed'
+            ? 'bg-ink-900 border-ink-900 text-white shadow-hard hover:bg-brand-600 hover:border-brand-600 active:scale-[0.98]'
+            : 'bg-ink-100 border-ink-200 text-ink-400 cursor-not-allowed'
           }`}
       >
         <><BrainLogo className="w-4 h-4" /> Generate Study Notes</>
