@@ -1,4 +1,4 @@
-import { getNoteById, deleteNote, updateNote, saveQuizScore } from '../../../lib/store.js';
+import { getNoteById, deleteNote, updateNote, saveQuizScore, updateNotesJson } from '../../../lib/store.js';
 import { tryGetUserId } from '../../../lib/auth.js';
 
 export default async function handler(req, res) {
@@ -15,7 +15,12 @@ export default async function handler(req, res) {
     }
   } else if (req.method === 'PATCH') {
     try {
-      const { title, description, subject_id, latest_quiz_pct } = req.body;
+      const { title, description, subject_id, latest_quiz_pct, notes } = req.body;
+      // Diagram URL injection — just patches the notes JSON column
+      if (notes != null && title == null && description == null && subject_id == null && latest_quiz_pct == null) {
+        await updateNotesJson(id, notes, userId);
+        return res.status(200).json({ ok: true });
+      }
       if (latest_quiz_pct != null && title == null && description == null && subject_id == null) {
         await saveQuizScore(id, latest_quiz_pct, userId);
         return res.status(200).json({ ok: true });

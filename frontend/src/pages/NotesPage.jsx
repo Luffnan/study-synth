@@ -167,7 +167,7 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
       try {
         const processedNotes = await processDiagrams(data.notes, imageFiles, noteId);
         if (processedNotes !== data.notes) {
-          await apiFetch(`/api/notes/${noteId}/diagrams`, {
+          await apiFetch(`/api/notes/${noteId}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ notes: processedNotes }),

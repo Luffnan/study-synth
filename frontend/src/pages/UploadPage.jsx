@@ -113,7 +113,7 @@ function FilesPanel({ onNotes, yearLevel, onLoading, files, setFiles, error, set
           const processedNotes = await processDiagrams(data.notes, imageFiles, data.id);
           if (processedNotes !== data.notes) {
             // Save the diagram URLs into the DB
-            await apiFetch(`/api/notes/${data.id}/diagrams`, {
+            await apiFetch(`/api/notes/${data.id}`, {
               method: 'PATCH',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ notes: processedNotes }),
