@@ -64,7 +64,12 @@ Return your response as valid JSON in this exact format:
   "keyTerms": [
     { "term": "term name", "definition": "brief definition" }
   ]
-}`;
+}
+
+Key terms rules:
+- Include ALL named concepts, subject-specific vocabulary, and technical terms with their definitions
+- ALWAYS include every formula or equation that appears in the material — use the format: "term" = the formula name (e.g. "Net Profit"), "definition" = the full equation (e.g. "Net Profit = Gross Profit − Expenses")
+- Do not omit formulas even if they also appear in the notes body`;
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });

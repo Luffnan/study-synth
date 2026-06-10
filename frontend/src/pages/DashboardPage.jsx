@@ -1,12 +1,43 @@
 import { apiFetch } from '../lib/api.js';
 import { submitFiles } from '../lib/upload.js';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import {
   FileText, Image, Trash2, BookOpen, Hash, AlertCircle, Zap, Pencil,
   Check, X, Plus, UploadCloud, Loader2, Youtube, Link, FolderPlus,
   ChevronDown, ChevronRight, MoveRight, Folder,
 } from 'lucide-react';
 import BrainLogo from '../components/BrainLogo.jsx';
+
+// ── Tips ─────────────────────────────────────────────────────────────────────
+
+const TIPS = [
+  { lead: 'Upload multiple files at once', body: 'Combine lecture slides, textbook pages and handwritten notes into one set of study notes in a single upload.' },
+  { lead: 'Switch to Concise mode', body: 'Get a compressed version of your notes when you\'re short on time — find the toggle above your notes.' },
+  { lead: 'Add a YouTube video to existing notes', body: 'Open any topic, hit Add Source, and paste a YouTube URL to merge the transcript straight into your existing notes.' },
+  { lead: 'Generate a quiz from specific topics', body: 'Pick exactly which subtopics to test yourself on — you don\'t have to quiz the whole subject at once.' },
+  { lead: 'Organise topics into colour-coded subjects', body: 'Create a subject and move any topic into it to keep History separate from Biology and everything easy to find.' },
+  { lead: 'Download your notes as Word or Markdown', body: 'Export any topic for offline study or to share with classmates — look for the download button inside your notes.' },
+  { lead: 'Upload a photo of handwritten notes', body: 'Brain Buffet reads your handwriting and structures it into clean, organised notes automatically.' },
+  { lead: 'Add more sources to an existing topic', body: 'Open a topic and hit Add Source to bring in new material — your notes update without losing what\'s already there.' },
+  { lead: 'Your quiz scores are tracked over time', body: 'Revisit a topic\'s quiz to see whether your score improves across sessions as you study.' },
+  { lead: 'Standard and Concise views are always available', body: 'Both note modes are stored — switch between them any time without needing to re-generate anything.' },
+];
+
+function TipBanner() {
+  const tip = useMemo(() => TIPS[Math.floor(Math.random() * TIPS.length)], []);
+  return (
+    <div className="rounded-2xl border-2 border-ink-900 bg-accent-yellow shadow-hard-sm p-4 flex items-start gap-3 mb-8">
+      <div className="flex-shrink-0 mt-0.5">
+        <span className="text-lg">⚡</span>
+      </div>
+      <div>
+        <p className="text-[11px] font-700 text-ink-900 uppercase tracking-wider mb-0.5">Hot tip</p>
+        <p className="text-sm font-700 text-ink-900">{tip.lead}</p>
+        <p className="text-sm text-ink-700 mt-0.5">{tip.body}</p>
+      </div>
+    </div>
+  );
+}
 
 // ── Colour palette for subjects ───────────────────────────────────────────────
 
@@ -140,6 +171,8 @@ export default function DashboardPage({ onUpload, onOpenNote, onQuiz, onOpenSubj
           <FolderPlus className="w-3.5 h-3.5" /> New Subject
         </button>
       </div>
+
+      <TipBanner />
 
       {error && (
         <div className="flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm mb-6">
