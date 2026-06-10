@@ -214,7 +214,7 @@ function Header({ onLogoClick, onUploadClick, onProfileClick, view, user, yearLe
             <svg viewBox="0 0 16 16" fill="none" className="w-3.5 h-3.5" stroke="currentColor" strokeWidth="2.2">
               <path d="M8 3v10M3 8l5-5 5 5"/>
             </svg>
-            <span className="hidden sm:inline">New Notes</span>
+            <span className="hidden sm:inline">Upload Notes</span>
             <span className="sm:hidden">New</span>
           </button>
 
