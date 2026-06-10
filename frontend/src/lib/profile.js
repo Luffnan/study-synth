@@ -5,10 +5,13 @@
 import { supabase } from './supabase.js';
 
 export const YEAR_LEVELS = [
-  { value: 'year7-8',    label: 'Year 7 – 8',          detail: 'Ages 12–14' },
-  { value: 'year9-10',   label: 'Year 9 – 10',         detail: 'Ages 14–16' },
-  { value: 'year11-12',  label: 'Year 11 – 12',        detail: 'Senior secondary / HSC / VCE' },
-  { value: 'university', label: 'University / TAFE',   detail: 'Tertiary education' },
+  { value: 'year7',      label: 'Year 7',               detail: 'Age ~12' },
+  { value: 'year8',      label: 'Year 8',               detail: 'Age ~13' },
+  { value: 'year9',      label: 'Year 9',               detail: 'Age ~14' },
+  { value: 'year10',     label: 'Year 10',              detail: 'Age ~15' },
+  { value: 'year11',     label: 'Year 11',              detail: 'Senior secondary' },
+  { value: 'year12',     label: 'Year 12',              detail: 'Final year / HSC / VCE' },
+  { value: 'university', label: 'University / TAFE',    detail: 'Tertiary education' },
   { value: 'adult',      label: 'Adult / Professional', detail: 'Self-directed learning' },
 ];
 

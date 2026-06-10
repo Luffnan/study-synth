@@ -6,8 +6,9 @@
  */
 export function yearLevelModifier(yearLevel) {
   switch (yearLevel) {
-    case 'year7-8':
-      return `STUDENT LEVEL: Year 7–8 (approximately 12–14 years old).
+    case 'year7':
+    case 'year8':
+      return `STUDENT LEVEL: Year ${yearLevel === 'year7' ? '7' : '8'} (approximately ${yearLevel === 'year7' ? '12' : '13'} years old).
 - Use simple, clear, everyday language. Short sentences. Avoid jargon — define any subject-specific terms when you first use them.
 - Use concrete examples and relatable analogies where helpful.
 - Notes: focus on key facts and ideas; broad overview; avoid dense technical detail.
@@ -17,8 +18,9 @@ export function yearLevelModifier(yearLevel) {
 
 `;
 
-    case 'year9-10':
-      return `STUDENT LEVEL: Year 9–10 (approximately 14–16 years old).
+    case 'year9':
+    case 'year10':
+      return `STUDENT LEVEL: Year ${yearLevel === 'year9' ? '9' : '10'} (approximately ${yearLevel === 'year9' ? '14' : '15'} years old).
 - Use clear language with moderate complexity. Introduce subject-specific terminology naturally, with brief explanation of new terms.
 - Notes: cover key concepts and cause-effect relationships with moderate depth.
 - Quiz questions: mix of recall and application questions. Short answers require a couple of clear sentences.
@@ -27,8 +29,9 @@ export function yearLevelModifier(yearLevel) {
 
 `;
 
-    case 'year11-12':
-      return `STUDENT LEVEL: Year 11–12 (senior secondary, preparing for HSC / VCE / ATAR exams).
+    case 'year11':
+    case 'year12':
+      return `STUDENT LEVEL: Year ${yearLevel === 'year11' ? '11' : '12'} (senior secondary${yearLevel === 'year12' ? ', final year' : ''} — preparing for HSC / VCE / ATAR exams).
 - Use precise subject-specific terminology throughout. Write at exam-ready level.
 - Notes: thorough depth — include analysis, evaluation, nuanced relationships, not just bare facts. Cover all significant content needed for exams.
 - Quiz questions: include higher-order questions requiring analysis and evaluation. Short answer questions should be substantive and exam-style.
