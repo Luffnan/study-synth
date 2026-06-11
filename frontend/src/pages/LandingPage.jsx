@@ -172,6 +172,27 @@ export default function LandingPage({ onGetStarted, onLogin }) {
         </div>
       </section>
 
+      {/* ── Feature list ── */}
+      <section className="py-10 max-w-5xl mx-auto px-4 sm:px-6">
+        <div className="grid sm:grid-cols-2 gap-x-12 gap-y-4">
+          {[
+            'Structured notes with topics, subtopics, and key terms',
+            'Standard + concise note modes for different study phases',
+            'YouTube video panel with timecoded navigation',
+            'Merge video content into existing topic notes with one click',
+            'Custom quiz generation: pick exactly which topics to test',
+            'Download as Word (.docx) or Markdown',
+            'Organise topics into colour-coded subjects',
+            'Quiz scoring tracked over time per topic',
+          ].map(f => (
+            <div key={f} className="flex items-start gap-3">
+              <CheckCircle className="w-4 h-4 text-accent-green flex-shrink-0 mt-0.5" />
+              <span className="text-sm text-ink-700">{f}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* ── CTA ── */}
       <section className="py-12 bg-ink-900">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 text-center">
