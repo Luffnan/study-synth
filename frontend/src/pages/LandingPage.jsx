@@ -41,8 +41,8 @@ export default function LandingPage({ onGetStarted, onLogin }) {
         </h1>
 
         <p className="text-lg sm:text-xl text-ink-500 max-w-2xl mx-auto mb-8 leading-relaxed">
-          Upload textbooks, lecture slides, handwritten notes, screenshots or even YouTube videos.
-          Brain Buffet reads the ingredients and serves up structured notes and quizzes to help you study smarter.
+          Upload anything: textbooks, lecture slides, handwritten notes, YouTube videos.
+          Brain Buffet structures it into notes and quizzes built entirely from your material.
         </p>
 
         <div className="flex flex-col items-center justify-center gap-2">
@@ -53,16 +53,13 @@ export default function LandingPage({ onGetStarted, onLogin }) {
           <p className="text-sm text-ink-900/40 font-500">Free for a limited time</p>
         </div>
 
-        {/* Social proof */}
-        <div className="flex flex-col items-center gap-1.5 mt-8">
-          <div className="flex items-center gap-1.5">
-            {[...Array(5)].map((_, i) => (
-              <svg key={i} className="w-4 h-4 text-accent-yellow fill-current" viewBox="0 0 20 20">
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-              </svg>
-            ))}
-          </div>
-          <span className="text-sm text-ink-500">Suitable for students from Year 7 right<br className="sm:hidden" />up to University degrees</span>
+        {/* Trust strip */}
+        <div className="flex items-center justify-center gap-4 mt-8 text-xs text-ink-400 font-500">
+          <span>Free during beta</span>
+          <span className="w-1 h-1 rounded-full bg-ink-300 flex-shrink-0" />
+          <span>No credit card needed</span>
+          <span className="w-1 h-1 rounded-full bg-ink-300 flex-shrink-0" />
+          <span>Year 7 to university</span>
         </div>
       </section>
 
@@ -80,7 +77,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
               {
                 icon: <CheckCircle className="w-5 h-5 text-ink-900" />,
                 tile: 'bg-accent-green',
-                title: 'No mystery meat — just your material',
+                title: 'No mystery meat. Just your material.',
                 body: 'Every note Brain Buffet generates comes directly from what you upload. No invented facts, no hallucinated content. If it\'s not in your source, it won\'t be in your notes.',
               },
               {
@@ -141,46 +138,35 @@ export default function LandingPage({ onGetStarted, onLogin }) {
       </section>
 
       {/* ── Source types ── */}
-      <section className="py-10">
+      <section className="py-8">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-8">
-            <h2 className="font-display text-2xl sm:text-3xl font-600 text-ink-900 mb-3">
-              Works with <span className="italic">anything</span> you study from
-            </h2>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <p className="text-center text-xs font-600 text-ink-400 uppercase tracking-wider mb-5">Works with</p>
+          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6">
             {[
-              { icon: <FileText className="w-6 h-6 text-ink-900" />, tile: 'bg-accent-teal',       label: 'PDF Textbooks', sub: 'School or university textbooks, lecture handouts' },
-              { icon: <Image className="w-6 h-6 text-ink-900" />,    tile: 'bg-accent-lightGreen', label: 'Photos & Screenshots', sub: 'Handwritten notes, whiteboard snaps, slide screenshots' },
-              { icon: <Youtube className="w-6 h-6 text-ink-900" />,  tile: 'bg-brand-500',         label: 'YouTube Videos', sub: 'Documentaries, subject explainers, lectures and crash courses' },
-              { icon: <Hash className="w-6 h-6 text-ink-900" />,     tile: 'bg-accent-yellow',     label: 'Any subject, any level', sub: 'GCSE, A-level, university, professional exams' },
+              { icon: <FileText className="w-4 h-4" />, label: 'PDF Textbooks' },
+              { icon: <Image className="w-4 h-4" />,    label: 'Photos & Screenshots' },
+              { icon: <Youtube className="w-4 h-4" />,  label: 'YouTube Videos' },
+              { icon: <Hash className="w-4 h-4" />,     label: 'Any subject, any level' },
             ].map(s => (
-              <div key={s.label} className="rounded-2xl border-2 border-ink-900 bg-white p-5 shadow-hard-sm">
-                <div className={`w-10 h-10 rounded-xl border-2 border-ink-900 flex items-center justify-center mb-3 ${s.tile}`}>{s.icon}</div>
-                <h3 className="font-700 text-ink-900 text-sm mb-1">{s.label}</h3>
-                <p className="text-xs text-ink-500">{s.sub}</p>
+              <div key={s.label} className="flex items-center gap-2 bg-white border-2 border-ink-900 rounded-full px-4 py-2 text-sm font-600 text-ink-700">
+                {s.icon}{s.label}
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── Feature list ── */}
-      <section className="py-10 max-w-5xl mx-auto px-4 sm:px-6">
-        <div className="grid sm:grid-cols-2 gap-x-12 gap-y-4">
+      {/* ── Outcomes ── */}
+      <section className="py-10 max-w-3xl mx-auto px-4 sm:px-6">
+        <div className="space-y-5">
           {[
-            'Structured notes with topics, subtopics, and key terms',
-            'Standard + concise note modes for different study phases',
-            'YouTube video panel with timecoded navigation',
-            'Merge video content into existing topic notes with one click',
-            'Custom quiz generation: pick exactly which topics to test',
-            'Download as Word (.docx) or Markdown',
-            'Organise topics into colour-coded subjects',
-            'Quiz scoring tracked over time per topic',
+            'Walk into your exam knowing the material, not just having read it.',
+            'Every source you\'ve ever studied, organised and searchable in one place.',
+            'Notes that reflect your actual curriculum. Nothing invented, nothing generic.',
           ].map(f => (
-            <div key={f} className="flex items-start gap-3">
-              <CheckCircle className="w-4 h-4 text-accent-green flex-shrink-0 mt-0.5" />
-              <span className="text-sm text-ink-700">{f}</span>
+            <div key={f} className="flex items-start gap-4">
+              <CheckCircle className="w-5 h-5 text-accent-green flex-shrink-0 mt-0.5" />
+              <span className="text-base text-ink-700 leading-relaxed">{f}</span>
             </div>
           ))}
         </div>
