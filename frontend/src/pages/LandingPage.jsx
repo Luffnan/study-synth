@@ -45,21 +45,18 @@ export default function LandingPage({ onGetStarted, onLogin }) {
           Brain Buffet structures it into notes and quizzes built entirely from your material.
         </p>
 
-        <div className="flex flex-col items-center justify-center gap-2">
+        <div className="flex flex-col items-center justify-center gap-3">
           <button onClick={onGetStarted}
             className="flex items-center gap-2 bg-ink-900 hover:bg-brand-600 text-white px-7 py-3.5 rounded-2xl text-base font-700 transition-colors">
             Create Account <ArrowRight className="w-4 h-4" />
           </button>
-          <p className="text-sm text-ink-900/40 font-500">Free for a limited time</p>
-        </div>
-
-        {/* Trust strip */}
-        <div className="flex items-center justify-center gap-4 mt-8 text-xs text-ink-400 font-500">
-          <span>Free during beta</span>
-          <span className="w-1 h-1 rounded-full bg-ink-300 flex-shrink-0" />
-          <span>No credit card needed</span>
-          <span className="w-1 h-1 rounded-full bg-ink-300 flex-shrink-0" />
-          <span>Year 7 to university</span>
+          <div className="flex items-center justify-center gap-4 text-xs text-ink-400 font-500">
+            <span>Free during beta</span>
+            <span className="w-1 h-1 rounded-full bg-ink-300 flex-shrink-0" />
+            <span>No credit card needed</span>
+            <span className="w-1 h-1 rounded-full bg-ink-300 flex-shrink-0" />
+            <span>Year 7 to university</span>
+          </div>
         </div>
       </section>
 
@@ -156,21 +153,6 @@ export default function LandingPage({ onGetStarted, onLogin }) {
         </div>
       </section>
 
-      {/* ── Outcomes ── */}
-      <section className="py-10 max-w-3xl mx-auto px-4 sm:px-6">
-        <div className="space-y-5">
-          {[
-            'Walk into your exam knowing the material, not just having read it.',
-            'Every source you\'ve ever studied, organised and searchable in one place.',
-            'Notes that reflect your actual curriculum. Nothing invented, nothing generic.',
-          ].map(f => (
-            <div key={f} className="flex items-start gap-4">
-              <CheckCircle className="w-5 h-5 text-accent-green flex-shrink-0 mt-0.5" />
-              <span className="text-base text-ink-700 leading-relaxed">{f}</span>
-            </div>
-          ))}
-        </div>
-      </section>
 
       {/* ── Feature list ── */}
       <section className="py-10 max-w-5xl mx-auto px-4 sm:px-6">
