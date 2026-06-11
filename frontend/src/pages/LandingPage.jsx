@@ -13,6 +13,10 @@ export default function LandingPage({ onGetStarted, onLogin }) {
             <span className="text-[15px] font-700 tracking-tight text-ink-900">Brain Buffet</span>
             <span className="hidden sm:inline text-[11px] font-600 text-ink-900 bg-transparent border border-ink-900 px-2 py-0.5 rounded-full">beta</span>
           </div>
+          <div className="hidden lg:flex absolute left-1/2 -translate-x-1/2 items-center gap-1 text-xs text-ink-400 font-500">
+            <img src="/fork.png" alt="fork" className="w-5 h-5 opacity-40" />
+            Serving up snackable bite-sized brain food
+          </div>
           <div className="ml-auto flex items-center gap-2">
             <button onClick={onLogin}
               className="hidden sm:block px-4 py-2 rounded-xl text-sm font-600 text-ink-600 hover:text-ink-900 hover:bg-ink-100 transition-colors">
@@ -28,11 +32,6 @@ export default function LandingPage({ onGetStarted, onLogin }) {
 
       {/* ── Hero ── */}
       <section className="max-w-5xl mx-auto px-4 sm:px-6 pt-12 pb-10 text-center">
-
-        <div className="inline-flex items-center gap-0 text-ink-400 text-sm font-500 mb-2">
-          <img src="/fork.png" alt="fork" className="w-8 h-8 opacity-40" />
-          Serving up snackable bite-sized brain food
-        </div>
 
         <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-600 text-ink-900 leading-tight mb-6">
           Turn any content into
