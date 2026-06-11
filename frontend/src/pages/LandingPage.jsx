@@ -80,7 +80,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
               {
                 icon: <Zap className="w-5 h-5 text-ink-900" />,
                 tile: 'bg-accent-yellow',
-                title: 'Quizzes that make it stick',
+                title: 'Quizzes with guided marking',
                 body: 'Generate a quiz on any topic in seconds. Varied question types with guided, incremental marking so you don\'t just get a score, you understand where your answer fell short.',
               },
               {
