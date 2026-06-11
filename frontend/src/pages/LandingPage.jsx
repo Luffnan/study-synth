@@ -87,7 +87,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
                 icon: <Zap className="w-5 h-5 text-ink-900" />,
                 tile: 'bg-accent-yellow',
                 title: 'Quick quizzes, served fresh',
-                body: 'Generate a quiz from any topic in seconds. Multiple choice, true or false, fill-in-the-blank and short answer, with instant marking to help you spot what needs more attention.',
+                body: 'Generate a quiz from any topic in seconds. Quizzes contain varied question types with guided, incremental marking to help you improve your written answers.',
               },
               {
                 icon: <BookOpen className="w-5 h-5 text-ink-900" />,
