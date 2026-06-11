@@ -293,7 +293,7 @@ function SubjectCard({ subject, topics, onOpen, onDelete, onRename }) {
         <BrainLogo className="w-24 h-24 text-white" />
       </div>
 
-      <div className="relative z-10 px-4 pt-4 pb-3">
+      <div className="relative z-10 px-5 pt-6 pb-6">
         {/* Title row */}
         <div className="flex items-center justify-between gap-2 mb-3">
           {editing ? (
