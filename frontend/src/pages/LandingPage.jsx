@@ -80,20 +80,20 @@ export default function LandingPage({ onGetStarted, onLogin }) {
               {
                 icon: <CheckCircle className="w-5 h-5 text-ink-900" />,
                 tile: 'bg-accent-green',
-                title: 'Your own ingredients',
-                body: 'Every note and quiz starts with the content you upload. No mystery meat. Just your material, organised properly.',
+                title: 'No mystery meat — just your material',
+                body: 'Every note Brain Buffet generates comes directly from what you upload. No invented facts, no hallucinated content. If it\'s not in your source, it won\'t be in your notes.',
               },
               {
                 icon: <Zap className="w-5 h-5 text-ink-900" />,
                 tile: 'bg-accent-yellow',
-                title: 'Quick quizzes, served fresh',
-                body: 'Generate a quiz from any topic in seconds. Quizzes contain varied question types with guided, incremental marking to help you improve your written answers.',
+                title: 'Quizzes that make it stick',
+                body: 'Generate a quiz on any topic in seconds. Varied question types with guided, incremental marking so you don\'t just get a score, you understand where your answer fell short.',
               },
               {
                 icon: <BookOpen className="w-5 h-5 text-ink-900" />,
                 tile: 'bg-accent-lightGreen',
-                title: 'Everything on the right plate',
-                body: 'Group your work into subjects, topics and subtopics, from History to Biology to Economics. Your study content stays neat, searchable and ready when you need it.',
+                title: 'Your notes, complete across the whole term',
+                body: 'Add new sources to existing topics as the term moves forward. By the time exams arrive, every subject is consolidated in one place. Nothing scattered, nothing missing.',
               },
             ].map(f => (
               <div key={f.title} className="bg-white rounded-2xl p-6 border-2 border-ink-900 shadow-hard">
