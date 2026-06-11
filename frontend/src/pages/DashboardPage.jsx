@@ -197,7 +197,7 @@ export default function DashboardPage({ onUpload, onOpenNote, onQuiz, onOpenSubj
           {/* ── Subjects grid ── */}
           {subjects.length > 0 && (
             <div className="space-y-3">
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-3 sm:grid-cols-2">
                 {subjects.map(subject => {
                   const topics = records.filter(r => r.subject_id === subject.id);
                   return (
@@ -285,61 +285,62 @@ function SubjectCard({ subject, topics, onOpen, onDelete, onRename }) {
   return (
     <div
       onClick={() => !editing && onOpen()}
-      className="relative rounded-2xl border-2 border-ink-900 shadow-hard cursor-pointer group transition-all duration-200 hover:-translate-y-0.5 overflow-hidden"
+      className="relative overflow-hidden rounded-2xl border-2 border-ink-900 shadow-hard cursor-pointer group transition-all duration-200 hover:-translate-y-0.5"
+      style={{ backgroundColor: hex }}
     >
-      {/* Coloured header */}
-      <div className="relative overflow-hidden px-4 py-3 flex items-center justify-between gap-2" style={{ backgroundColor: hex }}>
-        {/* Watermark */}
-        <div className="absolute right-0 bottom-0 translate-x-3 translate-y-3 opacity-15 pointer-events-none">
-          <BrainLogo className="w-16 h-16 text-white" />
-        </div>
-
-        {editing ? (
-          <div onClick={e => e.stopPropagation()} className="flex items-center gap-1.5 flex-1 min-w-0 relative z-10">
-            <input ref={inputRef} value={titleVal} onChange={e => setTitleVal(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') saveEdit(); if (e.key === 'Escape') cancelEdit(); }}
-              className="flex-1 min-w-0 bg-white/20 border border-white/40 rounded-lg px-2 py-0.5 text-sm font-700 text-white placeholder-white/60 focus:outline-none focus:bg-white/30"
-            />
-            <button onClick={saveEdit} className="p-1 bg-white/20 hover:bg-white/40 rounded text-white"><Check className="w-3 h-3" /></button>
-            <button onClick={cancelEdit} className="p-1 bg-white/10 hover:bg-white/25 rounded text-white"><X className="w-3 h-3" /></button>
-          </div>
-        ) : (
-          <h2 className="text-sm font-800 text-white leading-tight truncate relative z-10">{subject.title}</h2>
-        )}
-
-        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 relative z-10">
-          <button onClick={startEdit} className="p-1.5 bg-white/15 hover:bg-white/30 rounded-lg text-white transition-colors">
-            <Pencil className="w-3 h-3" />
-          </button>
-          <button onClick={e => { e.stopPropagation(); onDelete(); }} className="p-1.5 bg-white/15 hover:bg-red-500/60 rounded-lg text-white transition-colors">
-            <Trash2 className="w-3 h-3" />
-          </button>
-        </div>
+      {/* Watermark */}
+      <div className="absolute right-0 bottom-0 translate-x-5 translate-y-5 opacity-10 pointer-events-none">
+        <BrainLogo className="w-24 h-24 text-white" />
       </div>
 
-      {/* Body — off-white */}
-      <div className="bg-[#FAFAF8] px-4 py-3">
+      <div className="relative z-10 px-4 pt-4 pb-3">
+        {/* Title row */}
+        <div className="flex items-center justify-between gap-2 mb-3">
+          {editing ? (
+            <div onClick={e => e.stopPropagation()} className="flex items-center gap-1.5 flex-1 min-w-0">
+              <input ref={inputRef} value={titleVal} onChange={e => setTitleVal(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') saveEdit(); if (e.key === 'Escape') cancelEdit(); }}
+                className="flex-1 min-w-0 bg-white/20 border border-white/40 rounded-lg px-2 py-0.5 text-sm font-700 text-white placeholder-white/60 focus:outline-none focus:bg-white/30"
+              />
+              <button onClick={saveEdit} className="p-1 bg-white/20 hover:bg-white/40 rounded text-white"><Check className="w-3 h-3" /></button>
+              <button onClick={cancelEdit} className="p-1 bg-white/10 hover:bg-white/25 rounded text-white"><X className="w-3 h-3" /></button>
+            </div>
+          ) : (
+            <h2 className="text-base font-800 text-white leading-tight truncate">{subject.title}</h2>
+          )}
+          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+            <button onClick={startEdit} className="p-1.5 bg-white/15 hover:bg-white/30 rounded-lg text-white transition-colors">
+              <Pencil className="w-3 h-3" />
+            </button>
+            <button onClick={e => { e.stopPropagation(); onDelete(); }} className="p-1.5 bg-white/15 hover:bg-red-500/60 rounded-lg text-white transition-colors">
+              <Trash2 className="w-3 h-3" />
+            </button>
+          </div>
+        </div>
+
+        {/* Topics */}
         {topics.length === 0 ? (
-          <p className="text-xs text-ink-400 italic">No topics yet</p>
+          <p className="text-xs text-white/50 italic">No topics yet</p>
         ) : (
           <ul className="space-y-1.5">
             {topics.slice(0, 4).map(t => (
-              <li key={t.id} className="flex items-center gap-2 text-xs text-ink-600">
-                <div className="w-1 h-1 rounded-full flex-shrink-0" style={{ backgroundColor: hex }} />
+              <li key={t.id} className="flex items-center gap-2 text-xs text-white/80">
+                <div className="w-1 h-1 rounded-full bg-white/60 flex-shrink-0" />
                 <span className="truncate">{t.title}</span>
               </li>
             ))}
             {topics.length > 4 && (
-              <li className="text-xs text-ink-400">+{topics.length - 4} more</li>
+              <li className="text-xs text-white/50">+{topics.length - 4} more</li>
             )}
           </ul>
         )}
 
-        <div className="mt-2.5 pt-2.5 border-t border-ink-100 flex items-center justify-between">
-          <span className="text-[10px] font-600 text-ink-400 uppercase tracking-wider">
+        {/* Footer */}
+        <div className="mt-3 pt-2.5 border-t border-white/20 flex items-center justify-between">
+          <span className="text-[10px] font-600 text-white/50 uppercase tracking-wider">
             {topics.length} topic{topics.length !== 1 ? 's' : ''}
           </span>
-          <span className="text-[10px] font-600 text-ink-400 group-hover:text-ink-700 transition-colors flex items-center gap-1">
+          <span className="text-[10px] font-600 text-white/50 group-hover:text-white/90 transition-colors flex items-center gap-1">
             Open <ChevronRight className="w-3 h-3" />
           </span>
         </div>
