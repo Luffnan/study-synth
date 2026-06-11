@@ -277,13 +277,15 @@ function SubjectCard({ subject, topicCount, onOpen, onDelete, onRename }) {
       onClick={() => !editing && onOpen()}
       className={`relative overflow-hidden rounded-2xl cursor-pointer group transition-all duration-200 hover:-translate-y-0.5 bg-gradient-to-br ${c.from} ${c.to} border-2 border-ink-900 shadow-hard`}
     >
+      {/* Colour wash */}
+      <div className="absolute inset-0 bg-white/50 pointer-events-none" />
       {/* Brain logo watermark */}
       <div className="absolute bottom-0 right-0 translate-x-4 translate-y-4 opacity-10 pointer-events-none">
         <BrainLogo className="w-20 h-20 text-white" />
       </div>
 
       {/* Content */}
-      <div className="relative z-10 px-4 py-3 flex items-center gap-3">
+      <div className="relative z-10 px-4 py-6 flex items-center gap-3">
         <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
           <BrainLogo className="w-4 h-4 text-white" />
         </div>
