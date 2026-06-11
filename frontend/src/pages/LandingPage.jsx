@@ -74,7 +74,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
               {
                 icon: <CheckCircle className="w-5 h-5 text-ink-900" />,
                 tile: 'bg-accent-green',
-                title: 'No mystery meat. Just your material.',
+                title: 'Uses only your ingredients',
                 body: 'Every note Brain Buffet generates comes directly from what you upload. No invented facts, no hallucinated content. If it\'s not in your source, it won\'t be in your notes.',
               },
               {
@@ -86,7 +86,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
               {
                 icon: <BookOpen className="w-5 h-5 text-ink-900" />,
                 tile: 'bg-accent-lightGreen',
-                title: 'Build a library of notes across the year',
+                title: 'Build a library of notes',
                 body: 'Add new sources to existing topics as the term moves forward. By the time exams arrive, every subject is consolidated in one place. Nothing scattered, nothing missing.',
               },
             ].map(f => (
