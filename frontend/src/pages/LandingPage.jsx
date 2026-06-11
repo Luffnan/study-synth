@@ -62,7 +62,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
               </svg>
             ))}
           </div>
-          <span className="text-sm text-ink-500">Suitable for students from Year 7 right<br />up to University degrees</span>
+          <span className="text-sm text-ink-500">Suitable for students from Year 7 right<br className="sm:hidden" />up to University degrees</span>
         </div>
       </section>
 
