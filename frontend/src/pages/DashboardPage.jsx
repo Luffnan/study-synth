@@ -276,57 +276,48 @@ function SubjectCard({ subject, topicCount, onOpen, onDelete, onRename }) {
     <div
       onClick={() => !editing && onOpen()}
       className={`relative overflow-hidden rounded-2xl cursor-pointer group transition-all duration-200 hover:-translate-y-0.5 bg-gradient-to-br ${c.from} ${c.to} border-2 border-ink-900 shadow-hard`}
-      style={{ minHeight: '45px' }}
     >
       {/* Brain logo watermark */}
       <div className="absolute bottom-0 right-0 translate-x-4 translate-y-4 opacity-10 pointer-events-none">
-        <BrainLogo className="w-28 h-28 text-white" />
+        <BrainLogo className="w-20 h-20 text-white" />
       </div>
 
       {/* Content */}
-      <div className="relative z-10 p-4 flex flex-col h-full" style={{ minHeight: '45px' }}>
-        {/* Top row: icon + actions */}
-        <div className="flex items-start justify-between mb-auto">
-          <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
-            <BrainLogo className="w-5 h-5 text-white" />
-          </div>
-          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button onClick={startEdit}
-              className="p-1.5 rounded-lg bg-white/15 hover:bg-white/30 text-white transition-colors">
-              <Pencil className="w-3.5 h-3.5" />
-            </button>
-            <button onClick={e => { e.stopPropagation(); onDelete(); }}
-              className="p-1.5 rounded-lg bg-white/15 hover:bg-red-500/60 text-white transition-colors">
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
-          </div>
+      <div className="relative z-10 px-4 py-3 flex items-center gap-3">
+        <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
+          <BrainLogo className="w-4 h-4 text-white" />
         </div>
 
         {/* Subject name */}
-        <div className="mt-4">
+        <div className="flex-1 min-w-0">
           {editing ? (
             <div onClick={e => e.stopPropagation()} className="flex items-center gap-2">
               <input ref={inputRef} value={titleVal} onChange={e => setTitleVal(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') saveEdit(); if (e.key === 'Escape') cancelEdit(); }}
-                className="flex-1 bg-white/20 text-white placeholder-white/60 rounded-lg px-2 py-1 text-lg font-700 focus:outline-none focus:bg-white/30"
+                className="flex-1 bg-white/20 text-white placeholder-white/60 rounded-lg px-2 py-1 text-base font-700 focus:outline-none focus:bg-white/30"
               />
               <button onClick={saveEdit} className="p-1 bg-white/25 hover:bg-white/40 rounded-lg text-white"><Check className="w-3.5 h-3.5" /></button>
               <button onClick={cancelEdit} className="p-1 bg-white/15 hover:bg-white/25 rounded-lg text-white"><X className="w-3.5 h-3.5" /></button>
             </div>
           ) : (
-            <h2 className="text-xl font-800 text-white leading-tight">{subject.title}</h2>
+            <h2 className="text-base font-800 text-white leading-tight truncate">{subject.title}</h2>
           )}
-          <p className="text-white/60 text-sm mt-1.5">
+          <p className="text-white/60 text-xs mt-0.5">
             {topicCount === 0 ? 'No topics yet' : `${topicCount} topic${topicCount !== 1 ? 's' : ''}`}
           </p>
         </div>
 
-        {/* Open arrow indicator */}
-        <div className="flex items-center justify-end mt-3">
-          <div className="flex items-center gap-1 text-white/60 text-xs font-500 group-hover:text-white transition-colors">
-            <ChevronRight className="w-4 h-4" /> Open
-          </div>
+        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+          <button onClick={startEdit}
+            className="p-1.5 rounded-lg bg-white/15 hover:bg-white/30 text-white transition-colors">
+            <Pencil className="w-3 h-3" />
+          </button>
+          <button onClick={e => { e.stopPropagation(); onDelete(); }}
+            className="p-1.5 rounded-lg bg-white/15 hover:bg-red-500/60 text-white transition-colors">
+            <Trash2 className="w-3 h-3" />
+          </button>
         </div>
+
       </div>
     </div>
   );
