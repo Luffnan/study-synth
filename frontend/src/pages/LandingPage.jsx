@@ -11,7 +11,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
           <div className="flex items-center gap-2 flex-shrink-0">
             <img src="/brain.png" alt="Brain Buffet" className="w-7 h-7" />
             <span className="text-[15px] font-700 tracking-tight text-ink-900">Brain Buffet</span>
-            <span className="hidden sm:inline text-[11px] font-600 text-ink-900 bg-accent-yellow border border-ink-900 px-2 py-0.5 rounded-full">beta</span>
+            <span className="hidden sm:inline text-[11px] font-600 text-ink-900 bg-transparent border border-ink-900 px-2 py-0.5 rounded-full">beta</span>
           </div>
           <div className="ml-auto flex items-center gap-2">
             <button onClick={onLogin}
@@ -19,7 +19,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
               Sign in
             </button>
             <button onClick={onGetStarted}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-ink-900 hover:bg-brand-600 text-white text-sm font-600 transition-colors">
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-accent-yellow border border-ink-900 hover:bg-white text-ink-900 text-sm font-600 transition-colors">
               Get started <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -29,8 +29,8 @@ export default function LandingPage({ onGetStarted, onLogin }) {
       {/* ── Hero ── */}
       <section className="max-w-5xl mx-auto px-4 sm:px-6 pt-12 pb-10 text-center">
 
-        <div className="inline-flex items-center gap-0 text-brand-500 text-sm font-600 mb-2">
-          <img src="/fork.png" alt="fork" className="w-8 h-8 [filter:invert(55%)_sepia(48%)_saturate(2100%)_hue-rotate(335deg)_brightness(98%)]" />
+        <div className="inline-flex items-center gap-0 text-ink-400 text-sm font-500 mb-2">
+          <img src="/fork.png" alt="fork" className="w-8 h-8 opacity-40" />
           Serving up snackable bite-sized brain food
         </div>
 
