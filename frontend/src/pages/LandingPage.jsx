@@ -50,7 +50,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
             className="flex items-center gap-2 bg-ink-900 hover:bg-brand-600 text-white px-7 py-3.5 rounded-2xl text-base font-700 transition-colors">
             Create Account <ArrowRight className="w-4 h-4" />
           </button>
-          <div className="flex items-center justify-center gap-4 text-xs text-ink-400 font-500">
+          <div className="flex items-center justify-center gap-2 text-xs text-ink-400 font-500">
             <span>Free during beta</span>
             <span className="w-1 h-1 rounded-full bg-ink-300 flex-shrink-0" />
             <span>No credit card needed</span>
