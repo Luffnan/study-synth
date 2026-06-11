@@ -89,7 +89,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
               {
                 icon: <BookOpen className="w-5 h-5 text-ink-900" />,
                 tile: 'bg-accent-lightGreen',
-                title: 'Your notes, complete across the whole term',
+                title: 'Build a library of notes across the year',
                 body: 'Add new sources to existing topics as the term moves forward. By the time exams arrive, every subject is consolidated in one place. Nothing scattered, nothing missing.',
               },
             ].map(f => (
