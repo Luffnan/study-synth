@@ -69,39 +69,41 @@ export default function LandingPage({ onGetStarted, onLogin }) {
             </h2>
           </div>
 
-          <div className="grid sm:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
               {
-                icon: <CheckCircle className="w-5 h-5 text-ink-900" />,
+                icon: <CheckCircle className="w-4 h-4 text-ink-900" />,
                 tile: 'bg-accent-green',
                 title: 'Uses only your ingredients',
-                body: 'Every note Brain Buffet generates comes directly from what you upload. No invented facts, no hallucinated content. If it\'s not in your source, it won\'t be in your notes.',
+                body: 'Every note comes directly from what you upload. If it\'s not in your source, it won\'t be in your notes.',
               },
               {
-                icon: <FileText className="w-5 h-5 text-ink-900" />,
+                icon: <FileText className="w-4 h-4 text-ink-900" />,
                 tile: 'bg-accent-teal',
                 title: 'Intelligent Fact Extraction',
-                body: 'No more trawling through textbooks to find what matters. Brain Buffet pulls out the key facts, concepts, terms and formulas so you can start studying the detail straight away.',
+                body: 'No more trawling through textbooks. Key facts, concepts, terms and formulas pulled out and ready to study.',
               },
               {
-                icon: <Zap className="w-5 h-5 text-ink-900" />,
+                icon: <Zap className="w-4 h-4 text-ink-900" />,
                 tile: 'bg-accent-yellow',
                 title: 'Quizzes with guided marking',
-                body: 'Generate a quiz on any topic in seconds. Varied question types with guided, incremental marking so you don\'t just get a score, you understand where your answer fell short.',
+                body: 'Varied question types with guided, incremental marking so you understand where your answer fell short.',
               },
               {
-                icon: <BookOpen className="w-5 h-5 text-ink-900" />,
+                icon: <BookOpen className="w-4 h-4 text-ink-900" />,
                 tile: 'bg-accent-lightGreen',
                 title: 'Build a library of notes',
-                body: 'Add new sources to existing topics as the term moves forward. By the time exams arrive, every subject is consolidated in one place. Nothing scattered, nothing missing.',
+                body: 'Add sources across the term. By exam time every subject is consolidated in one place, nothing missing.',
               },
             ].map(f => (
-              <div key={f.title} className="bg-white rounded-2xl p-6 border-2 border-ink-900 shadow-hard">
-                <div className={`w-10 h-10 rounded-xl border-2 border-ink-900 flex items-center justify-center mb-4 ${f.tile}`}>
-                  {f.icon}
+              <div key={f.title} className="bg-white rounded-2xl p-4 border-2 border-ink-900 shadow-hard">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className={`w-7 h-7 rounded-lg border-2 border-ink-900 flex items-center justify-center flex-shrink-0 ${f.tile}`}>
+                    {f.icon}
+                  </div>
+                  <h3 className="font-700 text-ink-900 text-sm leading-tight">{f.title}</h3>
                 </div>
-                <h3 className="font-700 text-ink-900 mb-2">{f.title}</h3>
-                <p className="text-sm text-ink-500 leading-relaxed">{f.body}</p>
+                <p className="text-xs text-ink-500 leading-relaxed">{f.body}</p>
               </div>
             ))}
           </div>
