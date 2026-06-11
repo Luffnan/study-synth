@@ -28,22 +28,24 @@ function TipBanner() {
   const [index, setIndex] = useState(startIndex);
   const tip = TIPS[index];
   return (
-    <div className="rounded-2xl border-2 border-ink-900 bg-accent-yellow shadow-hard-sm p-4 flex items-center gap-3 mb-8">
-      <div className="flex-shrink-0">
-        <Zap className="w-[38px] h-[38px] text-ink-900 fill-ink-900" strokeWidth={0} />
+    <div className="relative overflow-hidden rounded-2xl border-2 border-ink-900 bg-accent-yellow shadow-hard">
+      <div className="px-4 py-6 flex items-center gap-3">
+        <div className="flex-shrink-0">
+          <Zap className="w-8 h-8 text-ink-900 fill-ink-900" strokeWidth={0} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-[11px] font-700 text-ink-900 uppercase tracking-wider mb-0.5">Big Brain Tip</p>
+          <p className="text-sm font-700 text-ink-900">{tip.lead}</p>
+          <p className="text-xs text-ink-700 mt-0.5">{tip.body}</p>
+        </div>
+        <button
+          onClick={e => { e.stopPropagation(); setIndex(i => (i + 1) % TIPS.length); }}
+          className="flex-shrink-0 w-7 h-7 rounded-full border-2 border-ink-900 bg-white/60 hover:bg-white flex items-center justify-center transition-colors"
+          title="Next tip"
+        >
+          <ChevronRight className="w-4 h-4 text-ink-900" />
+        </button>
       </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-[15px] font-700 text-ink-900 uppercase tracking-wider mb-0.5">Big Brain Tip</p>
-        <p className="text-sm font-700 text-ink-900">{tip.lead}</p>
-        <p className="text-sm text-ink-700 mt-0.5">{tip.body}</p>
-      </div>
-      <button
-        onClick={() => setIndex(i => (i + 1) % TIPS.length)}
-        className="flex-shrink-0 w-7 h-7 rounded-full border-2 border-ink-900 bg-white/60 hover:bg-white flex items-center justify-center transition-colors"
-        title="Next tip"
-      >
-        <ChevronRight className="w-4 h-4 text-ink-900" />
-      </button>
     </div>
   );
 }
@@ -181,8 +183,6 @@ export default function DashboardPage({ onUpload, onOpenNote, onQuiz, onOpenSubj
         </button>
       </div>
 
-      <TipBanner />
-
       {error && (
         <div className="flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm mb-6">
           <AlertCircle className="w-4 h-4 flex-shrink-0" />{error}
@@ -198,6 +198,7 @@ export default function DashboardPage({ onUpload, onOpenNote, onQuiz, onOpenSubj
           {subjects.length > 0 && (
             <div>
               <div className="grid gap-4 sm:grid-cols-2">
+                <TipBanner />
                 {subjects.map(subject => {
                   const topics = records.filter(r => r.subject_id === subject.id);
                   return (
@@ -283,7 +284,7 @@ function SubjectCard({ subject, topicCount, onOpen, onDelete, onRename }) {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 px-4 py-6 flex items-center gap-3">
+      <div className="relative z-10 px-4 py-[30px] flex items-center gap-3">
         <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
           <BrainLogo className="w-4 h-4 text-white" />
         </div>
