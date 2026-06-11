@@ -29,7 +29,7 @@ function TipBanner() {
   const tip = TIPS[index];
   return (
     <div className="relative overflow-hidden rounded-2xl border-2 border-ink-900 bg-accent-yellow shadow-hard">
-      <div className="px-4 py-6 flex items-center gap-3">
+      <div className="px-4 py-3 flex items-center gap-3">
         <div className="flex-shrink-0">
           <Zap className="w-8 h-8 text-ink-900 fill-ink-900" strokeWidth={0} />
         </div>
@@ -306,7 +306,10 @@ function SubjectCard({ subject, topics, onOpen, onDelete, onRename }) {
               <button onClick={cancelEdit} className="p-1 bg-white/10 hover:bg-white/25 rounded text-white"><X className="w-3 h-3" /></button>
             </div>
           ) : (
+            <div className="flex items-center gap-2 min-w-0">
             <h2 className="text-base font-800 text-white leading-tight truncate">{subject.title}</h2>
+            <span className="text-xs font-600 text-white/60 flex-shrink-0">{topics.length} topic{topics.length !== 1 ? 's' : ''}</span>
+          </div>
           )}
           <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
             <button onClick={startEdit} className="p-1.5 bg-white/15 hover:bg-white/30 rounded-lg text-white transition-colors">
@@ -335,15 +338,6 @@ function SubjectCard({ subject, topics, onOpen, onDelete, onRename }) {
           </ul>
         )}
 
-        {/* Footer */}
-        <div className="mt-3 pt-2.5 border-t border-white/20 flex items-center justify-between">
-          <span className="text-[10px] font-600 text-white/50 uppercase tracking-wider">
-            {topics.length} topic{topics.length !== 1 ? 's' : ''}
-          </span>
-          <span className="text-[10px] font-600 text-white/50 group-hover:text-white/90 transition-colors flex items-center gap-1">
-            Open <ChevronRight className="w-3 h-3" />
-          </span>
-        </div>
       </div>
     </div>
   );
