@@ -13,7 +13,7 @@ const ACCEPTED = {
 };
 const ACCEPTED_EXTS = Object.values(ACCEPTED).flat().join(',');
 
-export default function NotesPage({ notes: initialNotes, noteId, conciseNotesProp, onConciseNotes, onBack, onQuiz }) {
+export default function NotesPage({ notes: initialNotes, noteId, conciseNotesProp, onConciseNotes, onBack, fromSubject, onBackToSubject, onQuiz }) {
   const [mode, setMode] = useState('standard');
   const [conciseNotes, setConciseNotesLocal] = useState(conciseNotesProp ?? null);
   const [conciseLoading, setConciseLoading] = useState(false);
@@ -186,9 +186,15 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
 
       {/* Top bar */}
       <div className="flex items-center justify-between mb-5">
-        <button onClick={onBack} className="flex items-center gap-1.5 text-ink-400 hover:text-ink-800 text-sm font-medium transition-colors">
-          <ArrowLeft className="w-4 h-4" /> Dashboard
-        </button>
+        <nav className="flex items-center gap-1.5 text-sm">
+          <button onClick={onBack} className="text-ink-400 hover:text-ink-800 font-500 transition-colors">Dashboard</button>
+          {fromSubject && (
+            <>
+              <ChevronRight className="w-3.5 h-3.5 text-ink-300 flex-shrink-0" />
+              <button onClick={onBackToSubject} className="text-ink-400 hover:text-ink-800 font-500 transition-colors">{fromSubject.title}</button>
+            </>
+          )}
+        </nav>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setDownloadModalOpen(true)}

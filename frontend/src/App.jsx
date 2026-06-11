@@ -25,9 +25,26 @@ export default function App() {
   const [currentSubject, setCurrentSubject] = useState(null);
   const [allRecords, setAllRecords] = useState([]);
   const [allSubjects, setAllSubjects] = useState([]);
+  const [noteFromSubject, setNoteFromSubject] = useState(null);
 
   // Convenience: the student's year level (null if not set)
   const yearLevel = profile?.year_level ?? null;
+
+  // ── Analytics ────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (typeof window.gtag !== 'function') return;
+    const pages = {
+      landing: '/landing',
+      auth: '/auth',
+      dashboard: '/dashboard',
+      subject: '/subject',
+      notes: '/notes',
+      upload: '/upload',
+      quiz: '/quiz',
+      profile: '/profile',
+    };
+    window.gtag('event', 'page_view', { page_path: pages[view] ?? `/${view}` });
+  }, [view]);
 
   // ── Auth: listen for session changes ────────────────────────────────────────
   useEffect(() => {
@@ -68,11 +85,12 @@ export default function App() {
     setView('notes');
   }
 
-  function handleOpenNote(record) {
+  function handleOpenNote(record, fromSubject = null) {
     setNotes(record.notes);
     setNoteId(record.id);
     setNoteTitle(record.notes.title);
     setConciseNotes(null);
+    setNoteFromSubject(fromSubject);
     setView('notes');
   }
 
@@ -157,14 +175,14 @@ export default function App() {
             allRecords={allRecords}
             subjects={allSubjects}
             onBack={handleReset}
-            onOpenNote={handleOpenNote}
+            onOpenNote={record => handleOpenNote(record, currentSubject)}
             onQuiz={handleStartQuiz}
             onRecordsChange={setAllRecords}
             yearLevel={yearLevel}
           />
         )}
         {view === 'upload'   && <UploadPage onNotes={handleNotes} onBack={handleReset} yearLevel={yearLevel} />}
-        {view === 'notes'    && <NotesPage notes={notes} noteId={noteId} conciseNotesProp={conciseNotes} onConciseNotes={setConciseNotes} onBack={handleReset} onQuiz={() => handleStartQuiz(noteId, noteTitle)} />}
+        {view === 'notes'    && <NotesPage notes={notes} noteId={noteId} conciseNotesProp={conciseNotes} onConciseNotes={setConciseNotes} onBack={handleReset} fromSubject={noteFromSubject} onBackToSubject={() => { setView('subject'); }} onQuiz={() => handleStartQuiz(noteId, noteTitle)} />}
         {view === 'quiz'     && <QuizPage noteId={noteId} noteTitle={noteTitle} notes={notes} yearLevel={yearLevel} onBack={() => setView(notes ? 'notes' : 'dashboard')} />}
         {view === 'profile'  && (
           <ProfilePage
