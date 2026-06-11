@@ -50,7 +50,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
             className="flex items-center gap-2 bg-ink-900 hover:bg-brand-600 text-white px-7 py-3.5 rounded-2xl text-base font-700 transition-colors">
             Create Account <ArrowRight className="w-4 h-4" />
           </button>
-          <p className="text-sm text-accent-lightGreen font-500">Free for a limited time</p>
+          <p className="text-sm text-ink-900/40 font-500">Free for a limited time</p>
         </div>
 
         {/* Social proof */}
