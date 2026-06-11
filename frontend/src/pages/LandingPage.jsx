@@ -80,7 +80,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
               {
                 icon: <FileText className="w-4 h-4 text-ink-900" />,
                 tile: 'bg-accent-teal',
-                title: 'Intelligent Fact Extraction',
+                title: 'Intelligent fact extraction',
                 body: 'No more trawling through textbooks. Key facts, concepts, terms and formulas pulled out and ready to study.',
               },
               {
@@ -96,8 +96,8 @@ export default function LandingPage({ onGetStarted, onLogin }) {
                 body: 'Add sources across the term. By exam time every subject is consolidated in one place, nothing missing.',
               },
             ].map(f => (
-              <div key={f.title} className="bg-white rounded-2xl p-4 border-2 border-ink-900 shadow-hard">
-                <div className="flex items-center gap-2 mb-3">
+              <div key={f.title} className="bg-white rounded-2xl p-5 border-2 border-ink-900 shadow-hard">
+                <div className="flex items-center gap-2 mb-4">
                   <div className={`w-7 h-7 rounded-lg border-2 border-ink-900 flex items-center justify-center flex-shrink-0 ${f.tile}`}>
                     {f.icon}
                   </div>
