@@ -69,13 +69,19 @@ export default function LandingPage({ onGetStarted, onLogin }) {
             </h2>
           </div>
 
-          <div className="grid sm:grid-cols-3 gap-5">
+          <div className="grid sm:grid-cols-2 gap-5">
             {[
               {
                 icon: <CheckCircle className="w-5 h-5 text-ink-900" />,
                 tile: 'bg-accent-green',
                 title: 'Uses only your ingredients',
                 body: 'Every note Brain Buffet generates comes directly from what you upload. No invented facts, no hallucinated content. If it\'s not in your source, it won\'t be in your notes.',
+              },
+              {
+                icon: <FileText className="w-5 h-5 text-ink-900" />,
+                tile: 'bg-accent-teal',
+                title: 'Intelligent Fact Extraction',
+                body: 'No more trawling through textbooks to find what matters. Brain Buffet pulls out the key facts, concepts, terms and formulas so you can start studying the detail straight away.',
               },
               {
                 icon: <Zap className="w-5 h-5 text-ink-900" />,
