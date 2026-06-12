@@ -473,7 +473,7 @@ function TermsPane({ keyTerms }) {
         {keyTerms?.map((item, i) => (
           <div key={i} className="flex gap-4 px-5 py-3.5 flex-col sm:flex-row">
             <dt className="text-sm font-600 text-brand-600 sm:w-40 sm:flex-shrink-0">{item.term}</dt>
-            <dd className="text-sm text-ink-600 leading-relaxed">{item.definition}</dd>
+            <dd className="text-sm text-ink-600 leading-relaxed">{renderPoint(item.definition)}</dd>
           </div>
         ))}
       </dl>
