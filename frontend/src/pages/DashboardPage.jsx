@@ -28,7 +28,7 @@ function TipBanner() {
   const [index, setIndex] = useState(startIndex);
   const tip = TIPS[index];
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-accent-yellow">
+    <div className="relative overflow-hidden rounded-2xl border-2 border-ink-900 bg-accent-yellow shadow-hard">
       <div className="px-4 py-3 flex items-center gap-3">
         <div className="flex-shrink-0">
           <Zap className="w-8 h-8 text-ink-900 fill-ink-900" strokeWidth={0} />

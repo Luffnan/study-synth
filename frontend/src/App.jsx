@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import UploadPage from './pages/UploadPage.jsx';
 import NotesPage from './pages/NotesPage.jsx';
 import DashboardPage from './pages/DashboardPage.jsx';
@@ -10,7 +10,6 @@ import ProfilePage from './pages/ProfilePage.jsx';
 import OnboardingPage from './pages/OnboardingPage.jsx';
 import BrainLogo from './components/BrainLogo.jsx';
 import { supabase } from './lib/supabase.js';
-import { apiFetch } from './lib/api.js';
 import { getProfile, yearLevelLabel } from './lib/profile.js';
 
 export default function App() {
@@ -27,7 +26,6 @@ export default function App() {
   const [allRecords, setAllRecords] = useState([]);
   const [allSubjects, setAllSubjects] = useState([]);
   const [noteFromSubject, setNoteFromSubject] = useState(null);
-  const uploadFromSubject = useRef(null);
 
   // Convenience: the student's year level (null if not set)
   const yearLevel = profile?.year_level ?? null;
@@ -79,25 +77,11 @@ export default function App() {
   }
 
   // ── App navigation ───────────────────────────────────────────────────────────
-  async function handleNotes(data) {
-    const id = data.id ?? null;
+  function handleNotes(data) {
     setNotes(data.notes ?? data);
-    setNoteId(id);
+    setNoteId(data.id ?? null);
     setNoteTitle((data.notes ?? data).title ?? null);
     setConciseNotes(null);
-    if (id && uploadFromSubject.current) {
-      try {
-        await apiFetch(`/api/notes/${id}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ subject_id: uploadFromSubject.current.id }),
-        });
-        setNoteFromSubject(uploadFromSubject.current);
-      } catch (e) {
-        console.error('Failed to assign subject after upload', e);
-      }
-      uploadFromSubject.current = null;
-    }
     setView('notes');
   }
 
@@ -119,7 +103,6 @@ export default function App() {
   function handleReset() {
     setNotes(null);
     setConciseNotes(null);
-    uploadFromSubject.current = null;
     setView('dashboard');
   }
 
@@ -170,7 +153,7 @@ export default function App() {
     <div className="min-h-screen flex flex-col bg-ink-50">
       <Header
         onLogoClick={handleReset}
-        onUploadClick={() => { uploadFromSubject.current = view === 'subject' ? currentSubject : null; setView('upload'); }}
+        onUploadClick={() => setView('upload')}
         onProfileClick={() => setView('profile')}
         view={view}
         user={session.user}
@@ -198,7 +181,7 @@ export default function App() {
             yearLevel={yearLevel}
           />
         )}
-        {view === 'upload'   && <UploadPage onNotes={handleNotes} onBack={handleReset} yearLevel={yearLevel} targetSubject={uploadFromSubject.current} />}
+        {view === 'upload'   && <UploadPage onNotes={handleNotes} onBack={handleReset} yearLevel={yearLevel} />}
         {view === 'notes'    && <NotesPage notes={notes} noteId={noteId} conciseNotesProp={conciseNotes} onConciseNotes={setConciseNotes} onBack={handleReset} fromSubject={noteFromSubject} onBackToSubject={() => { setView('subject'); }} onQuiz={() => handleStartQuiz(noteId, noteTitle)} />}
         {view === 'quiz'     && <QuizPage noteId={noteId} noteTitle={noteTitle} notes={notes} yearLevel={yearLevel} onBack={() => setView(notes ? 'notes' : 'dashboard')} />}
         {view === 'profile'  && (
