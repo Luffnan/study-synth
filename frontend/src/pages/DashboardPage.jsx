@@ -600,18 +600,18 @@ export function AddSourcesModal({ target, yearLevel, onDone, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md animate-slide-up max-h-[90vh] overflow-y-auto">
-        <div className="flex items-start justify-between p-6 pb-4">
-          <div>
-            <h2 className="font-700 text-ink-900 text-base">Add sources</h2>
-            <p className="text-ink-400 text-sm mt-0.5 line-clamp-1">{target.title}</p>
+      <div className="relative bg-ink-50 rounded-2xl border-2 border-ink-900 shadow-hard w-full max-w-md animate-slide-up max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between px-5 pt-5 pb-4">
+          <div className="flex items-center gap-2">
+            <Plus className="w-4 h-4 text-ink-900" />
+            <h2 className="font-700 text-ink-900 text-base">Add source</h2>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-ink-100 text-ink-400 transition-colors"><X className="w-4 h-4" /></button>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-ink-200 text-ink-400 transition-colors"><X className="w-4 h-4" /></button>
         </div>
-        <div className="flex gap-1 mx-6 mb-4 bg-ink-100 rounded-xl p-1">
+        <div className="flex gap-1 mx-5 mb-4 bg-ink-200 rounded-xl p-1">
           {['files', 'youtube'].map(t => (
             <button key={t} onClick={() => setTab(t)}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-600 transition-all ${tab === t ? 'bg-white text-ink-900 shadow-sm' : 'text-ink-400 hover:text-ink-600'}`}>
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-600 transition-all ${tab === t ? 'bg-white text-ink-900 shadow-hard-sm border border-ink-900' : 'text-ink-500 hover:text-ink-700'}`}>
               {t === 'files' ? <><UploadCloud className="w-3.5 h-3.5" /> Files</> : <><Youtube className="w-3.5 h-3.5" /> YouTube</>}
             </button>
           ))}
@@ -647,20 +647,20 @@ function FilesTab({ target, yearLevel, onDone, onClose }) {
   }
 
   return (
-    <div className="px-6 pb-6 space-y-4">
+    <div className="px-5 pb-5 space-y-3">
       <div onDragOver={e => { e.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)}
         onDrop={e => { e.preventDefault(); setDragging(false); addFiles(e.dataTransfer.files); }}
         onClick={() => inputRef.current?.click()}
-        className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${dragging ? 'border-brand-400 bg-brand-50' : 'border-ink-200 hover:border-brand-300 hover:bg-ink-50'}`}>
-        <UploadCloud className="w-7 h-7 text-ink-300 mx-auto mb-2" />
-        <p className="text-sm font-medium text-ink-600">Drop files or <span className="text-brand-600">browse</span></p>
-        <p className="text-xs text-ink-400 mt-1">PDF, JPG, PNG</p>
+        className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${dragging ? 'border-brand-500 bg-brand-500/5' : 'border-ink-300 hover:border-ink-500 hover:bg-white'}`}>
+        <UploadCloud className="w-6 h-6 text-ink-400 mx-auto mb-2" />
+        <p className="text-sm font-600 text-ink-700">Drop files or <span className="text-brand-500">browse</span></p>
+        <p className="text-xs text-ink-400 mt-1">PDF · JPG · PNG · WEBP</p>
         <input ref={inputRef} type="file" multiple accept=".pdf,image/*" className="hidden" onChange={e => addFiles(e.target.files)} />
       </div>
       {files.length > 0 && (
         <ul className="space-y-1.5">
           {files.map(f => (
-            <li key={f.name} className="flex items-center gap-2 bg-ink-50 rounded-lg px-3 py-2 text-sm">
+            <li key={f.name} className="flex items-center gap-2 bg-white border border-ink-200 rounded-lg px-3 py-2 text-sm">
               <FileText className="w-3.5 h-3.5 text-ink-400 flex-shrink-0" />
               <span className="flex-1 text-ink-700 truncate">{f.name}</span>
               <button onClick={() => setFiles(p => p.filter(x => x.name !== f.name))} className="text-ink-300 hover:text-red-400"><X className="w-3.5 h-3.5" /></button>
@@ -669,12 +669,12 @@ function FilesTab({ target, yearLevel, onDone, onClose }) {
         </ul>
       )}
       {error && <p className="text-sm text-red-500">{error}</p>}
-      {processing && <div className="flex items-center gap-2 text-sm text-brand-700 bg-brand-50 rounded-xl px-4 py-3"><Loader2 className="w-4 h-4 animate-spin" />Merging… 20–30 seconds</div>}
-      <div className="flex gap-2">
-        {!processing && <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-ink-200 text-ink-600 text-sm font-500">Cancel</button>}
+      {processing && <div className="flex items-center gap-2 text-sm text-ink-700 bg-white border border-ink-200 rounded-xl px-4 py-3"><Loader2 className="w-4 h-4 animate-spin" />Merging… 20–30 seconds</div>}
+      <div className="flex gap-2 pt-1">
+        {!processing && <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border-2 border-ink-200 text-ink-600 hover:bg-white text-sm font-600 transition-colors">Cancel</button>}
         <button onClick={handleSubmit} disabled={!files.length || processing}
-          className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-ink-900 hover:bg-brand-600 text-white text-sm font-600 disabled:opacity-40 transition-colors">
-          {processing ? <><Loader2 className="w-4 h-4 animate-spin" />Processing…</> : <><Plus className="w-4 h-4" />Merge</>}
+          className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 border-ink-900 bg-ink-900 hover:bg-brand-600 hover:border-brand-600 text-white text-sm font-700 disabled:opacity-40 transition-colors shadow-hard-sm">
+          {processing ? <><Loader2 className="w-4 h-4 animate-spin" />Processing…</> : <><Plus className="w-4 h-4" />Merge into notes</>}
         </button>
       </div>
     </div>
@@ -702,19 +702,19 @@ function YouTubeTab({ target, onDone, onClose }) {
   }
 
   return (
-    <div className="px-6 pb-6 space-y-4">
-      <div className="flex items-center gap-2 bg-ink-50 border-2 border-ink-200 focus-within:border-brand-400 rounded-xl px-3">
+    <div className="px-5 pb-5 space-y-3">
+      <div className="flex items-center gap-2 bg-white border-2 border-ink-200 focus-within:border-ink-900 rounded-xl px-3 transition-colors">
         <Link className="w-4 h-4 text-ink-400 flex-shrink-0" />
         <input value={url} onChange={e => setUrl(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSubmit()}
           placeholder="https://youtube.com/watch?v=…" disabled={processing}
           className="flex-1 py-3 bg-transparent text-sm text-ink-700 placeholder-ink-400 focus:outline-none" />
       </div>
       {error && <p className="text-sm text-red-500">{error}</p>}
-      {processing && <div className="flex items-center gap-2 text-sm text-red-700 bg-red-50 rounded-xl px-4 py-3"><Loader2 className="w-4 h-4 animate-spin" />Fetching transcript… 30–45 seconds</div>}
-      <div className="flex gap-2">
-        {!processing && <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-ink-200 text-ink-600 text-sm font-500">Cancel</button>}
+      {processing && <div className="flex items-center gap-2 text-sm text-ink-700 bg-white border border-ink-200 rounded-xl px-4 py-3"><Loader2 className="w-4 h-4 animate-spin" />Fetching transcript… 30–45 seconds</div>}
+      <div className="flex gap-2 pt-1">
+        {!processing && <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border-2 border-ink-200 text-ink-600 hover:bg-white text-sm font-600 transition-colors">Cancel</button>}
         <button onClick={handleSubmit} disabled={!url.trim() || processing}
-          className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-600 disabled:opacity-40 transition-colors">
+          className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 border-ink-900 bg-ink-900 hover:bg-brand-600 hover:border-brand-600 text-white text-sm font-700 disabled:opacity-40 transition-colors shadow-hard-sm">
           {processing ? <><Loader2 className="w-4 h-4 animate-spin" />Processing…</> : <><Youtube className="w-4 h-4" />Add video</>}
         </button>
       </div>

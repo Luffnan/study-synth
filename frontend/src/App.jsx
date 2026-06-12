@@ -26,6 +26,7 @@ export default function App() {
   const [allRecords, setAllRecords] = useState([]);
   const [allSubjects, setAllSubjects] = useState([]);
   const [noteFromSubject, setNoteFromSubject] = useState(null);
+  const [uploadFromSubject, setUploadFromSubject] = useState(null);
 
   // Convenience: the student's year level (null if not set)
   const yearLevel = profile?.year_level ?? null;
@@ -77,11 +78,17 @@ export default function App() {
   }
 
   // ── App navigation ───────────────────────────────────────────────────────────
-  function handleNotes(data) {
+  async function handleNotes(data) {
+    const id = data.id ?? null;
     setNotes(data.notes ?? data);
-    setNoteId(data.id ?? null);
+    setNoteId(id);
     setNoteTitle((data.notes ?? data).title ?? null);
     setConciseNotes(null);
+    if (id && uploadFromSubject) {
+      await supabase.from('records').update({ subject_id: uploadFromSubject.id }).eq('id', id);
+      setUploadFromSubject(null);
+      setNoteFromSubject(uploadFromSubject);
+    }
     setView('notes');
   }
 
@@ -103,6 +110,7 @@ export default function App() {
   function handleReset() {
     setNotes(null);
     setConciseNotes(null);
+    setUploadFromSubject(null);
     setView('dashboard');
   }
 
@@ -153,7 +161,7 @@ export default function App() {
     <div className="min-h-screen flex flex-col bg-ink-50">
       <Header
         onLogoClick={handleReset}
-        onUploadClick={() => setView('upload')}
+        onUploadClick={() => { setUploadFromSubject(view === 'subject' ? currentSubject : null); setView('upload'); }}
         onProfileClick={() => setView('profile')}
         view={view}
         user={session.user}

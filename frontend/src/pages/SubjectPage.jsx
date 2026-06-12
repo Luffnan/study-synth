@@ -85,7 +85,7 @@ export default function SubjectPage({
           onClick={onBack}
           className="text-ink-400 hover:text-ink-700 font-500 transition-colors"
         >
-          My Study Notes
+          Dashboard
         </button>
         <ChevronRight className="w-4 h-4 text-ink-300 flex-shrink-0" />
         <span className="text-ink-700 font-600">{subject.title}</span>
