@@ -189,7 +189,7 @@ export default function App() {
             yearLevel={yearLevel}
           />
         )}
-        {view === 'upload'   && <UploadPage onNotes={handleNotes} onBack={handleReset} yearLevel={yearLevel} />}
+        {view === 'upload'   && <UploadPage onNotes={handleNotes} onBack={handleReset} yearLevel={yearLevel} targetSubject={uploadFromSubject.current} />}
         {view === 'notes'    && <NotesPage notes={notes} noteId={noteId} conciseNotesProp={conciseNotes} onConciseNotes={setConciseNotes} onBack={handleReset} fromSubject={noteFromSubject} onBackToSubject={() => { setView('subject'); }} onQuiz={() => handleStartQuiz(noteId, noteTitle)} />}
         {view === 'quiz'     && <QuizPage noteId={noteId} noteTitle={noteTitle} notes={notes} yearLevel={yearLevel} onBack={() => setView(notes ? 'notes' : 'dashboard')} />}
         {view === 'profile'  && (

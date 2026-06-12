@@ -1,7 +1,7 @@
 import { apiFetch } from '../lib/api.js';
 import { submitFiles } from '../lib/upload.js';
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { FileText, Image, X, Loader2, AlertCircle, ArrowLeft, ArrowUp, Youtube, Link } from 'lucide-react';
+import { FileText, Image, X, Loader2, AlertCircle, ArrowLeft, ArrowUp, Youtube, Link, FolderOpen } from 'lucide-react';
 import BrainLogo from '../components/BrainLogo.jsx';
 
 const ACCEPTED = {
@@ -13,7 +13,7 @@ const ACCEPTED = {
 };
 const ACCEPTED_EXTS = Object.values(ACCEPTED).flat().join(',');
 
-export default function UploadPage({ onNotes, onBack, yearLevel }) {
+export default function UploadPage({ onNotes, onBack, yearLevel, targetSubject }) {
   const [tab, setTab] = useState('files'); // 'files' | 'youtube'
   const [loading, setLoading] = useState(false);
   // Lifted so state survives the ProcessingPanel swap (FilesPanel would remount otherwise)
@@ -36,6 +36,16 @@ export default function UploadPage({ onNotes, onBack, yearLevel }) {
         <button onClick={onBack} className="flex items-center gap-1.5 text-ink-400 hover:text-ink-700 text-sm font-medium mb-6 transition-colors">
           <ArrowLeft className="w-4 h-4" /> Dashboard
         </button>
+      )}
+
+      {/* Subject context banner */}
+      {targetSubject && (
+        <div className="flex items-center gap-2 mb-5 px-3 py-2.5 rounded-xl border-2 border-ink-900 bg-accent-yellow shadow-hard-sm">
+          <FolderOpen className="w-4 h-4 text-ink-900 flex-shrink-0" />
+          <p className="text-sm font-700 text-ink-900">
+            Adding to <span className="underline underline-offset-2">{targetSubject.title}</span>
+          </p>
+        </div>
       )}
 
       {/* Hero */}
