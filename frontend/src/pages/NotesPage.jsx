@@ -371,7 +371,7 @@ function looksLikeFormula(s) {
   if (!s.includes('=')) return false;
   if (!/[+\-–−×÷*/%]|\d/.test(s.replace(/=/g, ''))) return false;
   // Reject prose: connective words signal a sentence, not an equation
-  if (/\b(who|which|that|where|when|the|a|an|of|are|is|to|and)\b/i.test(s)) return false;
+  if (/\b(who|which|that|where|when|the|a|an|are|is|and|refers|means|defined|describes|used|allows|helps)\b/i.test(s)) return false;
   return true;
 }
 

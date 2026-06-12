@@ -1,4 +1,4 @@
-import { BookOpen, Zap, Youtube, Hash, CheckCircle, ArrowRight, FileText, Image } from 'lucide-react';
+import { BookOpen, Zap, Youtube, Hash, CheckCircle, ArrowRight, FileText, Image, Monitor } from 'lucide-react';
 import BrainLogo from '../components/BrainLogo.jsx';
 
 export default function LandingPage({ onGetStarted, onLogin }) {
@@ -158,6 +158,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
             {[
               { icon: <FileText className="w-4 h-4" />, label: 'PDF Textbooks' },
               { icon: <Image className="w-4 h-4" />,    label: 'Photos & Screenshots' },
+              { icon: <Monitor className="w-4 h-4" />,   label: 'Slide Decks' },
               { icon: <Youtube className="w-4 h-4" />,  label: 'YouTube Videos' },
               { icon: <Hash className="w-4 h-4" />,     label: 'Any subject, any level' },
             ].map(s => (
