@@ -5,13 +5,13 @@ export default function LandingPage({ onGetStarted, onLogin }) {
   return (
     <div className="min-h-screen bg-ink-50">
 
-      {/* ── Nav ── */}
-      <header className="sticky top-0 z-20 bg-ink-50/90 backdrop-blur-md border-b border-ink-900/10">
+      {/* ── Nav — desktop only ── */}
+      <header className="hidden sm:block sticky top-0 z-20 bg-ink-50/90 backdrop-blur-md border-b border-ink-900/10">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-3">
           <div className="flex items-center gap-2 flex-shrink-0">
             <img src="/brain.png" alt="Brain Buffet" className="w-7 h-7" />
             <span className="text-[15px] font-700 tracking-tight text-ink-900">Brain Buffet</span>
-            <span className="hidden sm:inline text-[11px] font-600 text-ink-900 bg-transparent border border-ink-900 px-2 py-0.5 rounded-full">beta</span>
+            <span className="text-[11px] font-600 text-ink-900 bg-transparent border border-ink-900 px-2 py-0.5 rounded-full">beta</span>
           </div>
           <div className="hidden lg:flex absolute left-1/2 -translate-x-1/2 items-center gap-1 text-xs text-ink-400 font-500">
             <img src="/fork.png" alt="fork" className="w-5 h-5 opacity-40" />
@@ -19,7 +19,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
           </div>
           <div className="ml-auto flex items-center gap-2">
             <button onClick={onLogin}
-              className="hidden sm:block px-4 py-2 rounded-xl text-sm font-600 text-ink-600 hover:text-ink-900 hover:bg-ink-100 transition-colors">
+              className="px-4 py-2 rounded-xl text-sm font-600 text-ink-600 hover:text-ink-900 hover:bg-ink-100 transition-colors">
               Sign in
             </button>
             <button onClick={onGetStarted}
@@ -31,30 +31,39 @@ export default function LandingPage({ onGetStarted, onLogin }) {
       </header>
 
       {/* ── Hero ── */}
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 pt-12 pb-10 text-center">
+      <section className="max-w-5xl mx-auto px-5 sm:px-6 pb-8 sm:pb-10 text-center">
 
-        <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-600 text-ink-900 leading-tight mb-6">
-          Turn any content into
-          <br />
-          <span className="italic font-500">perfect study notes</span>
-        </h1>
+        {/* Mobile-only logo lockup */}
+        <div className="flex flex-col items-center pt-10 pb-6 sm:hidden">
+          <img src="/brain.png" alt="Brain Buffet" className="w-14 h-14 mb-3" />
+          <span className="text-[22px] font-700 tracking-tight text-ink-900">Brain Buffet</span>
+          <span className="mt-1.5 text-[11px] font-600 text-ink-900 border border-ink-900 px-2.5 py-0.5 rounded-full">beta</span>
+        </div>
 
-        <p className="text-lg sm:text-xl text-ink-500 max-w-2xl mx-auto mb-8 leading-relaxed">
-          Upload anything: textbooks, lecture slides, handwritten notes, YouTube videos.
-          Brain Buffet structures it into notes and quizzes built entirely from your material.
-        </p>
+        <div className="sm:pt-12">
+          <h1 className="font-display text-[2.55rem] sm:text-5xl lg:text-6xl font-600 text-ink-900 leading-[1.1] mb-4 sm:mb-6">
+            Turn any content into
+            <br />
+            <span className="italic font-500">perfect study notes</span>
+          </h1>
 
-        <div className="flex flex-col items-center justify-center gap-3">
-          <button onClick={onGetStarted}
-            className="flex items-center gap-2 bg-ink-900 hover:bg-brand-600 text-white px-7 py-3.5 rounded-2xl text-base font-700 transition-colors">
-            Create Account <ArrowRight className="w-4 h-4" />
-          </button>
-          <div className="flex items-center justify-center gap-2 text-xs text-ink-400 font-500">
-            <span>Free during beta</span>
-            <span className="w-1 h-1 rounded-full bg-ink-300 flex-shrink-0" />
-            <span>No credit card needed</span>
-            <span className="w-1 h-1 rounded-full bg-ink-300 flex-shrink-0" />
-            <span>Year 7 to university</span>
+          <p className="text-[15px] sm:text-xl text-ink-500 max-w-2xl mx-auto mb-7 sm:mb-8 leading-relaxed">
+            Upload anything: textbooks, lecture slides, handwritten notes, YouTube videos.
+            Brain Buffet structures it into notes and quizzes built entirely from your material.
+          </p>
+
+          <div className="flex flex-col items-center justify-center gap-3">
+            <button onClick={onGetStarted}
+              className="flex items-center gap-2 bg-ink-900 hover:bg-brand-600 text-white px-7 py-3.5 rounded-2xl text-base font-700 transition-colors w-full sm:w-auto justify-center">
+              Create Account <ArrowRight className="w-4 h-4" />
+            </button>
+            <div className="flex flex-col items-center gap-1 text-[11px] text-ink-400 font-500 tracking-wide sm:flex-row sm:gap-1.5">
+              <span>Free during beta</span>
+              <span className="hidden sm:block w-0.5 h-0.5 rounded-full bg-ink-300" />
+              <span>No credit card needed</span>
+              <span className="hidden sm:block w-0.5 h-0.5 rounded-full bg-ink-300" />
+              <span>Year 7 to university</span>
+            </div>
           </div>
         </div>
       </section>
