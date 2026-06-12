@@ -242,18 +242,8 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
         <ConciseLoadingState onSwitchBack={() => setMode('standard')} />
       ) : (
         <>
-        {/* ── Mobile nav (hamburger) ── */}
-        <div className="sm:hidden w-full mb-4">
-          <button
-            onClick={() => setTopicMenuOpen(true)}
-            className="flex items-center gap-2 px-3 py-2 rounded-xl border-2 border-ink-900 bg-white text-ink-900 text-sm font-600 shadow-hard-sm"
-          >
-            <Menu className="w-4 h-4" />
-            <span className="truncate max-w-[200px]">{selected?.label || 'Topics'}</span>
-            <ChevronDown className="w-3.5 h-3.5 ml-auto flex-shrink-0" />
-          </button>
-
-          {topicMenuOpen && (
+        {/* ── Mobile topic menu overlay ── */}
+        {topicMenuOpen && (
             <div className="fixed inset-0 z-50 flex flex-col justify-end" onClick={() => setTopicMenuOpen(false)}>
               <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
               <div className="relative bg-ink-50 rounded-t-2xl border-t-2 border-ink-900 pb-8 max-h-[70vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
@@ -286,7 +276,6 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
               </div>
             </div>
           )}
-        </div>
 
         <div className="flex gap-6 items-start">
 
@@ -351,7 +340,7 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
           {/* ── Content pane ── */}
           <div className="flex-1 min-w-0">
             {selected?.type === 'topic' && (
-              <TopicPane topic={activeNotes.topics[selected.index]} mode={mode} />
+              <TopicPane topic={activeNotes.topics[selected.index]} mode={mode} onOpenMenu={() => setTopicMenuOpen(true)} />
             )}
             {selected?.type === 'terms' && (
               <TermsPane keyTerms={activeNotes.keyTerms} />
@@ -417,7 +406,7 @@ function renderPoint(text) {
 
 // ── Topic pane ────────────────────────────────────────────────────────────────
 
-function TopicPane({ topic, mode }) {
+function TopicPane({ topic, mode, onOpenMenu }) {
   const [openSubs, setOpenSubs] = useState({});
 
   // Default all subtopics open
@@ -429,9 +418,17 @@ function TopicPane({ topic, mode }) {
 
   return (
     <div className="space-y-2">
-      <div className="bg-white rounded-2xl border-2 border-ink-900 px-5 py-4 mb-3">
-        <h2 className="font-700 text-ink-900 text-lg">{topic.name}</h2>
-        <p className="text-ink-400 text-sm mt-0.5">{topic.subtopics?.length || 0} subtopics</p>
+      <div
+        className="bg-white rounded-2xl border-2 border-ink-900 px-5 py-4 mb-3 sm:cursor-default cursor-pointer sm:pointer-events-none"
+        onClick={onOpenMenu}
+      >
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="font-700 text-ink-900 text-lg leading-tight">{topic.name}</h2>
+          <div className="sm:hidden flex items-center gap-1.5 flex-shrink-0 text-ink-400">
+            <Menu className="w-4 h-4" />
+            <ChevronDown className="w-3.5 h-3.5" />
+          </div>
+        </div>
       </div>
       {topic.subtopics?.map((sub, si) => {
         const isOpen = openSubs[si] !== false;
