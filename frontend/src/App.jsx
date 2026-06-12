@@ -10,6 +10,7 @@ import ProfilePage from './pages/ProfilePage.jsx';
 import OnboardingPage from './pages/OnboardingPage.jsx';
 import BrainLogo from './components/BrainLogo.jsx';
 import { supabase } from './lib/supabase.js';
+import { apiFetch } from './lib/api.js';
 import { getProfile, yearLevelLabel } from './lib/profile.js';
 
 export default function App() {
@@ -85,8 +86,16 @@ export default function App() {
     setNoteTitle((data.notes ?? data).title ?? null);
     setConciseNotes(null);
     if (id && uploadFromSubject.current) {
-      await supabase.from('records').update({ subject_id: uploadFromSubject.current.id }).eq('id', id);
-      setNoteFromSubject(uploadFromSubject.current);
+      try {
+        await apiFetch(`/api/notes/${id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ subject_id: uploadFromSubject.current.id }),
+        });
+        setNoteFromSubject(uploadFromSubject.current);
+      } catch (e) {
+        console.error('Failed to assign subject after upload', e);
+      }
       uploadFromSubject.current = null;
     }
     setView('notes');
