@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import UploadPage from './pages/UploadPage.jsx';
 import NotesPage from './pages/NotesPage.jsx';
 import DashboardPage from './pages/DashboardPage.jsx';
@@ -26,7 +26,7 @@ export default function App() {
   const [allRecords, setAllRecords] = useState([]);
   const [allSubjects, setAllSubjects] = useState([]);
   const [noteFromSubject, setNoteFromSubject] = useState(null);
-  const [uploadFromSubject, setUploadFromSubject] = useState(null);
+  const uploadFromSubject = useRef(null);
 
   // Convenience: the student's year level (null if not set)
   const yearLevel = profile?.year_level ?? null;
@@ -84,10 +84,10 @@ export default function App() {
     setNoteId(id);
     setNoteTitle((data.notes ?? data).title ?? null);
     setConciseNotes(null);
-    if (id && uploadFromSubject) {
-      await supabase.from('records').update({ subject_id: uploadFromSubject.id }).eq('id', id);
-      setUploadFromSubject(null);
-      setNoteFromSubject(uploadFromSubject);
+    if (id && uploadFromSubject.current) {
+      await supabase.from('records').update({ subject_id: uploadFromSubject.current.id }).eq('id', id);
+      setNoteFromSubject(uploadFromSubject.current);
+      uploadFromSubject.current = null;
     }
     setView('notes');
   }
@@ -110,7 +110,7 @@ export default function App() {
   function handleReset() {
     setNotes(null);
     setConciseNotes(null);
-    setUploadFromSubject(null);
+    uploadFromSubject.current = null;
     setView('dashboard');
   }
 
@@ -161,7 +161,7 @@ export default function App() {
     <div className="min-h-screen flex flex-col bg-ink-50">
       <Header
         onLogoClick={handleReset}
-        onUploadClick={() => { setUploadFromSubject(view === 'subject' ? currentSubject : null); setView('upload'); }}
+        onUploadClick={() => { uploadFromSubject.current = view === 'subject' ? currentSubject : null; setView('upload'); }}
         onProfileClick={() => setView('profile')}
         view={view}
         user={session.user}
