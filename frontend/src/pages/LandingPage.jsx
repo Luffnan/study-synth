@@ -95,7 +95,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
                 icon: <Zap className="w-4 h-4 text-ink-900" />,
                 tile: 'bg-accent-yellow',
                 title: 'Quizzes with guided marking',
-                body: 'Varied question types with guided, incremental marking so you understand where your answer fell short.',
+                body: 'Varied question types with guided, incremental marking that teaches you how to write the perfect answer.',
               },
               {
                 icon: <BookOpen className="w-4 h-4 text-ink-900" />,
@@ -160,13 +160,13 @@ export default function LandingPage({ onGetStarted, onLogin }) {
               { icon: <Image className="w-4 h-4" />,    label: 'Photos & Screenshots' },
               { icon: <Monitor className="w-4 h-4" />,   label: 'Slide Decks' },
               { icon: <Youtube className="w-4 h-4" />,  label: 'YouTube Videos' },
-              { icon: <Hash className="w-4 h-4" />,     label: 'Any subject, any level' },
             ].map(s => (
               <div key={s.label} className="flex items-center gap-2 bg-white border-2 border-ink-900 rounded-full px-4 py-2 text-sm font-600 text-ink-700">
                 {s.icon}{s.label}
               </div>
             ))}
           </div>
+          <p className="text-center text-xs font-500 text-ink-400 mt-4">...and more</p>
         </div>
       </section>
 
