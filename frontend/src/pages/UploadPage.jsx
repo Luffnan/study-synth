@@ -40,7 +40,7 @@ export default function UploadPage({ onNotes, onBack, yearLevel }) {
 
       {/* Hero */}
       <div className="text-center mb-6">
-        <img src="/brain.png" alt="Brain Buffet" className="w-10 h-10 mb-3" />
+        <img src="/brain.png" alt="Brain Buffet" className="w-10 h-10 mb-3 mx-auto" />
         <h1 className="text-2xl sm:text-3xl font-800 text-ink-900 leading-tight mb-1.5">
           Create study notes
         </h1>

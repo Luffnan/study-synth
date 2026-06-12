@@ -1,7 +1,7 @@
 import { apiFetch } from '../lib/api.js';
 import { submitFiles } from '../lib/upload.js';
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { ArrowLeft, ChevronDown, ChevronRight, Download, BookOpen, Hash, FileText, Zap, Layers, Youtube, CheckCircle, Loader2, FileDown, Plus, ArrowUp, X, Link, AlertCircle, Image } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronRight, Download, BookOpen, Hash, FileText, Zap, Layers, Youtube, CheckCircle, Loader2, FileDown, Plus, ArrowUp, X, Link, AlertCircle, Image, Menu } from 'lucide-react';
 import { generateDocx } from '../utils/generateDocx.js';
 
 const ACCEPTED = {
@@ -70,6 +70,7 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
   const [docxLoading, setDocxLoading] = useState(false);
   const [downloadModalOpen, setDownloadModalOpen] = useState(false);
   const [addSourceOpen, setAddSourceOpen] = useState(false);
+  const [topicMenuOpen, setTopicMenuOpen] = useState(false);
 
   // When mode switches, reset selected to first item
   useEffect(() => {
@@ -186,15 +187,13 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
 
       {/* Top bar */}
       <div className="flex items-center justify-between mb-5">
-        <nav className="flex items-center gap-1.5 text-sm">
-          <button onClick={onBack} className="text-ink-400 hover:text-ink-800 font-500 transition-colors">Dashboard</button>
-          {fromSubject && (
-            <>
-              <ChevronRight className="w-3.5 h-3.5 text-ink-300 flex-shrink-0" />
-              <button onClick={onBackToSubject} className="text-ink-400 hover:text-ink-800 font-500 transition-colors">{fromSubject.title}</button>
-            </>
-          )}
-        </nav>
+        <button
+          onClick={fromSubject ? onBackToSubject : onBack}
+          className="flex items-center gap-1.5 text-sm font-600 text-ink-400 hover:text-ink-800 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>{fromSubject ? fromSubject.title : 'Dashboard'}</span>
+        </button>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setDownloadModalOpen(true)}
@@ -230,11 +229,6 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
       <div className="mb-5 flex items-end justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-800 text-ink-900 leading-tight">{initialNotes.title || 'Study Notes'}</h1>
-          <p className="text-ink-400 text-sm mt-1">
-            {activeNotes.topics?.length || 0} topics · {activeNotes.topics?.reduce((a, t) => a + (t.subtopics?.length || 0), 0) || 0} subtopics
-            {activeNotes.keyTerms?.length > 0 && ` · ${activeNotes.keyTerms.length} key terms`}
-            {videoSources.length > 0 && ` · ${videoSources.length} video${videoSources.length > 1 ? 's' : ''}`}
-          </p>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           {conciseError && <span className="text-xs text-red-500">Failed — try again</span>}
@@ -248,27 +242,50 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
         <ConciseLoadingState onSwitchBack={() => setMode('standard')} />
       ) : (
         <>
-        {/* ── Mobile nav (horizontal scroll) — full width above the flex area ── */}
+        {/* ── Mobile nav (hamburger) ── */}
         <div className="sm:hidden w-full mb-4">
-          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-            {currentSidebarItems.map((item, i) => {
-              const isSelected = selected?.type === item.type &&
-                (item.type === 'topic' ? selected.index === item.index :
-                 item.type === 'video' ? selected.videoId === item.videoId : true);
-              return (
-                <button key={i} onClick={() => setSelected(item)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-500 whitespace-nowrap flex-shrink-0 transition-colors ${
-                    isSelected ? 'bg-ink-900 text-white' : 'bg-white border border-ink-100 text-ink-500 hover:text-ink-700'
-                  }`}
-                >
-                  {item.type === 'video' && <Youtube className="w-3 h-3" />}
-                  {item.type === 'terms' && <Hash className="w-3 h-3" />}
-                  {item.type === 'topic' && <span className="font-700">{item.index + 1}</span>}
-                  <span className="max-w-[120px] truncate">{item.label}</span>
-                </button>
-              );
-            })}
-          </div>
+          <button
+            onClick={() => setTopicMenuOpen(true)}
+            className="flex items-center gap-2 px-3 py-2 rounded-xl border-2 border-ink-900 bg-white text-ink-900 text-sm font-600 shadow-hard-sm"
+          >
+            <Menu className="w-4 h-4" />
+            <span className="truncate max-w-[200px]">{selected?.label || 'Topics'}</span>
+            <ChevronDown className="w-3.5 h-3.5 ml-auto flex-shrink-0" />
+          </button>
+
+          {topicMenuOpen && (
+            <div className="fixed inset-0 z-50 flex flex-col justify-end" onClick={() => setTopicMenuOpen(false)}>
+              <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+              <div className="relative bg-ink-50 rounded-t-2xl border-t-2 border-ink-900 pb-8 max-h-[70vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+                <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-ink-100">
+                  <p className="text-sm font-700 text-ink-900">Topics</p>
+                  <button onClick={() => setTopicMenuOpen(false)} className="p-1.5 hover:bg-ink-100 rounded-lg text-ink-400"><X className="w-4 h-4" /></button>
+                </div>
+                <ul className="px-3 pt-2 space-y-1">
+                  {currentSidebarItems.map((item, i) => {
+                    const isSelected = selected?.type === item.type &&
+                      (item.type === 'topic' ? selected.index === item.index :
+                       item.type === 'video' ? selected.videoId === item.videoId : true);
+                    return (
+                      <li key={i}>
+                        <button
+                          onClick={() => { setSelected(item); setTopicMenuOpen(false); }}
+                          className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-500 text-left transition-colors ${
+                            isSelected ? 'bg-ink-900 text-white' : 'text-ink-700 hover:bg-ink-100'
+                          }`}
+                        >
+                          {item.type === 'video' && <Youtube className="w-4 h-4 flex-shrink-0" />}
+                          {item.type === 'terms' && <Hash className="w-4 h-4 flex-shrink-0" />}
+                          {item.type === 'topic' && <span className={`w-5 h-5 rounded-full text-[11px] font-700 flex items-center justify-center flex-shrink-0 ${isSelected ? 'bg-white/20' : 'bg-ink-200'}`}>{item.index + 1}</span>}
+                          <span>{item.label}</span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="flex gap-6 items-start">
