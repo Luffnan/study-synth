@@ -156,7 +156,7 @@ export default function App() {
 
   // ── Authenticated ────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen flex flex-col bg-ink-50">
+    <div className="min-h-screen flex flex-col bg-white">
       <Header
         onLogoClick={handleReset}
         onUploadClick={() => setView('upload')}
@@ -212,7 +212,7 @@ function Header({ onLogoClick, onUploadClick, onProfileClick, view, user, yearLe
   const avatarUrl = user?.user_metadata?.avatar_url;
 
   return (
-    <header className="bg-ink-50/90 backdrop-blur-md border-b border-ink-900/10 sticky top-0 z-20">
+    <header className="bg-white/90 backdrop-blur-md border-b border-ink-100 sticky top-0 z-20">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center relative">
         {/* Logo — left */}
         <button onClick={onLogoClick} className="flex items-center gap-2 group flex-shrink-0">

@@ -176,7 +176,7 @@ export default function DashboardPage({ onUpload, onOpenNote, onOpenNoteAtSource
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-800 text-ink-900">My Study Notes</h1>
+          <h1 className="font-display text-2xl sm:text-3xl font-700 text-ink-900">My Study Notes</h1>
           <p className="text-ink-400 text-sm mt-1">
             {subjects.length > 0
               ? `${subjects.length} subject${subjects.length !== 1 ? 's' : ''} · ${records.length} topic${records.length !== 1 ? 's' : ''}`
@@ -548,7 +548,7 @@ export function TopicCard({ record, onClick, onOpenSources, onDelete, onQuiz, on
       </div>
 
       {/* Bottom action bar — slides in on hover */}
-      <div className="border-t border-ink-100 bg-ink-50 px-3 py-2 flex items-center gap-0.5 rounded-b-2xl
+      <div className="border-t border-ink-100 bg-white px-3 py-2 flex items-center gap-0.5 rounded-b-2xl
                       opacity-0 group-hover:opacity-100 transition-opacity duration-150">
         {/* Left: primary actions */}
         <div className="flex items-center gap-0.5 flex-1">

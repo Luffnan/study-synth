@@ -290,7 +290,7 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
         {topicMenuOpen && (
             <div className="fixed inset-0 z-50 flex flex-col justify-end" onClick={() => setTopicMenuOpen(false)}>
               <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
-              <div className="relative bg-ink-50 rounded-t-2xl border-t-2 border-ink-900 pb-8 max-h-[70vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+              <div className="relative bg-white rounded-t-2xl border-t border-ink-200 pb-8 max-h-[70vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
                 <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-ink-100">
                   <p className="text-sm font-700 text-ink-900">Topics</p>
                   <button onClick={() => setTopicMenuOpen(false)} className="p-1.5 hover:bg-ink-100 rounded-lg text-ink-400"><X className="w-4 h-4" /></button>
