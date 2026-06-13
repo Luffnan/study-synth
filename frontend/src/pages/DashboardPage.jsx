@@ -51,9 +51,13 @@ function TipBanner() {
 export const COLORS = {
   indigo:  { from: 'from-[#9B6DFF]', to: 'to-[#9B6DFF]', dot: 'bg-[#9B6DFF]', ring: 'ring-[#9B6DFF]' },
   blue:    { from: 'from-[#2E90FA]', to: 'to-[#2E90FA]', dot: 'bg-[#2E90FA]', ring: 'ring-[#2E90FA]' },
+  sky:     { from: 'from-[#38BDF8]', to: 'to-[#38BDF8]', dot: 'bg-[#38BDF8]', ring: 'ring-[#38BDF8]' },
   emerald: { from: 'from-[#1DB870]', to: 'to-[#1DB870]', dot: 'bg-[#1DB870]', ring: 'ring-[#1DB870]' },
+  teal:    { from: 'from-[#14B8A6]', to: 'to-[#14B8A6]', dot: 'bg-[#14B8A6]', ring: 'ring-[#14B8A6]' },
   amber:   { from: 'from-[#E8A300]', to: 'to-[#E8A300]', dot: 'bg-[#E8A300]', ring: 'ring-[#E8A300]' },
+  orange:  { from: 'from-[#F97316]', to: 'to-[#F97316]', dot: 'bg-[#F97316]', ring: 'ring-[#F97316]' },
   rose:    { from: 'from-[#F2654E]', to: 'to-[#F2654E]', dot: 'bg-[#F2654E]', ring: 'ring-[#F2654E]' },
+  pink:    { from: 'from-[#EC4899]', to: 'to-[#EC4899]', dot: 'bg-[#EC4899]', ring: 'ring-[#EC4899]' },
   slate:   { from: 'from-[#141310]', to: 'to-[#141310]', dot: 'bg-[#141310]', ring: 'ring-[#141310]' },
 };
 
@@ -266,9 +270,13 @@ export default function DashboardPage({ onUpload, onOpenNote, onOpenNoteAtSource
 const COLOR_HEX = {
   indigo:  '#9B6DFF',
   blue:    '#2E90FA',
+  sky:     '#38BDF8',
   emerald: '#1DB870',
+  teal:    '#14B8A6',
   amber:   '#E8A300',
+  orange:  '#F97316',
   rose:    '#F2654E',
+  pink:    '#EC4899',
   slate:   '#141310',
 };
 
