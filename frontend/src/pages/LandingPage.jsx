@@ -38,7 +38,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
         setStep(s => (s + 1) % order.length);
         setVisible(true);
       }, 400);
-    }, 5000);
+    }, 10000);
     return () => clearInterval(interval);
   }, [order]);
 
