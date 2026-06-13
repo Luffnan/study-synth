@@ -1,4 +1,4 @@
-import { BookOpen, Zap, Youtube, Hash, CheckCircle, ArrowRight, FileText, Image, Monitor } from 'lucide-react';
+import { Zap, Youtube, Hash, CheckCircle, ArrowRight, FileText, Image, Monitor, BookOpen } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import BrainLogo from '../components/BrainLogo.jsx';
 
@@ -13,12 +13,11 @@ const HEADLINES = [
   { top: 'Every subject. Colour-coded.',  bottom: 'Nothing gets lost.' },
   { top: 'Concise or detailed —',         bottom: 'the notes adapt to you' },
   { top: 'PDF, photo, slide deck,',       bottom: 'YouTube — all become notes' },
-  { top: 'From any source',              bottom: 'to exam-ready in under a minute' },
-  { top: 'Custom quizzes',               bottom: 'from your handwritten notes' },
-  { top: 'Build your study library',     bottom: 'across the year' },
+  { top: 'From any source',               bottom: 'to exam-ready in under a minute' },
+  { top: 'Custom quizzes',                bottom: 'from your handwritten notes' },
+  { top: 'Build your study library',      bottom: 'across the year' },
 ];
 
-// Fisher-Yates shuffle of indices 1..n-1, always keeping 0 first
 function buildOrder() {
   const rest = Array.from({ length: HEADLINES.length - 1 }, (_, i) => i + 1);
   for (let i = rest.length - 1; i > 0; i--) {
@@ -47,27 +46,27 @@ export default function LandingPage({ onGetStarted, onLogin }) {
   const headline = HEADLINES[order[step]];
 
   return (
-    <div className="min-h-screen bg-ink-50">
+    <div className="min-h-screen bg-white font-sans">
 
-      {/* ── Nav — desktop only ── */}
-      <header className="hidden sm:block sticky top-0 z-20 bg-ink-50/90 backdrop-blur-md border-b border-ink-900/10">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-3">
+      {/* ── Nav ── */}
+      <header className="sticky top-0 z-20 bg-white/95 backdrop-blur-md border-b border-black/8">
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 h-14 flex items-center gap-4">
           <div className="flex items-center gap-2 flex-shrink-0">
             <img src="/brain.png" alt="Brain Buffet" className="w-7 h-7" />
             <span className="text-[15px] font-700 tracking-tight text-ink-900">Brain Buffet</span>
-            <span className="text-[11px] font-600 text-ink-900 bg-transparent border border-ink-900 px-2 py-0.5 rounded-full">beta</span>
+            <span className="text-[10px] font-700 text-white bg-brand-500 px-2 py-0.5 rounded-full uppercase tracking-wider">beta</span>
           </div>
-          <div className="hidden lg:flex absolute left-1/2 -translate-x-1/2 items-center gap-1 text-xs text-ink-400 font-500">
-            <img src="/fork.png" alt="fork" className="w-5 h-5 opacity-40" />
+          <div className="hidden lg:flex absolute left-1/2 -translate-x-1/2 items-center gap-1.5 text-xs text-ink-400 font-500">
+            <img src="/fork.png" alt="fork" className="w-4 h-4 opacity-30" />
             Serving up snackable bite-sized brain food
           </div>
           <div className="ml-auto flex items-center gap-2">
             <button onClick={onLogin}
-              className="px-4 py-2 rounded-xl text-sm font-600 text-ink-600 hover:text-ink-900 hover:bg-ink-100 transition-colors">
+              className="px-4 py-2 rounded-xl text-sm font-600 text-ink-500 hover:text-ink-900 hover:bg-ink-100 transition-colors">
               Sign in
             </button>
             <button onClick={onGetStarted}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-accent-yellow border border-ink-900 hover:bg-white text-ink-900 text-sm font-600 transition-colors">
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-ink-900 hover:bg-brand-600 text-white text-sm font-600 transition-colors">
               Get started <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -75,194 +74,205 @@ export default function LandingPage({ onGetStarted, onLogin }) {
       </header>
 
       {/* ── Hero ── */}
-      <section className="max-w-5xl mx-auto px-5 sm:px-6 pb-8 sm:pb-10 text-center">
+      <section className="max-w-6xl mx-auto px-5 sm:px-8 pt-12 pb-10 sm:pt-16 sm:pb-14">
+        <div className="grid lg:grid-cols-[1fr_420px] gap-10 lg:gap-16 items-center">
 
-        {/* Mobile-only logo lockup */}
-        <div className="flex flex-col items-center pt-10 pb-6 sm:hidden">
-          <img src="/brain.png" alt="Brain Buffet" className="w-14 h-14 mb-3" />
-          <span className="text-[22px] font-700 tracking-tight text-ink-900">Brain Buffet</span>
-          <span className="mt-1.5 text-[11px] font-600 text-ink-900 border border-ink-900 px-2.5 py-0.5 rounded-full">beta</span>
-        </div>
+          {/* Left: headline + CTA */}
+          <div>
+            {/* Mobile logo */}
+            <div className="flex items-center gap-2 mb-6 sm:hidden">
+              <img src="/brain.png" alt="Brain Buffet" className="w-9 h-9" />
+              <span className="text-lg font-700 tracking-tight text-ink-900">Brain Buffet</span>
+            </div>
 
-        <div className="sm:pt-12">
-          <h1 className={`font-display text-[2.55rem] sm:text-5xl lg:text-6xl font-600 text-ink-900 leading-[1.1] mb-4 sm:mb-6 transition-opacity duration-400 ${visible ? 'opacity-100' : 'opacity-0'}`}>
-            {headline.top}
-            <br />
-            <span className="italic font-500">{headline.bottom}</span>
-          </h1>
+            <div className="inline-flex items-center gap-2 bg-brand-50 border border-brand-200 text-brand-600 text-xs font-600 px-3 py-1.5 rounded-full mb-5">
+              <Zap className="w-3 h-3" /> Free during beta — no credit card needed
+            </div>
 
-          <p className="text-[15px] sm:text-xl text-ink-500 max-w-2xl mx-auto mb-7 sm:mb-8 leading-relaxed">
-            Upload anything: textbooks, lecture slides, handwritten notes, YouTube videos.
-            Brain Buffet structures it into notes and quizzes built entirely from your material.
-          </p>
+            <h1 className={`font-display text-[2.4rem] sm:text-5xl lg:text-[3.4rem] font-600 text-ink-900 leading-[1.08] mb-5 transition-opacity duration-400 ${visible ? 'opacity-100' : 'opacity-0'}`}>
+              {headline.top}
+              <br />
+              <span className="italic font-500 text-brand-500">{headline.bottom}</span>
+            </h1>
 
-          <div className="flex flex-col items-center justify-center gap-3">
-            <button onClick={onGetStarted}
-              className="flex items-center gap-2 bg-ink-900 hover:bg-brand-600 text-white px-7 py-3.5 rounded-2xl text-base font-700 transition-colors w-full sm:w-auto justify-center">
-              Create Account <ArrowRight className="w-4 h-4" />
-            </button>
-            <div className="flex flex-col items-center gap-1 text-[11px] text-ink-400 font-500 tracking-wide sm:flex-row sm:gap-1.5">
-              <span>Free during beta</span>
-              <span className="hidden sm:block w-0.5 h-0.5 rounded-full bg-ink-300" />
-              <span>No credit card needed</span>
-              <span className="hidden sm:block w-0.5 h-0.5 rounded-full bg-ink-300" />
-              <span>Year 7 to university</span>
+            <p className="text-base sm:text-lg text-ink-500 max-w-xl mb-8 leading-relaxed">
+              Upload anything — textbooks, lecture slides, handwritten notes, YouTube videos.
+              Brain Buffet turns it into structured notes and custom quizzes, built entirely from your material.
+            </p>
+
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+              <button onClick={onGetStarted}
+                className="flex items-center gap-2 bg-ink-900 hover:bg-brand-600 text-white px-7 py-3.5 rounded-2xl text-base font-700 transition-colors">
+                Create free account <ArrowRight className="w-4 h-4" />
+              </button>
+              <span className="text-xs text-ink-400 font-500">Year 7 to university</span>
+            </div>
+          </div>
+
+          {/* Right: mosaic grid */}
+          <div className="hidden lg:grid grid-cols-2 grid-rows-3 gap-3 h-[420px]">
+            <div className="bg-accent-yellow rounded-2xl p-5 flex flex-col justify-between row-span-2">
+              <Zap className="w-8 h-8 text-ink-900" strokeWidth={2.5} />
+              <div>
+                <p className="text-ink-900 font-800 text-xl leading-tight">Quiz yourself on anything</p>
+                <p className="text-ink-700 text-xs mt-1.5">Custom questions from your exact material</p>
+              </div>
+            </div>
+            <div className="bg-brand-500 rounded-2xl p-4 flex flex-col justify-between">
+              <BrainLogo className="w-7 h-7 text-white" />
+              <p className="text-white font-700 text-sm leading-snug">Topics, subtopics + key terms extracted</p>
+            </div>
+            <div className="bg-ink-900 rounded-2xl p-4 flex flex-col justify-between">
+              <Youtube className="w-6 h-6 text-red-400" />
+              <p className="text-white font-700 text-sm leading-snug">YouTube → timecoded notes</p>
+            </div>
+            <div className="bg-[#1DB870] rounded-2xl p-4 flex items-center justify-center col-span-2">
+              <div className="flex flex-wrap gap-2 justify-center">
+                {['PDF', 'Photos', 'Slides', 'YouTube', 'Handwriting'].map(t => (
+                  <span key={t} className="bg-white/25 text-white text-xs font-700 px-3 py-1.5 rounded-full">{t}</span>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── What makes it different ── */}
-      <section className="pt-2 pb-10">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-8">
-            <h2 className="font-display text-2xl sm:text-3xl font-600 text-ink-900 mb-3">
-              Why choose <span className="italic">Brain Buffet?</span>
+      {/* ── Works with strip ── */}
+      <div className="bg-ink-900 py-4 overflow-hidden">
+        <div className="flex items-center gap-6 px-6 sm:justify-center flex-wrap sm:flex-nowrap">
+          <span className="text-[10px] font-700 text-ink-500 uppercase tracking-widest flex-shrink-0">Works with</span>
+          {[
+            { icon: <FileText className="w-3.5 h-3.5" />, label: 'PDF Textbooks' },
+            { icon: <Image className="w-3.5 h-3.5" />,    label: 'Photos & Screenshots' },
+            { icon: <Monitor className="w-3.5 h-3.5" />,  label: 'Slide Decks' },
+            { icon: <Youtube className="w-3.5 h-3.5" />,  label: 'YouTube Videos' },
+          ].map(s => (
+            <div key={s.label} className="flex items-center gap-1.5 text-white text-xs font-600 flex-shrink-0">
+              <span className="text-ink-400">{s.icon}</span>{s.label}
+            </div>
+          ))}
+          <span className="text-ink-600 text-xs font-500">…and more</span>
+        </div>
+      </div>
+
+      {/* ── Why different ── */}
+      <section className="py-16 sm:py-20 max-w-6xl mx-auto px-5 sm:px-8">
+        <div className="flex items-end justify-between mb-10 gap-4">
+          <div>
+            <span className="text-[11px] font-700 text-ink-400 uppercase tracking-widest">01 /</span>
+            <h2 className="font-display text-3xl sm:text-4xl font-600 text-ink-900 mt-1">
+              Why Brain Buffet<br /><span className="italic font-500">is different</span>
             </h2>
           </div>
+          <p className="hidden sm:block text-sm text-ink-400 max-w-xs text-right leading-relaxed">
+            Most study tools generate generic summaries. Brain Buffet builds structured curriculum notes — only from what you give it.
+          </p>
+        </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[
-              {
-                icon: <CheckCircle className="w-4 h-4 text-ink-900" />,
-                tile: 'bg-accent-green',
-                title: 'Uses only your ingredients',
-                body: 'Every note comes directly from what you upload. If it\'s not in your source, it won\'t be in your notes.',
-              },
-              {
-                icon: <FileText className="w-4 h-4 text-ink-900" />,
-                tile: 'bg-accent-teal',
-                title: 'Intelligent fact extraction',
-                body: 'No more trawling through textbooks. Key facts, concepts, terms and formulas pulled out and ready to study.',
-              },
-              {
-                icon: <Zap className="w-4 h-4 text-ink-900" />,
-                tile: 'bg-accent-yellow',
-                title: 'Quizzes with guided marking',
-                body: 'Varied question types with guided, incremental marking that teaches you how to write the perfect answer.',
-              },
-              {
-                icon: <BookOpen className="w-4 h-4 text-ink-900" />,
-                tile: 'bg-accent-lightGreen',
-                title: 'Build a library of notes',
-                body: 'Add sources across the term. By exam time every subject is consolidated in one place, nothing missing.',
-              },
-            ].map(f => (
-              <div key={f.title} className="bg-white rounded-2xl p-5 border-2 border-ink-900 shadow-hard">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className={`w-7 h-7 rounded-lg border-2 border-ink-900 flex items-center justify-center flex-shrink-0 ${f.tile}`}>
-                    {f.icon}
-                  </div>
-                  <h3 className="font-700 text-ink-900 text-sm leading-tight">{f.title}</h3>
-                </div>
-                <p className="text-xs text-ink-500 leading-relaxed">{f.body}</p>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            { color: 'bg-accent-yellow', icon: '🎯', title: 'Your material only', body: 'Every note comes from what you upload. Nothing invented, nothing added.' },
+            { color: 'bg-brand-500',     icon: '🧠', title: 'Not flashcards', body: 'Topics, subtopics and key terms — structured like a real curriculum, not a deck of cards.', light: true },
+            { color: 'bg-[#F2654E]',     icon: '⚡', title: 'Quizzes that mark and teach', body: 'Guided, incremental marking that teaches you how to write the perfect answer.', light: true },
+            { color: 'bg-ink-900',       icon: '📚', title: 'Your whole study library', body: 'Colour-coded subjects. Everything in one place, all term long.', light: true },
+          ].map(f => (
+            <div key={f.title} className={`${f.color} rounded-2xl p-6 flex flex-col gap-4`}>
+              <span className="text-3xl">{f.icon}</span>
+              <div>
+                <h3 className={`font-700 text-[15px] leading-tight mb-1.5 ${f.light ? 'text-white' : 'text-ink-900'}`}>{f.title}</h3>
+                <p className={`text-xs leading-relaxed ${f.light ? 'text-white/75' : 'text-ink-700'}`}>{f.body}</p>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       </section>
 
       {/* ── How it works ── */}
-      <section className="py-10 max-w-5xl mx-auto px-4 sm:px-6">
-        <div className="text-center mb-8">
-          <h2 className="font-display text-2xl sm:text-3xl font-600 text-ink-900 mb-3">How it works</h2>
-          <p className="text-ink-500">From raw material to revision-ready notes in under a minute</p>
-        </div>
+      <section className="py-16 sm:py-20 bg-ink-50">
+        <div className="max-w-6xl mx-auto px-5 sm:px-8">
+          <div className="mb-10">
+            <span className="text-[11px] font-700 text-ink-400 uppercase tracking-widest">02 /</span>
+            <h2 className="font-display text-3xl sm:text-4xl font-600 text-ink-900 mt-1">
+              From upload<br /><span className="italic font-500">to exam-ready</span>
+            </h2>
+          </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-6">
-          {[
-            { step: '1', tile: 'bg-accent-teal',       icon: <FileText className="w-6 h-6 text-ink-900" />, title: 'Upload your content', body: 'PDFs, images of handwritten notes, lecture slides, or paste a YouTube URL' },
-            { step: '2', tile: 'bg-accent-lightGreen', icon: <BrainLogo className="w-6 h-6 text-ink-900" />, title: 'Extracts and structures', body: 'Brain Buffet extracts the subject knowledge, organises it into topics and subtopics, and identifies key terms' },
-            { step: '3', tile: 'bg-accent-yellow',     icon: <BookOpen className="w-6 h-6 text-ink-900" />, title: 'Review your notes', body: 'Browse structured notes, switch between standard and concise views, download as Word or Markdown' },
-            { step: '4', tile: 'bg-accent-green',      icon: <Zap className="w-6 h-6 text-ink-900" />, title: 'Test yourself', body: 'Generate a custom quiz from your chosen topics and get instant feedback on your answers' },
-          ].map(s => (
-            <div key={s.step} className="flex flex-col items-center text-center gap-3 px-4">
-              <div className="relative inline-flex flex-shrink-0 mb-0 sm:mb-4">
-                <div className={`w-14 h-14 rounded-2xl border-2 border-ink-900 shadow-hard-sm flex items-center justify-center ${s.tile}`}>
-                  {s.icon}
-                </div>
-                <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-brand-500 border border-ink-900 text-white text-[10px] font-700 flex items-center justify-center">
-                  {s.step}
-                </span>
-              </div>
-              <div className="max-w-[260px] sm:max-w-none">
-                <h3 className="font-700 text-ink-900 mb-1 text-[15px] sm:text-sm sm:mb-1.5">{s.title}</h3>
-                <p className="text-[13px] sm:text-xs text-ink-500 leading-relaxed">{s.body}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── Source types ── */}
-      <section className="py-8">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6">
-          <p className="text-center text-xs font-600 text-ink-400 uppercase tracking-wider mb-5">Works with</p>
-          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { icon: <FileText className="w-4 h-4" />, label: 'PDF Textbooks' },
-              { icon: <Image className="w-4 h-4" />,    label: 'Photos & Screenshots' },
-              { icon: <Monitor className="w-4 h-4" />,   label: 'Slide Decks' },
-              { icon: <Youtube className="w-4 h-4" />,  label: 'YouTube Videos' },
+              { n: '01', color: 'bg-[#2E90FA]', title: 'Upload your content', body: 'PDF, photo, slide deck or YouTube link — drop it in and hit go.', icon: '📄' },
+              { n: '02', color: 'bg-brand-500',  title: 'Extracts & structures', body: 'Brain Buffet pulls out facts, concepts, formulas and key terms — organised into topics.', icon: '🧩' },
+              { n: '03', color: 'bg-accent-yellow', title: 'Review your notes', body: 'Switch between standard and concise views. Download as Word or Markdown.', icon: '📖', dark: false },
+              { n: '04', color: 'bg-[#1DB870]',  title: 'Quiz yourself', body: 'Generate a custom quiz from chosen topics. Get feedback that actually teaches you.', icon: '⚡' },
             ].map(s => (
-              <div key={s.label} className="flex items-center gap-2 bg-white border-2 border-ink-900 rounded-full px-4 py-2 text-sm font-600 text-ink-700">
-                {s.icon}{s.label}
+              <div key={s.n} className={`${s.color} rounded-2xl p-6`}>
+                <div className="flex items-center justify-between mb-6">
+                  <span className={`text-2xl`}>{s.icon}</span>
+                  <span className={`text-xs font-800 ${s.n === '03' ? 'text-ink-400' : 'text-white/40'}`}>{s.n}</span>
+                </div>
+                <h3 className={`font-700 text-base mb-2 leading-tight ${s.n === '03' ? 'text-ink-900' : 'text-white'}`}>{s.title}</h3>
+                <p className={`text-xs leading-relaxed ${s.n === '03' ? 'text-ink-600' : 'text-white/75'}`}>{s.body}</p>
               </div>
             ))}
           </div>
-          <p className="text-center text-xs font-500 text-ink-400 mt-4">...and more</p>
         </div>
       </section>
 
-
       {/* ── Feature list ── */}
-      <section className="py-10 max-w-5xl mx-auto px-4 sm:px-6">
-        <div className="grid sm:grid-cols-2 gap-x-12 gap-y-4">
-          {[
-            'Structured notes with topics, subtopics, and key terms',
-            'Standard + concise note modes for different study phases',
-            'YouTube video panel with timecoded navigation',
-            'Merge video content into existing topic notes with one click',
-            'Custom quiz generation: pick exactly which topics to test',
-            'Download as Word (.docx) or Markdown',
-            'Organise topics into colour-coded subjects',
-            'Quiz scoring tracked over time per topic',
-          ].map(f => (
-            <div key={f} className="flex items-start gap-3">
-              <CheckCircle className="w-4 h-4 text-accent-green flex-shrink-0 mt-0.5" />
-              <span className="text-sm text-ink-700">{f}</span>
-            </div>
-          ))}
+      <section className="py-16 sm:py-20 max-w-6xl mx-auto px-5 sm:px-8">
+        <div className="grid lg:grid-cols-[1fr_1fr] gap-12 items-start">
+          <div>
+            <span className="text-[11px] font-700 text-ink-400 uppercase tracking-widest">03 /</span>
+            <h2 className="font-display text-3xl sm:text-4xl font-600 text-ink-900 mt-1 mb-4">
+              Everything you need<br /><span className="italic font-500">to actually revise</span>
+            </h2>
+            <p className="text-ink-500 text-base leading-relaxed">
+              Brain Buffet isn't just a note summariser. It's a full revision toolkit — structured notes, quizzes, YouTube integration, and organised subjects.
+            </p>
+          </div>
+          <div className="grid gap-3">
+            {[
+              { icon: '📝', text: 'Structured notes with topics, subtopics, and key terms' },
+              { icon: '⚡', text: 'Standard + concise note modes for different study phases' },
+              { icon: '🎬', text: 'YouTube panel with timecoded note navigation' },
+              { icon: '🔀', text: 'Merge video content into existing topic notes with one click' },
+              { icon: '🎯', text: 'Custom quiz generation — pick exactly which topics to test' },
+              { icon: '⬇️', text: 'Download as Word (.docx) or Markdown' },
+              { icon: '🗂️', text: 'Colour-coded subjects to organise your library' },
+              { icon: '📈', text: 'Quiz scores tracked over time per topic' },
+            ].map(f => (
+              <div key={f.text} className="flex items-start gap-3 py-3 border-b border-ink-100 last:border-0">
+                <span className="text-lg flex-shrink-0 mt-0.5">{f.icon}</span>
+                <span className="text-sm text-ink-700 leading-snug">{f.text}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* ── CTA ── */}
-      <section className="py-12 bg-ink-900">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 text-center">
-          <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center mx-auto mb-6">
-            <BrainLogo className="w-7 h-7 text-white" />
-          </div>
-          <h2 className="font-display text-2xl sm:text-3xl font-600 text-white mb-4">
-            Ready to feed your <span className="italic">brain?</span>
+      <section className="py-16 sm:py-20 bg-brand-500">
+        <div className="max-w-3xl mx-auto px-5 sm:px-8 text-center">
+          <BrainLogo className="w-12 h-12 text-white mx-auto mb-6 opacity-80" />
+          <h2 className="font-display text-3xl sm:text-5xl font-600 text-white leading-[1.1] mb-5">
+            Ready to feed<br /><span className="italic font-500">your brain?</span>
           </h2>
-          <p className="text-ink-300 mb-8 text-base">
+          <p className="text-white/70 mb-8 text-base max-w-md mx-auto leading-relaxed">
             Create your free account and turn your first set of notes into a full study spread in under a minute.
           </p>
           <button onClick={onGetStarted}
-            className="inline-flex items-center gap-2 bg-accent-yellow hover:bg-white text-ink-900 px-7 py-3.5 rounded-2xl text-base font-700 transition-colors">
+            className="inline-flex items-center gap-2 bg-accent-yellow hover:bg-white text-ink-900 px-8 py-4 rounded-2xl text-base font-700 transition-colors">
             Get started for free <ArrowRight className="w-4 h-4" />
           </button>
+          <p className="text-white/40 text-xs mt-4 font-500">Free during beta · No credit card · Year 7 to university</p>
         </div>
       </section>
 
       {/* ── Footer ── */}
-      <footer className="py-8 border-t border-ink-900/10">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 flex items-center justify-between">
+      <footer className="py-6 border-t border-ink-100">
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-lg bg-ink-900 flex items-center justify-center">
-              <BrainLogo className="w-3.5 h-3.5 text-white" />
-            </div>
-            <span className="text-sm font-600 text-ink-600">Brain Buffet</span>
+            <img src="/brain.png" alt="Brain Buffet" className="w-5 h-5" />
+            <span className="text-sm font-700 text-ink-600">Brain Buffet</span>
           </div>
           <p className="text-xs text-ink-400">Study notes, only from your source material</p>
         </div>
