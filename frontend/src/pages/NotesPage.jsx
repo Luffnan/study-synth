@@ -465,7 +465,7 @@ function TopicPane({ topic, mode, onOpenMenu }) {
   return (
     <div className="space-y-2">
       <div
-        className="bg-white rounded-2xl border-2 border-ink-900 px-5 py-4 mb-3 sm:cursor-default cursor-pointer sm:pointer-events-none"
+        className="bg-white rounded-2xl border border-ink-200 px-5 py-4 mb-3 sm:cursor-default cursor-pointer sm:pointer-events-none"
         onClick={onOpenMenu}
       >
         <div className="flex items-center justify-between gap-2">
@@ -479,7 +479,7 @@ function TopicPane({ topic, mode, onOpenMenu }) {
       {topic.subtopics?.map((sub, si) => {
         const isOpen = openSubs[si] !== false;
         return (
-          <div key={si} className="bg-white rounded-2xl border-2 border-ink-900 overflow-hidden">
+          <div key={si} className="bg-white rounded-2xl border border-ink-200 overflow-hidden">
             <button onClick={() => setOpenSubs(p => ({ ...p, [si]: !p[si] }))}
               className="w-full flex items-center gap-3 px-5 py-3.5 text-left hover:bg-ink-50 transition-colors">
               <span className="w-1 h-4 rounded-full bg-brand-500 flex-shrink-0" />
@@ -507,7 +507,7 @@ function TopicPane({ topic, mode, onOpenMenu }) {
 
 function TermsPane({ keyTerms }) {
   return (
-    <div className="bg-white rounded-2xl border-2 border-ink-900 overflow-hidden">
+    <div className="bg-white rounded-2xl border border-ink-200 overflow-hidden">
       <div className="flex items-center gap-3 px-5 py-4 border-b border-ink-100">
         <span className="w-6 h-6 rounded-lg bg-amber-400 flex items-center justify-center flex-shrink-0">
           <Hash className="w-3.5 h-3.5 text-white" />
@@ -552,7 +552,7 @@ function VideoPane({ source, onToggleMerge, merging }) {
   return (
     <div className="space-y-3">
       {/* Video embed */}
-      <div className="bg-white rounded-2xl border-2 border-ink-900 overflow-hidden">
+      <div className="bg-white rounded-2xl border border-ink-200 overflow-hidden">
         <div className="flex items-center gap-3 px-5 py-3.5 border-b border-ink-100">
           <span className="w-6 h-6 rounded-lg bg-red-500 flex items-center justify-center flex-shrink-0">
             <Youtube className="w-3.5 h-3.5 text-white" />
@@ -570,7 +570,7 @@ function VideoPane({ source, onToggleMerge, merging }) {
       </div>
 
       {/* Merge toggle */}
-      <div className="bg-white rounded-2xl border-2 border-ink-900 px-5 py-4 flex items-center gap-3">
+      <div className="bg-white rounded-2xl border border-ink-200 px-5 py-4 flex items-center gap-3">
         <div className="flex-1">
           <p className="text-sm font-600 text-ink-800">Include notes in subject</p>
           <p className="text-xs text-ink-400 mt-0.5">
@@ -595,7 +595,7 @@ function VideoPane({ source, onToggleMerge, merging }) {
 
       {/* Timecoded notes */}
       {source.notes?.length > 0 && (
-        <div className="bg-white rounded-2xl border-2 border-ink-900 overflow-hidden">
+        <div className="bg-white rounded-2xl border border-ink-200 overflow-hidden">
           <div className="px-5 py-3.5 border-b border-ink-100">
             <p className="text-xs font-600 text-ink-500 uppercase tracking-wider">Video Notes — click a timecode to jump</p>
           </div>
@@ -824,7 +824,7 @@ function ConciseLoadingState({ onSwitchBack }) {
         </p>
       </div>
       {[1, 2, 3].map(i => (
-        <div key={i} className="bg-white rounded-2xl border-2 border-ink-900 p-5 animate-pulse">
+        <div key={i} className="bg-white rounded-2xl border border-ink-200 p-5 animate-pulse">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-6 h-6 rounded-lg bg-ink-200" />
             <div className="h-4 bg-ink-200 rounded w-1/3" />
@@ -1074,7 +1074,7 @@ function SourceFilesPane({ files, loading, onView, onDelete }) {
 
   return (
     <div className="animate-fade-in">
-      <div className="bg-white rounded-2xl border-2 border-ink-900 px-5 py-4 mb-3">
+      <div className="bg-white rounded-2xl border border-ink-200 px-5 py-4 mb-3">
         <h2 className="font-700 text-ink-900 text-lg leading-tight">Source Files</h2>
       </div>
 
@@ -1083,7 +1083,7 @@ function SourceFilesPane({ files, loading, onView, onDelete }) {
           <Loader2 className="w-5 h-5 animate-spin text-ink-400" />
         </div>
       ) : !files?.length ? (
-        <div className="bg-white rounded-2xl border-2 border-ink-900 px-5 py-12 text-center">
+        <div className="bg-white rounded-2xl border border-ink-200 px-5 py-12 text-center">
           <FileText className="w-8 h-8 text-ink-300 mx-auto mb-2" />
           <p className="text-sm font-600 text-ink-500">No source files stored</p>
           <p className="text-xs text-ink-400 mt-1">Files from new uploads will appear here</p>
@@ -1095,7 +1095,7 @@ function SourceFilesPane({ files, loading, onView, onDelete }) {
               const days = daysRemaining(f.expires_at);
               const expiring = days !== null && days <= 2;
               return (
-                <li key={f.id} className="bg-white border-2 border-ink-900 rounded-2xl px-5 py-4">
+                <li key={f.id} className="bg-white border border-ink-200 rounded-2xl px-5 py-4">
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-baseline gap-2">
@@ -1134,6 +1134,7 @@ function SourceFilesPane({ files, loading, onView, onDelete }) {
           <div className="flex items-center gap-2 mt-4 px-1">
             <HardDrive className="w-3.5 h-3.5 text-ink-400" />
             <p className="text-xs text-ink-400">{formatBytes(FREE_STORAGE_LIMIT - totalBytes)} of {formatBytes(FREE_STORAGE_LIMIT)} remaining · Files auto-delete after 7 days</p>
+            <span className="ml-1 px-2 py-0.5 rounded-full bg-accent-yellow text-ink-900 text-[10px] font-700 cursor-pointer hover:opacity-80 transition-opacity flex-shrink-0">UPGRADE</span>
           </div>
         </>
       )}
@@ -1162,7 +1163,7 @@ function SourceFilesModal({ files, loading, onView, onDelete, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
-      <div className="relative bg-ink-50 rounded-2xl border-2 border-ink-900 shadow-hard w-full max-w-md max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
+      <div className="relative bg-ink-50 rounded-2xl border border-ink-200 shadow-hard w-full max-w-md max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-ink-100">
           <div className="flex items-center gap-2">
@@ -1192,7 +1193,7 @@ function SourceFilesModal({ files, loading, onView, onDelete, onClose }) {
                 const days = daysRemaining(f.expires_at);
                 const expiring = days !== null && days <= 2;
                 return (
-                  <li key={f.id} className="bg-white border-2 border-ink-900 rounded-xl px-4 py-3">
+                  <li key={f.id} className="bg-white border border-ink-200 rounded-xl px-4 py-3">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0 flex-1">
                         <div className="flex items-baseline gap-2">
@@ -1235,6 +1236,7 @@ function SourceFilesModal({ files, loading, onView, onDelete, onClose }) {
           <div className="px-5 py-3 border-t border-ink-100 flex items-center gap-2">
             <HardDrive className="w-3.5 h-3.5 text-ink-400" />
             <p className="text-xs text-ink-400">{formatBytes(FREE_STORAGE_LIMIT - totalBytes)} of {formatBytes(FREE_STORAGE_LIMIT)} remaining · Files auto-delete after 7 days</p>
+            <span className="ml-1 px-2 py-0.5 rounded-full bg-accent-yellow text-ink-900 text-[10px] font-700 cursor-pointer hover:opacity-80 transition-opacity flex-shrink-0">UPGRADE</span>
           </div>
         )}
       </div>
