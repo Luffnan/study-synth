@@ -3,17 +3,19 @@ import { useState, useEffect } from 'react';
 import BrainLogo from '../components/BrainLogo.jsx';
 
 const HEADLINES = [
-  { top: 'Turn any content into',        bottom: 'perfect study notes' },
-  { top: 'Upload your textbook,',         bottom: 'walk away with a quiz' },
+  { top: 'Turn any content into',         bottom: 'perfect study notes' },
+  { top: 'Not flashcards.',               bottom: 'Structured curriculum notes.' },
+  { top: 'Only facts from your source',   bottom: 'never adding extra information' },
+  { top: 'Quizzes that teach you',        bottom: 'how to write the perfect answer' },
+  { top: 'Your YouTube lecture,',         bottom: 'with notes at every timestamp' },
   { top: 'From handwritten scrawl',       bottom: 'to structured revision' },
-  { top: 'Your notes, built only',        bottom: 'from your material' },
-  { top: 'Stop highlighting.',            bottom: 'Start understanding.' },
-  { top: 'One upload.',                   bottom: 'A whole term of notes.' },
-  { top: 'YouTube lecture?',              bottom: 'Timecoded notes in seconds.' },
-  { top: 'Notes that know',               bottom: 'exactly what to test you on' },
-  { top: 'Every subject.',                bottom: 'One place. Always organised.' },
-  { top: 'Concise or detailed —',         bottom: 'you choose how you study' },
-  { top: 'From any source',               bottom: 'to exam-ready in a minute' },
+  { top: 'Upload once.',                  bottom: 'Study all term.' },
+  { top: 'Every subject. Colour-coded.',  bottom: 'Nothing gets lost.' },
+  { top: 'Concise or detailed —',         bottom: 'the notes adapt to you' },
+  { top: 'PDF, photo, slide deck,',       bottom: 'YouTube — all become notes' },
+  { top: 'From any source',              bottom: 'to exam-ready in under a minute' },
+  { top: 'Custom quizzes',               bottom: 'from your handwritten notes' },
+  { top: 'Build your study library',     bottom: 'across the year' },
 ];
 
 // Fisher-Yates shuffle of indices 1..n-1, always keeping 0 first
