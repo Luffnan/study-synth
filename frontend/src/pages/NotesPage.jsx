@@ -59,12 +59,12 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
     return () => window.removeEventListener('keydown', onKey);
   }, [activeNotes, videoSources]);
 
-  // Build sidebar items: topics + key terms + videos + source files
+  // Build sidebar items: topics + key terms + videos + source files (only when files exist)
   const sidebarItems = [
     ...(activeNotes.topics || []).map((t, i) => ({ type: 'topic', index: i, label: t.name })),
     ...(activeNotes.keyTerms?.length ? [{ type: 'terms', label: 'Key Terms' }] : []),
     ...videoSources.map(v => ({ type: 'video', videoId: v.videoId, label: v.title })),
-    ...(noteId ? [{ type: 'sources', label: 'Source Files' }] : []),
+    ...(sourceFiles?.length > 0 ? [{ type: 'sources', label: 'Source Files' }] : []),
   ];
 
   const [selected, setSelected] = useState(() => {
@@ -78,9 +78,9 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
   const [sourceFiles, setSourceFiles] = useState(null); // null = not yet loaded
   const [sourceFilesLoading, setSourceFilesLoading] = useState(false);
 
-  // Auto-load source files if landing directly on sources pane
+  // Load source files on mount so we know whether to show the nav item
   useEffect(() => {
-    if (initialPane === 'sources') loadSourceFiles();
+    loadSourceFiles();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // When mode switches, reset selected to first item
@@ -89,7 +89,7 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
       ...(activeNotes.topics || []).map((t, i) => ({ type: 'topic', index: i, label: t.name })),
       ...(activeNotes.keyTerms?.length ? [{ type: 'terms', label: 'Key Terms' }] : []),
       ...videoSources.map(v => ({ type: 'video', videoId: v.videoId, label: v.title })),
-      ...(noteId ? [{ type: 'sources', label: 'Source Files' }] : []),
+      ...(sourceFiles?.length > 0 ? [{ type: 'sources', label: 'Source Files' }] : []),
     ];
     setSelected(items[0] ?? null);
   }, [mode, conciseNotes]);
@@ -222,7 +222,7 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
     ...(activeNotes.topics || []).map((t, i) => ({ type: 'topic', index: i, label: t.name })),
     ...(activeNotes.keyTerms?.length ? [{ type: 'terms', label: 'Key Terms' }] : []),
     ...videoSources.map(v => ({ type: 'video', videoId: v.videoId, label: v.title })),
-    ...(noteId ? [{ type: 'sources', label: 'Source Files' }] : []),
+    ...(sourceFiles?.length > 0 ? [{ type: 'sources', label: 'Source Files' }] : []),
   ];
 
   return (
