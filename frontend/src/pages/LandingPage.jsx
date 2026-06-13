@@ -85,7 +85,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
               <span className="text-lg font-700 tracking-tight text-ink-900">Brain Buffet</span>
             </div>
 
-            <h1 className={`font-display text-[2.4rem] sm:text-5xl lg:text-[3.4rem] font-600 text-ink-900 leading-[1.08] mb-5 transition-opacity duration-400 ${visible ? 'opacity-100' : 'opacity-0'}`}>
+            <h1 className={`font-display text-[1.9rem] sm:text-5xl lg:text-[3.4rem] font-600 text-ink-900 leading-[1.12] mb-5 transition-opacity duration-400 ${visible ? 'opacity-100' : 'opacity-0'}`}>
               {headline.top}
               <br />
               <span className="italic font-500 text-brand-500">{headline.bottom}</span>
