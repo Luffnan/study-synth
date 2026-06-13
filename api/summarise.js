@@ -105,21 +105,30 @@ export default async function handler(req, res) {
 
     // Large-file path: metadata already prepared by parse-files
     if (sourceFileMeta?.length) {
-      await saveSourceFiles(record.id, sourceFileMeta, userId).catch(() => {});
+      console.log('[source-files] large-file path, files:', sourceFileMeta.length);
+      await saveSourceFiles(record.id, sourceFileMeta, userId).catch(e => console.error('[source-files] saveSourceFiles error:', e.message));
     }
 
     // Small-file path: upload buffers now that we have a record ID
+    console.log('[source-files] rawFileBuffers:', rawFileBuffers?.length ?? 0);
     if (rawFileBuffers?.length) {
       const smallFileMeta = [];
       for (const { fileName, buffer, mimeType, fileSize } of rawFileBuffers) {
         const safeName = fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
         const destPath = `${userId}/${Date.now()}-${safeName}`;
+        console.log('[source-files] uploading to storage:', destPath);
+        const blob = new Blob([buffer], { type: mimeType });
         const { error } = await supabaseAdmin.storage
           .from('source-files')
-          .upload(destPath, buffer, { contentType: mimeType, upsert: false });
-        if (!error) smallFileMeta.push({ fileName, fileSize, mimeType, storagePath: destPath });
+          .upload(destPath, blob, { contentType: mimeType, upsert: false });
+        if (error) {
+          console.error('[source-files] storage upload error:', error.message);
+        } else {
+          smallFileMeta.push({ fileName, fileSize, mimeType, storagePath: destPath });
+        }
       }
-      if (smallFileMeta.length) await saveSourceFiles(record.id, smallFileMeta, userId).catch(() => {});
+      console.log('[source-files] smallFileMeta:', smallFileMeta.length);
+      if (smallFileMeta.length) await saveSourceFiles(record.id, smallFileMeta, userId).catch(e => console.error('[source-files] saveSourceFiles error:', e.message));
     }
 
     res.status(200).json({ notes, id: record.id });
