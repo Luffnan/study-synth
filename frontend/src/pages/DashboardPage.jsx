@@ -32,7 +32,7 @@ function TipBanner() {
       <Zap className="w-7 h-7 text-ink-500 flex-shrink-0 self-center" />
       <div className="flex-1 min-w-0">
         <p className="text-xs font-700 text-ink-700">HOT TIP: <span className="font-600 text-ink-600">{tip.lead}</span></p>
-        <p className="text-xs text-ink-500 leading-relaxed mt-0.5">{tip.body}</p>
+        <p className="text-xs text-ink-500 leading-relaxed">{tip.body}</p>
       </div>
       <button
         onClick={e => { e.stopPropagation(); setIndex(i => (i + 1) % TIPS.length); }}
