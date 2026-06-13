@@ -96,8 +96,8 @@ export default function LandingPage({ onGetStarted, onLogin }) {
             </h1>
 
             <p className="text-base sm:text-lg text-ink-500 max-w-xl mb-8 leading-relaxed">
-              Upload anything — textbooks, lecture slides, handwritten notes, YouTube videos.
-              Brain Buffet turns it into structured notes and custom quizzes, built entirely from your material.
+              Upload anything: textbooks, lecture slides, handwritten notes, YouTube videos.
+              Brain Buffet structures it into notes and quizzes built entirely from your material.
             </p>
 
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
@@ -161,7 +161,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
           <div>
             <span className="text-[11px] font-700 text-ink-400 uppercase tracking-widest">01 /</span>
             <h2 className="font-display text-3xl sm:text-4xl font-600 text-ink-900 mt-1">
-              Why Brain Buffet<br /><span className="italic font-500">is different</span>
+              Why choose<br /><span className="italic font-500">Brain Buffet?</span>
             </h2>
           </div>
           <p className="hidden sm:block text-sm text-ink-400 max-w-xs text-right leading-relaxed">
@@ -171,10 +171,10 @@ export default function LandingPage({ onGetStarted, onLogin }) {
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { color: 'bg-accent-yellow', icon: '🎯', title: 'Your material only', body: 'Every note comes from what you upload. Nothing invented, nothing added.' },
-            { color: 'bg-brand-500',     icon: '🧠', title: 'Not flashcards', body: 'Topics, subtopics and key terms — structured like a real curriculum, not a deck of cards.', light: true },
-            { color: 'bg-[#F2654E]',     icon: '⚡', title: 'Quizzes that mark and teach', body: 'Guided, incremental marking that teaches you how to write the perfect answer.', light: true },
-            { color: 'bg-ink-900',       icon: '📚', title: 'Your whole study library', body: 'Colour-coded subjects. Everything in one place, all term long.', light: true },
+            { color: 'bg-accent-yellow', icon: '🎯', title: 'Uses only your ingredients', body: "Every note comes directly from what you upload. If it's not in your source, it won't be in your notes." },
+            { color: 'bg-brand-500',     icon: '🧠', title: 'Intelligent fact extraction', body: 'No more trawling through textbooks. Key facts, concepts, terms and formulas pulled out and ready to study.', light: true },
+            { color: 'bg-[#F2654E]',     icon: '⚡', title: 'Quizzes with guided marking', body: 'Varied question types with guided, incremental marking that teaches you how to write the perfect answer.', light: true },
+            { color: 'bg-ink-900',       icon: '📚', title: 'Build a library of notes', body: 'Add sources across the term. By exam time every subject is consolidated in one place, nothing missing.', light: true },
           ].map(f => (
             <div key={f.title} className={`${f.color} rounded-2xl p-6 flex flex-col gap-4`}>
               <span className="text-3xl">{f.icon}</span>
@@ -193,16 +193,17 @@ export default function LandingPage({ onGetStarted, onLogin }) {
           <div className="mb-10">
             <span className="text-[11px] font-700 text-ink-400 uppercase tracking-widest">02 /</span>
             <h2 className="font-display text-3xl sm:text-4xl font-600 text-ink-900 mt-1">
-              From upload<br /><span className="italic font-500">to exam-ready</span>
+              How it<br /><span className="italic font-500">works</span>
             </h2>
+            <p className="text-ink-500 text-sm mt-2">From raw material to revision-ready notes in under a minute</p>
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { n: '01', color: 'bg-[#2E90FA]', title: 'Upload your content', body: 'PDF, photo, slide deck or YouTube link — drop it in and hit go.', icon: '📄' },
-              { n: '02', color: 'bg-brand-500',  title: 'Extracts & structures', body: 'Brain Buffet pulls out facts, concepts, formulas and key terms — organised into topics.', icon: '🧩' },
-              { n: '03', color: 'bg-accent-yellow', title: 'Review your notes', body: 'Switch between standard and concise views. Download as Word or Markdown.', icon: '📖', dark: false },
-              { n: '04', color: 'bg-[#1DB870]',  title: 'Quiz yourself', body: 'Generate a custom quiz from chosen topics. Get feedback that actually teaches you.', icon: '⚡' },
+              { n: '01', color: 'bg-[#2E90FA]', title: 'Upload your content', body: 'PDFs, images of handwritten notes, lecture slides, or paste a YouTube URL', icon: '📄' },
+              { n: '02', color: 'bg-brand-500',  title: 'Extracts and structures', body: 'Brain Buffet extracts the subject knowledge, organises it into topics and subtopics, and identifies key terms', icon: '🧩' },
+              { n: '03', color: 'bg-accent-yellow', title: 'Review your notes', body: 'Browse structured notes, switch between standard and concise views, download as Word or Markdown', icon: '📖', dark: false },
+              { n: '04', color: 'bg-[#1DB870]',  title: 'Test yourself', body: 'Generate a custom quiz from your chosen topics and get instant feedback on your answers', icon: '⚡' },
             ].map(s => (
               <div key={s.n} className={`${s.color} rounded-2xl p-6`}>
                 <div className="flex items-center justify-between mb-6">
@@ -226,7 +227,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
               Everything you need<br /><span className="italic font-500">to actually revise</span>
             </h2>
             <p className="text-ink-500 text-base leading-relaxed">
-              Brain Buffet isn't just a note summariser. It's a full revision toolkit — structured notes, quizzes, YouTube integration, and organised subjects.
+              Brain Buffet is a full revision toolkit — structured notes, quizzes, YouTube integration, and colour-coded subjects, all in one place.
             </p>
           </div>
           <div className="grid gap-3">
