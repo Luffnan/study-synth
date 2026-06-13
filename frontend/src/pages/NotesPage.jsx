@@ -59,6 +59,9 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
     return () => window.removeEventListener('keydown', onKey);
   }, [activeNotes, videoSources]);
 
+  const [sourceFiles, setSourceFiles] = useState(null); // null = not yet loaded
+  const [sourceFilesLoading, setSourceFilesLoading] = useState(false);
+
   // Build sidebar items: topics + key terms + videos + source files (only when files exist)
   const sidebarItems = [
     ...(activeNotes.topics || []).map((t, i) => ({ type: 'topic', index: i, label: t.name })),
@@ -75,8 +78,6 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
   const [downloadModalOpen, setDownloadModalOpen] = useState(false);
   const [addSourceOpen, setAddSourceOpen] = useState(false);
   const [topicMenuOpen, setTopicMenuOpen] = useState(false);
-  const [sourceFiles, setSourceFiles] = useState(null); // null = not yet loaded
-  const [sourceFilesLoading, setSourceFilesLoading] = useState(false);
 
   // Load source files on mount so we know whether to show the nav item
   useEffect(() => {
