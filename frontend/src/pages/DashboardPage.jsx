@@ -29,16 +29,14 @@ function TipBanner() {
   const tip = TIPS[index];
   return (
     <div className="flex items-start gap-2.5 bg-ink-100 rounded-xl px-3 py-2.5">
-      <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-ink-200 flex items-center justify-center self-center">
-        <Zap className="w-5 h-5 text-ink-500" />
-      </div>
+      <Zap className="w-7 h-7 text-ink-500 flex-shrink-0 self-center" />
       <div className="flex-1 min-w-0">
         <p className="text-xs font-700 text-ink-700">HOT TIP: <span className="font-600 text-ink-600">{tip.lead}</span></p>
         <p className="text-xs text-ink-500 leading-relaxed mt-0.5">{tip.body}</p>
       </div>
       <button
         onClick={e => { e.stopPropagation(); setIndex(i => (i + 1) % TIPS.length); }}
-        className="flex-shrink-0 w-5 h-5 rounded-full bg-white border border-ink-200 hover:bg-ink-50 flex items-center justify-center transition-colors mt-0.5"
+        className="flex-shrink-0 w-5 h-5 rounded-full bg-ink-200 hover:bg-ink-300 flex items-center justify-center transition-colors self-center"
         title="Next tip"
       >
         <ChevronRight className="w-3 h-3 text-ink-500" />
