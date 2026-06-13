@@ -109,49 +109,42 @@ export default function LandingPage({ onGetStarted, onLogin }) {
             </div>
           </div>
 
-          {/* Right: mosaic grid */}
-          <div className="hidden lg:grid grid-cols-2 grid-rows-3 gap-3 h-[420px]">
-            <div className="bg-accent-yellow rounded-2xl p-5 flex flex-col justify-between row-span-2">
-              <Zap className="w-8 h-8 text-ink-900" strokeWidth={2.5} />
-              <div>
-                <p className="text-ink-900 font-800 text-xl leading-tight">Quiz yourself on anything</p>
-                <p className="text-ink-700 text-xs mt-1.5">Custom questions from your exact material</p>
+          {/* Right: 2×2 step cards */}
+          <div className="hidden lg:grid grid-cols-2 gap-3">
+            {[
+              { n: '01', color: 'bg-[#2E90FA]', title: 'Upload your content', body: 'PDFs, images of handwritten notes, lecture slides, or paste a YouTube URL', icon: '📄' },
+              { n: '02', color: 'bg-brand-500',  title: 'Extracts and structures', body: 'Brain Buffet extracts the subject knowledge, organises it into topics and subtopics, and identifies key terms', icon: '🧩' },
+              { n: '03', color: 'bg-accent-yellow', title: 'Review your notes', body: 'Browse structured notes, switch between standard and concise views, download as Word or Markdown', icon: '📖' },
+              { n: '04', color: 'bg-[#1DB870]',  title: 'Test yourself', body: 'Generate a custom quiz from your chosen topics and get instant feedback on your answers', icon: '⚡' },
+            ].map(s => (
+              <div key={s.n} className={`${s.color} rounded-2xl p-5`}>
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-xl">{s.icon}</span>
+                  <span className={`text-xs font-800 ${s.n === '03' ? 'text-ink-400' : 'text-white/40'}`}>{s.n}</span>
+                </div>
+                <h3 className={`font-700 text-sm mb-1.5 leading-snug ${s.n === '03' ? 'text-ink-900' : 'text-white'}`}>{s.title}</h3>
+                <p className={`text-xs leading-relaxed ${s.n === '03' ? 'text-ink-600' : 'text-white/75'}`}>{s.body}</p>
               </div>
-            </div>
-            <div className="bg-brand-500 rounded-2xl p-4 flex flex-col justify-between">
-              <BrainLogo className="w-7 h-7 text-white" />
-              <p className="text-white font-700 text-sm leading-snug">Topics, subtopics + key terms extracted</p>
-            </div>
-            <div className="bg-ink-900 rounded-2xl p-4 flex flex-col justify-between">
-              <Youtube className="w-6 h-6 text-red-400" />
-              <p className="text-white font-700 text-sm leading-snug">YouTube → timecoded notes</p>
-            </div>
-            <div className="bg-[#1DB870] rounded-2xl p-4 flex items-center justify-center col-span-2">
-              <div className="flex flex-wrap gap-2 justify-center">
-                {['PDF', 'Photos', 'Slides', 'YouTube', 'Handwriting'].map(t => (
-                  <span key={t} className="bg-white/25 text-white text-xs font-700 px-3 py-1.5 rounded-full">{t}</span>
-                ))}
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* ── Works with strip ── */}
-      <div className="bg-ink-900 py-4 overflow-hidden">
-        <div className="flex items-center gap-6 px-6 sm:justify-center flex-wrap sm:flex-nowrap">
-          <span className="text-[10px] font-700 text-ink-500 uppercase tracking-widest flex-shrink-0">Works with</span>
+      {/* ── Works with ── */}
+      <div className="py-6">
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 flex items-center gap-3 flex-wrap justify-center">
+          <span className="text-[10px] font-700 text-ink-400 uppercase tracking-widest mr-1">Works with</span>
           {[
             { icon: <FileText className="w-3.5 h-3.5" />, label: 'PDF Textbooks' },
             { icon: <Image className="w-3.5 h-3.5" />,    label: 'Photos & Screenshots' },
             { icon: <Monitor className="w-3.5 h-3.5" />,  label: 'Slide Decks' },
             { icon: <Youtube className="w-3.5 h-3.5" />,  label: 'YouTube Videos' },
           ].map(s => (
-            <div key={s.label} className="flex items-center gap-1.5 text-white text-xs font-600 flex-shrink-0">
-              <span className="text-ink-400">{s.icon}</span>{s.label}
+            <div key={s.label} className="flex items-center gap-1.5 bg-ink-100 border border-ink-200 text-ink-700 text-xs font-600 px-3 py-1.5 rounded-full">
+              <span className="text-ink-500">{s.icon}</span>{s.label}
             </div>
           ))}
-          <span className="text-ink-600 text-xs font-500">…and more</span>
+          <span className="text-ink-400 text-xs font-500">…and more</span>
         </div>
       </div>
 
