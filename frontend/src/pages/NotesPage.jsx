@@ -1057,6 +1057,8 @@ function daysRemaining(expiresAt) {
   return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
 }
 
+const FREE_STORAGE_LIMIT = 1 * 1024 * 1024 * 1024; // 1 GB
+
 function SourceFilesModal({ files, loading, onView, onDelete, onClose }) {
   const [deleting, setDeleting] = useState(null);
   const [viewing, setViewing] = useState(null);
@@ -1111,15 +1113,15 @@ function SourceFilesModal({ files, loading, onView, onDelete, onClose }) {
                   <li key={f.id} className="bg-white border-2 border-ink-900 rounded-xl px-4 py-3">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-600 text-ink-800 truncate">{f.file_name}</p>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-xs text-ink-400">{formatBytes(f.file_size)}</span>
-                          {days !== null && (
-                            <span className={`text-xs font-500 ${expiring ? 'text-red-500' : 'text-ink-400'}`}>
-                              · {days === 0 ? 'Expires today' : `${days}d left`}
-                            </span>
-                          )}
+                        <div className="flex items-baseline gap-2">
+                          <p className="text-sm font-600 text-ink-800 truncate">{f.file_name}</p>
+                          <span className="text-xs text-ink-400 flex-shrink-0">{formatBytes(f.file_size)}</span>
                         </div>
+                        {days !== null && (
+                          <span className={`text-xs font-500 ${expiring ? 'text-red-500' : 'text-ink-400'}`}>
+                            {days === 0 ? 'Expires today' : `${days}d left`}
+                          </span>
+                        )}
                       </div>
                       <div className="flex items-center gap-1.5 flex-shrink-0">
                         <button
@@ -1150,7 +1152,7 @@ function SourceFilesModal({ files, loading, onView, onDelete, onClose }) {
         {files?.length > 0 && (
           <div className="px-5 py-3 border-t border-ink-100 flex items-center gap-2">
             <HardDrive className="w-3.5 h-3.5 text-ink-400" />
-            <p className="text-xs text-ink-400">{formatBytes(totalBytes)} stored · Files auto-delete after 7 days</p>
+            <p className="text-xs text-ink-400">{formatBytes(FREE_STORAGE_LIMIT - totalBytes)} of {formatBytes(FREE_STORAGE_LIMIT)} remaining · Files auto-delete after 7 days</p>
           </div>
         )}
       </div>
