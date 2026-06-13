@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { saveNote, saveSourceFiles } from '../lib/store.js';
+import { supabaseAdmin } from '../lib/supabase.js';
 import { tryGetUserId } from '../lib/auth.js';
 import { parseFilesFromRequest } from '../lib/parse-files.js';
 import { yearLevelModifier } from '../lib/year-level.js';
@@ -79,7 +80,7 @@ export default async function handler(req, res) {
   if (authErr) return res.status(401).json({ error: 'Unauthorized' });
 
   try {
-    const { contentBlocks, fileNames, yearLevel, sourceFileMeta } = await parseFilesFromRequest(req, { userId });
+    const { contentBlocks, fileNames, yearLevel, sourceFileMeta, rawFileBuffers } = await parseFilesFromRequest(req, { userId });
 
     contentBlocks.push({ type: 'text', text: 'Please summarise the above study material into structured notes as instructed.' });
 
@@ -102,9 +103,23 @@ export default async function handler(req, res) {
 
     const record = await saveNote(notes, fileNames, userId);
 
-    // Persist source files if we have metadata (large-file path via Supabase Storage)
+    // Large-file path: metadata already prepared by parse-files
     if (sourceFileMeta?.length) {
-      await saveSourceFiles(record.id, sourceFileMeta, userId).catch(() => {}); // non-fatal
+      await saveSourceFiles(record.id, sourceFileMeta, userId).catch(() => {});
+    }
+
+    // Small-file path: upload buffers now that we have a record ID
+    if (rawFileBuffers?.length) {
+      const smallFileMeta = [];
+      for (const { fileName, buffer, mimeType, fileSize } of rawFileBuffers) {
+        const safeName = fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
+        const destPath = `${userId}/${Date.now()}-${safeName}`;
+        const { error } = await supabaseAdmin.storage
+          .from('source-files')
+          .upload(destPath, buffer, { contentType: mimeType, upsert: false });
+        if (!error) smallFileMeta.push({ fileName, fileSize, mimeType, storagePath: destPath });
+      }
+      if (smallFileMeta.length) await saveSourceFiles(record.id, smallFileMeta, userId).catch(() => {});
     }
 
     res.status(200).json({ notes, id: record.id });

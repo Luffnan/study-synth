@@ -1,6 +1,6 @@
 import { getSourceFiles, deleteSourceFile } from '../../../lib/store.js';
 import { tryGetUserId } from '../../../lib/auth.js';
-import { supabase } from '../../../lib/supabase.js';
+import { supabaseAdmin } from '../../../lib/supabase.js';
 
 export default async function handler(req, res) {
   const { id } = req.query;
@@ -21,7 +21,7 @@ export default async function handler(req, res) {
       if (!fileId) return res.status(400).json({ error: 'fileId required' });
 
       const { storage_path } = await deleteSourceFile(fileId, userId);
-      await supabase.storage.from('source-files').remove([storage_path]);
+      await supabaseAdmin.storage.from('source-files').remove([storage_path]);
 
       res.status(200).json({ ok: true });
     } catch (e) {
@@ -38,7 +38,7 @@ export default async function handler(req, res) {
       const match = files.find(f => f.storage_path === storagePath);
       if (!match) return res.status(403).json({ error: 'Not found' });
 
-      const { data, error } = await supabase.storage
+      const { data, error } = await supabaseAdmin.storage
         .from('source-files')
         .createSignedUrl(storagePath, 300); // 5 minute URL
 
