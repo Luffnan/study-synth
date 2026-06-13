@@ -275,16 +275,17 @@ const COLOR_HEX = {
 function SubjectCard({ subject, topics, onOpen, onDelete, onRename }) {
   const [editing, setEditing] = useState(false);
   const [titleVal, setTitleVal] = useState(subject.title);
+  const [colorVal, setColorVal] = useState(subject.color || 'indigo');
   const inputRef = useRef(null);
-  const hex = COLOR_HEX[subject.color] || COLOR_HEX.indigo;
+  const hex = COLOR_HEX[editing ? colorVal : (subject.color || 'indigo')] || COLOR_HEX.indigo;
 
-  function startEdit(e) { e.stopPropagation(); setEditing(true); setTimeout(() => inputRef.current?.focus(), 0); }
+  function startEdit(e) { e.stopPropagation(); setColorVal(subject.color || 'indigo'); setEditing(true); setTimeout(() => inputRef.current?.focus(), 0); }
   async function saveEdit(e) {
     e?.stopPropagation();
-    if (titleVal.trim()) await onRename({ title: titleVal.trim() });
+    if (titleVal.trim()) await onRename({ title: titleVal.trim(), color: colorVal });
     setEditing(false);
   }
-  function cancelEdit(e) { e?.stopPropagation(); setTitleVal(subject.title); setEditing(false); }
+  function cancelEdit(e) { e?.stopPropagation(); setTitleVal(subject.title); setColorVal(subject.color || 'indigo'); setEditing(false); }
 
   return (
     <div
@@ -301,13 +302,23 @@ function SubjectCard({ subject, topics, onOpen, onDelete, onRename }) {
         {/* Title row */}
         <div className="flex items-center justify-between gap-2 mb-3">
           {editing ? (
-            <div onClick={e => e.stopPropagation()} className="flex items-center gap-1.5 flex-1 min-w-0">
-              <input ref={inputRef} value={titleVal} onChange={e => setTitleVal(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter') saveEdit(); if (e.key === 'Escape') cancelEdit(); }}
-                className="flex-1 min-w-0 bg-white/20 border border-white/40 rounded-lg px-2 py-0.5 text-sm font-700 text-white placeholder-white/60 focus:outline-none focus:bg-white/30"
-              />
-              <button onClick={saveEdit} className="p-1 bg-white/20 hover:bg-white/40 rounded text-white"><Check className="w-3 h-3" /></button>
-              <button onClick={cancelEdit} className="p-1 bg-white/10 hover:bg-white/25 rounded text-white"><X className="w-3 h-3" /></button>
+            <div onClick={e => e.stopPropagation()} className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5 mb-2">
+                <input ref={inputRef} value={titleVal} onChange={e => setTitleVal(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') saveEdit(); if (e.key === 'Escape') cancelEdit(); }}
+                  className="flex-1 min-w-0 bg-white/20 border border-white/40 rounded-lg px-2 py-0.5 text-sm font-700 text-white placeholder-white/60 focus:outline-none focus:bg-white/30"
+                />
+                <button onClick={saveEdit} className="p-1 bg-white/20 hover:bg-white/40 rounded text-white"><Check className="w-3 h-3" /></button>
+                <button onClick={cancelEdit} className="p-1 bg-white/10 hover:bg-white/25 rounded text-white"><X className="w-3 h-3" /></button>
+              </div>
+              <div className="flex gap-1.5">
+                {Object.entries(COLOR_HEX).map(([key, h]) => (
+                  <button key={key} onClick={() => setColorVal(key)}
+                    style={{ backgroundColor: h }}
+                    className={`w-5 h-5 rounded-full transition-all ${colorVal === key ? 'ring-2 ring-white ring-offset-1 ring-offset-transparent scale-110' : 'opacity-60 hover:opacity-100'}`}
+                  />
+                ))}
+              </div>
             </div>
           ) : (
             <div className="flex items-center gap-2 min-w-0">
