@@ -100,22 +100,22 @@ export default function LandingPage({ onGetStarted, onLogin }) {
               Brain Buffet structures it into notes and quizzes built entirely from your material.
             </p>
 
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            <div className="flex flex-col items-start gap-2">
               <button onClick={onGetStarted}
                 className="flex items-center gap-2 bg-ink-900 hover:bg-brand-600 text-white px-7 py-3.5 rounded-2xl text-base font-700 transition-colors">
                 Create free account <ArrowRight className="w-4 h-4" />
               </button>
-              <span className="text-xs text-ink-400 font-500">Year 7 to university</span>
+              <p className="text-[11px] text-ink-400 font-500">Free during beta &nbsp;·&nbsp; No credit card needed &nbsp;·&nbsp; Year 7 to university</p>
             </div>
           </div>
 
           {/* Right: 2×2 step cards */}
           <div className="hidden lg:grid grid-cols-2 gap-3">
             {[
-              { n: '01', color: 'bg-[#2E90FA]', title: 'Upload your content', body: 'PDFs, images of handwritten notes, lecture slides, or paste a YouTube URL', icon: '📄' },
-              { n: '02', color: 'bg-brand-500',  title: 'Extracts and structures', body: 'Brain Buffet extracts the subject knowledge, organises it into topics and subtopics, and identifies key terms', icon: '🧩' },
-              { n: '03', color: 'bg-accent-yellow', title: 'Review your notes', body: 'Browse structured notes, switch between standard and concise views, download as Word or Markdown', icon: '📖' },
-              { n: '04', color: 'bg-[#1DB870]',  title: 'Test yourself', body: 'Generate a custom quiz from your chosen topics and get instant feedback on your answers', icon: '⚡' },
+              { n: '01', color: 'bg-[#2E90FA]', title: 'Upload your content', body: 'PDFs, handwritten notes, slides or a YouTube URL', icon: '📄' },
+              { n: '02', color: 'bg-brand-500',  title: 'Extracts and structures', body: 'Key facts, terms and concepts pulled out and organised into topics and subtopics', icon: '🧩' },
+              { n: '03', color: 'bg-accent-yellow', title: 'Review your notes', body: 'Standard and concise views, download as Word or Markdown', icon: '📖' },
+              { n: '04', color: 'bg-[#1DB870]',  title: 'Test yourself', body: 'Pick your topics, generate a quiz, get instant feedback on your answers', icon: '⚡' },
             ].map(s => (
               <div key={s.n} className={`${s.color} rounded-2xl p-5`}>
                 <div className="flex items-center justify-between mb-4">
@@ -177,37 +177,6 @@ export default function LandingPage({ onGetStarted, onLogin }) {
               </div>
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* ── How it works ── */}
-      <section className="py-16 sm:py-20 bg-ink-50">
-        <div className="max-w-6xl mx-auto px-5 sm:px-8">
-          <div className="mb-10">
-            <span className="text-[11px] font-700 text-ink-400 uppercase tracking-widest">02 /</span>
-            <h2 className="font-display text-3xl sm:text-4xl font-600 text-ink-900 mt-1">
-              How it<br /><span className="italic font-500">works</span>
-            </h2>
-            <p className="text-ink-500 text-sm mt-2">From raw material to revision-ready notes in under a minute</p>
-          </div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[
-              { n: '01', color: 'bg-[#2E90FA]', title: 'Upload your content', body: 'PDFs, images of handwritten notes, lecture slides, or paste a YouTube URL', icon: '📄' },
-              { n: '02', color: 'bg-brand-500',  title: 'Extracts and structures', body: 'Brain Buffet extracts the subject knowledge, organises it into topics and subtopics, and identifies key terms', icon: '🧩' },
-              { n: '03', color: 'bg-accent-yellow', title: 'Review your notes', body: 'Browse structured notes, switch between standard and concise views, download as Word or Markdown', icon: '📖', dark: false },
-              { n: '04', color: 'bg-[#1DB870]',  title: 'Test yourself', body: 'Generate a custom quiz from your chosen topics and get instant feedback on your answers', icon: '⚡' },
-            ].map(s => (
-              <div key={s.n} className={`${s.color} rounded-2xl p-5`}>
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-xl">{s.icon}</span>
-                  <span className={`text-xs font-800 ${s.n === '03' ? 'text-ink-400' : 'text-white/40'}`}>{s.n}</span>
-                </div>
-                <h3 className={`font-700 text-sm mb-1.5 leading-snug ${s.n === '03' ? 'text-ink-900' : 'text-white'}`}>{s.title}</h3>
-                <p className={`text-xs leading-relaxed ${s.n === '03' ? 'text-ink-600' : 'text-white/75'}`}>{s.body}</p>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
