@@ -21,3 +21,4 @@ frontend/.vite/
 
 # macOS
 .DS_Store
+.vercel
