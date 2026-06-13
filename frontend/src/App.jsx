@@ -19,6 +19,7 @@ export default function App() {
   const [noteId, setNoteId] = useState(null);
   const [noteTitle, setNoteTitle] = useState(null);
   const [conciseNotes, setConciseNotes] = useState(null);
+  const [initialPane, setInitialPane] = useState(null);
   const [view, setView] = useState('dashboard');
 
   // Subject page state
@@ -85,13 +86,18 @@ export default function App() {
     setView('notes');
   }
 
-  function handleOpenNote(record, fromSubject = null) {
+  function handleOpenNote(record, fromSubject = null, pane = null) {
     setNotes(record.notes);
     setNoteId(record.id);
     setNoteTitle(record.notes.title);
     setConciseNotes(null);
     setNoteFromSubject(fromSubject);
+    setInitialPane(pane);
     setView('notes');
+  }
+
+  function handleOpenNoteAtSources(record, fromSubject = null) {
+    handleOpenNote(record, fromSubject, 'sources');
   }
 
   function handleStartQuiz(id, title) {
@@ -164,6 +170,7 @@ export default function App() {
           <DashboardPage
             onUpload={() => setView('upload')}
             onOpenNote={handleOpenNote}
+            onOpenNoteAtSources={handleOpenNoteAtSources}
             onQuiz={handleStartQuiz}
             onOpenSubject={handleOpenSubject}
             yearLevel={yearLevel}
@@ -176,13 +183,14 @@ export default function App() {
             subjects={allSubjects}
             onBack={handleReset}
             onOpenNote={record => handleOpenNote(record, currentSubject)}
+            onOpenNoteAtSources={record => handleOpenNoteAtSources(record, currentSubject)}
             onQuiz={handleStartQuiz}
             onRecordsChange={setAllRecords}
             yearLevel={yearLevel}
           />
         )}
         {view === 'upload'   && <UploadPage onNotes={handleNotes} onBack={handleReset} yearLevel={yearLevel} />}
-        {view === 'notes'    && <NotesPage notes={notes} noteId={noteId} conciseNotesProp={conciseNotes} onConciseNotes={setConciseNotes} onBack={handleReset} fromSubject={noteFromSubject} onBackToSubject={() => { setView('subject'); }} onQuiz={() => handleStartQuiz(noteId, noteTitle)} />}
+        {view === 'notes'    && <NotesPage notes={notes} noteId={noteId} conciseNotesProp={conciseNotes} onConciseNotes={setConciseNotes} onBack={handleReset} fromSubject={noteFromSubject} onBackToSubject={() => { setView('subject'); }} onQuiz={() => handleStartQuiz(noteId, noteTitle)} initialPane={initialPane} />}
         {view === 'quiz'     && <QuizPage noteId={noteId} noteTitle={noteTitle} notes={notes} yearLevel={yearLevel} onBack={() => setView(notes ? 'notes' : 'dashboard')} />}
         {view === 'profile'  && (
           <ProfilePage

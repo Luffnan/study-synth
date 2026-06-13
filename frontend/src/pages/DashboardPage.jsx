@@ -62,7 +62,7 @@ export const COLORS = {
   slate:   { from: 'from-[#141310]', to: 'to-[#141310]', dot: 'bg-[#141310]', ring: 'ring-[#141310]' },
 };
 
-export default function DashboardPage({ onUpload, onOpenNote, onQuiz, onOpenSubject, yearLevel }) {
+export default function DashboardPage({ onUpload, onOpenNote, onOpenNoteAtSources, onQuiz, onOpenSubject, yearLevel }) {
   const [records, setRecords] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -101,6 +101,14 @@ export default function DashboardPage({ onUpload, onOpenNote, onQuiz, onOpenSubj
     try {
       const res = await apiFetch(`/api/notes/${record.id}`);
       onOpenNote(await res.json());
+    } catch { setError('Failed to load note'); }
+  }
+
+  async function handleOpenAtSources(record) {
+    if (!onOpenNoteAtSources) return;
+    try {
+      const res = await apiFetch(`/api/notes/${record.id}`);
+      onOpenNoteAtSources(await res.json());
     } catch { setError('Failed to load note'); }
   }
 
@@ -226,6 +234,7 @@ export default function DashboardPage({ onUpload, onOpenNote, onQuiz, onOpenSubj
                 {uncategorised.map(r => (
                   <TopicCard key={r.id} record={r}
                     onClick={() => handleOpen(r)}
+                    onOpenSources={() => handleOpenAtSources(r)}
                     onDelete={e => handleDelete(e, r.id)}
                     onQuiz={onQuiz ? e => { e.stopPropagation(); onQuiz(r.id, r.title); } : null}
                     onSaveEdit={updates => handleSaveEdit(r.id, updates)}
@@ -411,7 +420,7 @@ function NewSubjectModal({ onCreated, onClose }) {
 
 // ── Topic card (slimmer version of old NoteCard) ──────────────────────────────
 
-export function TopicCard({ record, onClick, onDelete, onQuiz, onSaveEdit, onAddSource, onMoveToSubject, onRemoveFromSubject, subjects = [], deleting }) {
+export function TopicCard({ record, onClick, onOpenSources, onDelete, onQuiz, onSaveEdit, onAddSource, onMoveToSubject, onRemoveFromSubject, subjects = [], deleting }) {
   const [sourcesOpen, setSourcesOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(record.title || '');
@@ -508,7 +517,14 @@ export function TopicCard({ record, onClick, onDelete, onQuiz, onSaveEdit, onAdd
                 ) : (
                   <li key={i} className="flex items-center gap-1.5 text-xs text-ink-500">
                     <FileText className="w-3 h-3 flex-shrink-0 text-ink-400" />
-                    <span className="truncate">{f}</span>
+                    {onOpenSources ? (
+                      <button
+                        onClick={e => { e.stopPropagation(); onOpenSources(); }}
+                        className="truncate text-accent-teal hover:underline text-left"
+                      >{f}</button>
+                    ) : (
+                      <span className="truncate">{f}</span>
+                    )}
                   </li>
                 ))}
               </ul>

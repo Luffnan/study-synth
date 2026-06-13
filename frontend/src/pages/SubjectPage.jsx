@@ -12,10 +12,11 @@ export default function SubjectPage({
   subject,
   allRecords,
   subjects,
-  onBack,          // () => void — navigate back to dashboard
-  onOpenNote,      // (record) => void
-  onQuiz,          // (id, title) => void
-  onRecordsChange, // (newRecords) => void — propagate mutations upward
+  onBack,
+  onOpenNote,
+  onOpenNoteAtSources,
+  onQuiz,
+  onRecordsChange,
   yearLevel,
 }) {
   const [error, setError] = useState(null);
@@ -29,6 +30,14 @@ export default function SubjectPage({
     try {
       const res = await apiFetch(`/api/notes/${record.id}`);
       onOpenNote(await res.json());
+    } catch { setError('Failed to load note'); }
+  }
+
+  async function handleOpenAtSources(record) {
+    if (!onOpenNoteAtSources) return;
+    try {
+      const res = await apiFetch(`/api/notes/${record.id}`);
+      onOpenNoteAtSources(await res.json());
     } catch { setError('Failed to load note'); }
   }
 
@@ -142,6 +151,7 @@ export default function SubjectPage({
               key={r.id}
               record={r}
               onClick={() => handleOpen(r)}
+              onOpenSources={() => handleOpenAtSources(r)}
               onDelete={e => handleDelete(e, r.id)}
               onQuiz={onQuiz ? e => { e.stopPropagation(); onQuiz(r.id, r.title); } : null}
               onSaveEdit={updates => handleSaveEdit(r.id, updates)}

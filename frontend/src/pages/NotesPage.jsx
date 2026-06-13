@@ -13,7 +13,7 @@ const ACCEPTED = {
 };
 const ACCEPTED_EXTS = Object.values(ACCEPTED).flat().join(',');
 
-export default function NotesPage({ notes: initialNotes, noteId, conciseNotesProp, onConciseNotes, onBack, fromSubject, onBackToSubject, onQuiz }) {
+export default function NotesPage({ notes: initialNotes, noteId, conciseNotesProp, onConciseNotes, onBack, fromSubject, onBackToSubject, onQuiz, initialPane }) {
   const [mode, setMode] = useState('standard');
   const [conciseNotes, setConciseNotesLocal] = useState(conciseNotesProp ?? null);
   const [conciseLoading, setConciseLoading] = useState(false);
@@ -67,13 +67,21 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
     ...(noteId ? [{ type: 'sources', label: 'Source Files' }] : []),
   ];
 
-  const [selected, setSelected] = useState(sidebarItems[0] ?? null);
+  const [selected, setSelected] = useState(() => {
+    if (initialPane === 'sources' && noteId) return { type: 'sources', label: 'Source Files' };
+    return sidebarItems[0] ?? null;
+  });
   const [docxLoading, setDocxLoading] = useState(false);
   const [downloadModalOpen, setDownloadModalOpen] = useState(false);
   const [addSourceOpen, setAddSourceOpen] = useState(false);
   const [topicMenuOpen, setTopicMenuOpen] = useState(false);
   const [sourceFiles, setSourceFiles] = useState(null); // null = not yet loaded
   const [sourceFilesLoading, setSourceFilesLoading] = useState(false);
+
+  // Auto-load source files if landing directly on sources pane
+  useEffect(() => {
+    if (initialPane === 'sources') loadSourceFiles();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // When mode switches, reset selected to first item
   useEffect(() => {
