@@ -31,7 +31,7 @@ function TipBanner() {
     <div className="flex items-start gap-2.5 bg-ink-100 rounded-xl px-3 py-2.5">
       <Zap className="w-3.5 h-3.5 text-ink-400 flex-shrink-0 mt-0.5" />
       <p className="text-xs text-ink-500 flex-1 leading-relaxed">
-        <span className="font-600 text-ink-600">{tip.lead}.</span>{' '}
+        <span className="font-700 text-ink-700">HOT TIP: </span><span className="font-600 text-ink-600">{tip.lead}.</span>{' '}
         {tip.body}
       </p>
       <button
