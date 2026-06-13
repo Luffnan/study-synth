@@ -1172,7 +1172,7 @@ function SourceFilesModal({ files, loading, onView, onDelete, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
-      <div className="relative bg-ink-50 rounded-2xl border border-ink-200 shadow-hard w-full max-w-md max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
+      <div className="relative bg-white rounded-2xl border border-ink-200 shadow-xl w-full max-w-md max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-ink-100">
           <div className="flex items-center gap-2">

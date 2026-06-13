@@ -185,7 +185,7 @@ export default function DashboardPage({ onUpload, onOpenNote, onOpenNoteAtSource
           </p>
         </div>
         <button onClick={() => setNewSubjectOpen(true)}
-          className="flex items-center gap-1.5 bg-white hover:bg-ink-100 text-ink-900 border-2 border-ink-900 px-3 py-1.5 rounded-xl text-sm font-600 transition-colors flex-shrink-0 shadow-hard-sm">
+          className="flex items-center gap-1.5 bg-white hover:bg-ink-100 text-ink-900 border border-ink-200 px-3 py-1.5 rounded-xl text-sm font-600 transition-colors flex-shrink-0 shadow-sm">
           <FolderPlus className="w-3.5 h-3.5" /> New Subject
         </button>
       </div>
@@ -298,7 +298,7 @@ function SubjectCard({ subject, topics, onOpen, onDelete, onRename }) {
   return (
     <div
       onClick={() => !editing && onOpen()}
-      className="relative overflow-hidden rounded-2xl border-2 border-ink-900 shadow-hard cursor-pointer group transition-all duration-200 hover:-translate-y-0.5"
+      className="relative overflow-hidden rounded-2xl shadow-sm cursor-pointer group transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
       style={{ backgroundColor: hex }}
     >
       {/* Watermark */}
@@ -493,7 +493,7 @@ export function TopicCard({ record, onClick, onOpenSources, onDelete, onQuiz, on
 
   return (
     <div onClick={onClick}
-      className={`bg-white border-2 border-ink-900 rounded-2xl shadow-hard-sm hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group ${deleting ? 'opacity-50' : ''}`}>
+      className={`bg-white border border-ink-200 rounded-2xl shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 cursor-pointer group ${deleting ? 'opacity-50' : ''}`}>
 
       {/* Card body */}
       <div className="p-4">
@@ -630,7 +630,7 @@ export function AddSourcesModal({ target, yearLevel, onDone, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-ink-50 rounded-2xl border-2 border-ink-900 shadow-hard w-full max-w-md animate-slide-up max-h-[90vh] overflow-y-auto">
+      <div className="relative bg-white rounded-2xl border border-ink-200 shadow-xl w-full max-w-md animate-slide-up max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between px-5 pt-5 pb-4">
           <div className="flex items-center gap-2">
             <Plus className="w-4 h-4 text-ink-900" />
@@ -641,7 +641,7 @@ export function AddSourcesModal({ target, yearLevel, onDone, onClose }) {
         <div className="flex gap-1 mx-5 mb-4 bg-ink-200 rounded-xl p-1">
           {['files', 'youtube'].map(t => (
             <button key={t} onClick={() => setTab(t)}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-600 transition-all ${tab === t ? 'bg-white text-ink-900 shadow-hard-sm border border-ink-900' : 'text-ink-500 hover:text-ink-700'}`}>
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-600 transition-all ${tab === t ? 'bg-white text-ink-900 shadow-sm' : 'text-ink-500 hover:text-ink-700'}`}>
               {t === 'files' ? <><UploadCloud className="w-3.5 h-3.5" /> Files</> : <><Youtube className="w-3.5 h-3.5" /> YouTube</>}
             </button>
           ))}

@@ -144,16 +144,10 @@ export default function LandingPage({ onGetStarted, onLogin }) {
 
       {/* ── Why different ── */}
       <section className="py-16 sm:py-20 max-w-6xl mx-auto px-5 sm:px-8">
-        <div className="flex items-end justify-between mb-10 gap-4">
-          <div>
-            <span className="text-[11px] font-700 text-ink-400 uppercase tracking-widest">01 /</span>
-            <h2 className="font-display text-3xl sm:text-4xl font-600 text-ink-900 mt-1">
-              Why choose <span className="italic font-500">Brain Buffet?</span>
-            </h2>
-          </div>
-          <p className="hidden sm:block text-sm text-ink-400 max-w-xs text-right leading-relaxed">
-            Most study tools generate generic summaries. Brain Buffet builds structured curriculum notes — only from what you give it.
-          </p>
+        <div className="mb-10">
+          <h2 className="font-display text-3xl sm:text-4xl font-600 text-ink-900">
+            Why choose <span className="italic font-500">Brain Buffet?</span>
+          </h2>
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -177,9 +171,8 @@ export default function LandingPage({ onGetStarted, onLogin }) {
       {/* ── Feature list ── */}
       <section className="py-16 sm:py-20 max-w-6xl mx-auto px-5 sm:px-8">
         <div className="mb-10">
-          <span className="text-[11px] font-700 text-ink-400 uppercase tracking-widest">03 /</span>
-          <h2 className="font-display text-3xl sm:text-4xl font-600 text-ink-900 mt-1">
-            Everything you need <span className="italic font-500">to actually revise</span>
+          <h2 className="font-display text-3xl sm:text-4xl font-600 text-ink-900">
+            Everything you need <span className="italic font-500">to study smarter</span>
           </h2>
         </div>
         <div className="grid sm:grid-cols-2 gap-x-12 gap-y-1">

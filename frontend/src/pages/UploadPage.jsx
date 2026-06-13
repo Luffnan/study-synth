@@ -53,20 +53,20 @@ export default function UploadPage({ onNotes, onBack, yearLevel }) {
       <div className="flex gap-2 mb-4">
         <button
           onClick={() => setTab('files')}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-600 border-2 transition-all duration-200 ${
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-600 border transition-all duration-200 ${
             tab === 'files'
-              ? 'bg-ink-900 border-ink-900 text-white shadow-hard-sm'
-              : 'bg-white border-ink-900 text-ink-600 hover:bg-ink-50'
+              ? 'bg-ink-900 border-ink-900 text-white'
+              : 'bg-white border-ink-200 text-ink-600 hover:bg-ink-50'
           }`}
         >
           <ArrowUp className="w-4 h-4" /> Files
         </button>
         <button
           onClick={() => setTab('youtube')}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-600 border-2 transition-all duration-200 ${
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-600 border transition-all duration-200 ${
             tab === 'youtube'
-              ? 'bg-ink-900 border-ink-900 text-white shadow-hard-sm'
-              : 'bg-white border-ink-900 text-ink-600 hover:bg-ink-50'
+              ? 'bg-ink-900 border-ink-900 text-white'
+              : 'bg-white border-ink-200 text-ink-600 hover:bg-ink-50'
           }`}
         >
           <Youtube className="w-4 h-4" /> YouTube
@@ -132,7 +132,7 @@ function FilesPanel({ onNotes, yearLevel, onLoading, files, setFiles, error, set
       >
         <input ref={inputRef} type="file" multiple accept={ACCEPTED_EXTS} className="hidden"
           onChange={e => addFiles(e.target.files)} />
-        <div className={`w-10 h-10 rounded-xl border-2 border-ink-900 mx-auto mb-3 flex items-center justify-center transition-colors ${dragging ? 'bg-ink-900' : 'bg-accent-yellow'}`}>
+        <div className={`w-10 h-10 rounded-xl border border-ink-200 mx-auto mb-3 flex items-center justify-center transition-colors ${dragging ? 'bg-ink-900' : 'bg-accent-yellow'}`}>
           <ArrowUp className={`w-5 h-5 ${dragging ? 'text-white' : 'text-ink-900'}`} />
         </div>
         <p className="font-700 text-ink-900 text-sm mb-1">
@@ -145,7 +145,7 @@ function FilesPanel({ onNotes, yearLevel, onLoading, files, setFiles, error, set
       {files.length > 0 && (
         <ul className="mt-3 space-y-2 animate-slide-up">
           {files.map(f => (
-            <li key={f.name} className="flex items-center gap-3 bg-white border-2 border-ink-900 rounded-xl px-4 py-3">
+            <li key={f.name} className="flex items-center gap-3 bg-white border border-ink-200 rounded-xl px-4 py-3">
               {f.type === 'application/pdf'
                 ? <FileText className="w-4 h-4 text-red-400 flex-shrink-0" />
                 : <Image className="w-4 h-4 text-brand-500 flex-shrink-0" />
@@ -180,7 +180,7 @@ function FilesPanel({ onNotes, yearLevel, onLoading, files, setFiles, error, set
         disabled={!files.length}
         className={`mt-4 w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-700 text-sm border-2 transition-all duration-200
           ${files.length
-            ? 'bg-ink-900 border-ink-900 text-white shadow-hard hover:bg-brand-600 hover:border-brand-600 active:scale-[0.98]'
+            ? 'bg-ink-900 border-ink-900 text-white hover:bg-brand-600 hover:border-brand-600 active:scale-[0.98]'
             : 'bg-ink-100 border-ink-200 text-ink-400 cursor-not-allowed'
           }`}
       >
@@ -278,7 +278,7 @@ function YouTubePanel({ onNotes, onLoading }) {
   return (
     <>
       {/* Info card */}
-      <div className="bg-white border-2 border-ink-900 rounded-2xl p-6 text-center mb-4 shadow-hard-sm">
+      <div className="bg-white border border-ink-200 rounded-2xl p-6 text-center mb-4 shadow-sm">
         <div className="w-12 h-12 rounded-2xl bg-red-500 flex items-center justify-center mx-auto mb-3">
           <Youtube className="w-6 h-6 text-white" />
         </div>

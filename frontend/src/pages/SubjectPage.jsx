@@ -101,7 +101,7 @@ export default function SubjectPage({
       </nav>
 
       {/* ── Subject header banner ── */}
-      <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${c.from} ${c.to} border-2 border-ink-900 shadow-hard mb-8`}>
+      <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${c.from} ${c.to} shadow-sm mb-8`}>
         {/* Brain watermark */}
         <div className="absolute bottom-0 right-0 translate-x-6 translate-y-6 opacity-10 pointer-events-none">
           <BrainLogo className="w-40 h-40 text-white" />
@@ -130,7 +130,7 @@ export default function SubjectPage({
       {/* ── Topics grid ── */}
       {topics.length === 0 ? (
         <div className="text-center py-20">
-          <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${c.from} ${c.to} border-2 border-ink-900 shadow-hard-sm flex items-center justify-center mx-auto mb-4`}>
+          <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${c.from} ${c.to} shadow-sm flex items-center justify-center mx-auto mb-4`}>
             <BrainLogo className="w-7 h-7 text-white" />
           </div>
           <h2 className="text-lg font-700 text-ink-800 mb-2">No topics yet</h2>
