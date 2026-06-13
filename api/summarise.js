@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { saveNote } from '../lib/store.js';
+import { saveNote, saveSourceFiles } from '../lib/store.js';
 import { tryGetUserId } from '../lib/auth.js';
 import { parseFilesFromRequest } from '../lib/parse-files.js';
 import { yearLevelModifier } from '../lib/year-level.js';
@@ -79,7 +79,7 @@ export default async function handler(req, res) {
   if (authErr) return res.status(401).json({ error: 'Unauthorized' });
 
   try {
-    const { contentBlocks, fileNames, yearLevel } = await parseFilesFromRequest(req);
+    const { contentBlocks, fileNames, yearLevel, sourceFileMeta } = await parseFilesFromRequest(req, { userId });
 
     contentBlocks.push({ type: 'text', text: 'Please summarise the above study material into structured notes as instructed.' });
 
@@ -101,6 +101,11 @@ export default async function handler(req, res) {
     const notes = JSON.parse(jsonMatch[1].trim());
 
     const record = await saveNote(notes, fileNames, userId);
+
+    // Persist source files if we have metadata (large-file path via Supabase Storage)
+    if (sourceFileMeta?.length) {
+      await saveSourceFiles(record.id, sourceFileMeta, userId).catch(() => {}); // non-fatal
+    }
 
     res.status(200).json({ notes, id: record.id });
   } catch (err) {

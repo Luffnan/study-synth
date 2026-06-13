@@ -51,7 +51,7 @@ export async function submitFiles(files, apiPath, extraBody = {}) {
         .createSignedUrl(path, 600);
 
       if (urlError) throw new Error(`Could not create signed URL: ${urlError.message}`);
-      storageFiles.push({ signedUrl: signedData.signedUrl, fileName: file.name, mimeType: file.type });
+      storageFiles.push({ signedUrl: signedData.signedUrl, fileName: file.name, mimeType: file.type, tempPath: path, fileSize: file.size });
     }
 
     const res = await apiFetch(apiPath, {

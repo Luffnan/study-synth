@@ -1,7 +1,7 @@
 import { apiFetch } from '../lib/api.js';
 import { submitFiles } from '../lib/upload.js';
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { ArrowLeft, ChevronDown, ChevronRight, Download, BookOpen, Hash, FileText, Zap, Layers, Youtube, CheckCircle, Loader2, FileDown, Plus, ArrowUp, X, Link, AlertCircle, Image, Menu } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronRight, Download, BookOpen, Hash, FileText, Zap, Layers, Youtube, CheckCircle, Loader2, FileDown, Plus, ArrowUp, X, Link, AlertCircle, Image, Menu, Trash2, Eye, HardDrive } from 'lucide-react';
 import { generateDocx } from '../utils/generateDocx.js';
 
 const ACCEPTED = {
@@ -71,6 +71,9 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
   const [downloadModalOpen, setDownloadModalOpen] = useState(false);
   const [addSourceOpen, setAddSourceOpen] = useState(false);
   const [topicMenuOpen, setTopicMenuOpen] = useState(false);
+  const [sourceFilesOpen, setSourceFilesOpen] = useState(false);
+  const [sourceFiles, setSourceFiles] = useState(null); // null = not yet loaded
+  const [sourceFilesLoading, setSourceFilesLoading] = useState(false);
 
   // When mode switches, reset selected to first item
   useEffect(() => {
@@ -173,6 +176,36 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
     if (newestVideo) setSelected({ type: 'video', videoId: newestVideo.videoId, label: newestVideo.title });
   }
 
+  async function loadSourceFiles() {
+    if (!noteId || sourceFiles !== null) return;
+    setSourceFilesLoading(true);
+    try {
+      const res = await apiFetch(`/api/notes/${noteId}/source-files`);
+      const data = await res.json();
+      setSourceFiles(res.ok ? (data.files || []) : []);
+    } catch { setSourceFiles([]); }
+    finally { setSourceFilesLoading(false); }
+  }
+
+  async function handleDeleteSourceFile(fileId) {
+    const res = await apiFetch(`/api/notes/${noteId}/source-files`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fileId }),
+    });
+    if (res.ok) setSourceFiles(prev => prev.filter(f => f.id !== fileId));
+  }
+
+  async function handleViewSourceFile(storagePath) {
+    const res = await apiFetch(`/api/notes/${noteId}/source-files?action=signed-url`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ storagePath }),
+    });
+    const data = await res.json();
+    if (data.url) window.open(data.url, '_blank');
+  }
+
   if (!initialNotes) return null;
 
   // Rebuild sidebar every render (accounts for mode switch)
@@ -208,6 +241,23 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
               docxLoading={docxLoading}
               onDownload={async (opts) => { await handleDownload(opts); setDownloadModalOpen(false); }}
               onClose={() => setDownloadModalOpen(false)}
+            />
+          )}
+          {noteId && (
+            <button
+              onClick={() => { setSourceFilesOpen(true); loadSourceFiles(); }}
+              className="flex items-center gap-1.5 bg-ink-100 hover:bg-ink-200 text-ink-700 px-3 py-2 rounded-xl text-sm font-medium transition-colors"
+            >
+              <FileText className="w-3.5 h-3.5" /> Source Files
+            </button>
+          )}
+          {sourceFilesOpen && (
+            <SourceFilesModal
+              files={sourceFiles}
+              loading={sourceFilesLoading}
+              onView={handleViewSourceFile}
+              onDelete={handleDeleteSourceFile}
+              onClose={() => setSourceFilesOpen(false)}
             />
           )}
           {addSourceOpen && (
@@ -993,6 +1043,120 @@ function AddSourceModal({ onIngestFiles, onIngestYouTube, onClose }) {
 }
 
 // ── Markdown builder ──────────────────────────────────────────────────────────
+
+function formatBytes(bytes) {
+  if (!bytes) return '—';
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function daysRemaining(expiresAt) {
+  if (!expiresAt) return null;
+  const diff = new Date(expiresAt) - Date.now();
+  return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+}
+
+function SourceFilesModal({ files, loading, onView, onDelete, onClose }) {
+  const [deleting, setDeleting] = useState(null);
+  const [viewing, setViewing] = useState(null);
+
+  const totalBytes = (files || []).reduce((sum, f) => sum + (f.file_size || 0), 0);
+
+  async function handleDelete(f) {
+    setDeleting(f.id);
+    await onDelete(f.id);
+    setDeleting(null);
+  }
+
+  async function handleView(f) {
+    setViewing(f.id);
+    await onView(f.storage_path);
+    setViewing(null);
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+      <div className="relative bg-ink-50 rounded-2xl border-2 border-ink-900 shadow-hard w-full max-w-md max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-ink-100">
+          <div className="flex items-center gap-2">
+            <FileText className="w-4 h-4 text-ink-500" />
+            <p className="text-sm font-700 text-ink-900">Source Files</p>
+          </div>
+          <button onClick={onClose} className="text-ink-400 hover:text-ink-700 transition-colors">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto px-4 py-3">
+          {loading ? (
+            <div className="flex items-center justify-center py-10">
+              <Loader2 className="w-5 h-5 animate-spin text-ink-400" />
+            </div>
+          ) : !files?.length ? (
+            <div className="text-center py-10">
+              <FileText className="w-8 h-8 text-ink-300 mx-auto mb-2" />
+              <p className="text-sm text-ink-400">No source files stored</p>
+              <p className="text-xs text-ink-300 mt-1">Files are saved when you upload large documents</p>
+            </div>
+          ) : (
+            <ul className="space-y-2">
+              {files.map(f => {
+                const days = daysRemaining(f.expires_at);
+                const expiring = days !== null && days <= 2;
+                return (
+                  <li key={f.id} className="bg-white border-2 border-ink-900 rounded-xl px-4 py-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-600 text-ink-800 truncate">{f.file_name}</p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-xs text-ink-400">{formatBytes(f.file_size)}</span>
+                          {days !== null && (
+                            <span className={`text-xs font-500 ${expiring ? 'text-red-500' : 'text-ink-400'}`}>
+                              · {days === 0 ? 'Expires today' : `${days}d left`}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        <button
+                          onClick={() => handleView(f)}
+                          disabled={viewing === f.id}
+                          className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-600 bg-ink-100 hover:bg-ink-200 text-ink-700 transition-colors disabled:opacity-50"
+                        >
+                          {viewing === f.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Eye className="w-3 h-3" />}
+                          View
+                        </button>
+                        <button
+                          onClick={() => handleDelete(f)}
+                          disabled={deleting === f.id}
+                          className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-600 bg-red-50 hover:bg-red-100 text-red-600 transition-colors disabled:opacity-50"
+                        >
+                          {deleting === f.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
+                        </button>
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+
+        {/* Footer: storage usage */}
+        {files?.length > 0 && (
+          <div className="px-5 py-3 border-t border-ink-100 flex items-center gap-2">
+            <HardDrive className="w-3.5 h-3.5 text-ink-400" />
+            <p className="text-xs text-ink-400">{formatBytes(totalBytes)} stored · Files auto-delete after 7 days</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 function buildMarkdown(notes) {
   const lines = [`# ${notes.title || 'Study Notes'}`, ''];
