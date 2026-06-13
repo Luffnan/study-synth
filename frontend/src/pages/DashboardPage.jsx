@@ -170,7 +170,7 @@ export default function DashboardPage({ onUpload, onOpenNote, onOpenNoteAtSource
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12 animate-fade-in">
 
       {/* Header */}
-      <div className="flex items-start justify-between mb-8">
+      <div className="flex items-start justify-between mb-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-800 text-ink-900">My Study Notes</h1>
           <p className="text-ink-400 text-sm mt-1">
@@ -185,6 +185,7 @@ export default function DashboardPage({ onUpload, onOpenNote, onOpenNoteAtSource
           <FolderPlus className="w-3.5 h-3.5" /> New Subject
         </button>
       </div>
+      {subjects.length > 0 && <div className="mb-6"><TipBanner /></div>}
 
       {error && (
         <div className="flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm mb-6">
@@ -200,7 +201,6 @@ export default function DashboardPage({ onUpload, onOpenNote, onOpenNoteAtSource
           {/* ── Subjects grid ── */}
           {subjects.length > 0 && (
             <div className="space-y-3">
-              <TipBanner />
               <div className="grid gap-3 sm:grid-cols-2">
                 {subjects.map(subject => {
                   const topics = records.filter(r => r.subject_id === subject.id);
