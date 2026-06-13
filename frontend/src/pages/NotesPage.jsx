@@ -1100,7 +1100,7 @@ function SourceFilesModal({ files, loading, onView, onDelete, onClose }) {
             <div className="text-center py-10">
               <FileText className="w-8 h-8 text-ink-300 mx-auto mb-2" />
               <p className="text-sm text-ink-400">No source files stored</p>
-              <p className="text-xs text-ink-300 mt-1">Files are saved when you upload large documents</p>
+              <p className="text-xs text-ink-300 mt-1">Files from new uploads will appear here</p>
             </div>
           ) : (
             <ul className="space-y-2">
