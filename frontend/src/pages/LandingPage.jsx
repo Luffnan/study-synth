@@ -1,7 +1,49 @@
 import { BookOpen, Zap, Youtube, Hash, CheckCircle, ArrowRight, FileText, Image, Monitor } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import BrainLogo from '../components/BrainLogo.jsx';
 
+const HEADLINES = [
+  { top: 'Turn any content into',        bottom: 'perfect study notes' },
+  { top: 'Upload your textbook,',         bottom: 'walk away with a quiz' },
+  { top: 'From handwritten scrawl',       bottom: 'to structured revision' },
+  { top: 'Your notes, built only',        bottom: 'from your material' },
+  { top: 'Stop highlighting.',            bottom: 'Start understanding.' },
+  { top: 'One upload.',                   bottom: 'A whole term of notes.' },
+  { top: 'YouTube lecture?',              bottom: 'Timecoded notes in seconds.' },
+  { top: 'Notes that know',               bottom: 'exactly what to test you on' },
+  { top: 'Every subject.',                bottom: 'One place. Always organised.' },
+  { top: 'Concise or detailed —',         bottom: 'you choose how you study' },
+  { top: 'From any source',               bottom: 'to exam-ready in a minute' },
+];
+
+// Fisher-Yates shuffle of indices 1..n-1, always keeping 0 first
+function buildOrder() {
+  const rest = Array.from({ length: HEADLINES.length - 1 }, (_, i) => i + 1);
+  for (let i = rest.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [rest[i], rest[j]] = [rest[j], rest[i]];
+  }
+  return [0, ...rest];
+}
+
 export default function LandingPage({ onGetStarted, onLogin }) {
+  const [order] = useState(buildOrder);
+  const [step, setStep] = useState(0);
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setVisible(false);
+      setTimeout(() => {
+        setStep(s => (s + 1) % order.length);
+        setVisible(true);
+      }, 400);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [order]);
+
+  const headline = HEADLINES[order[step]];
+
   return (
     <div className="min-h-screen bg-ink-50">
 
@@ -41,10 +83,10 @@ export default function LandingPage({ onGetStarted, onLogin }) {
         </div>
 
         <div className="sm:pt-12">
-          <h1 className="font-display text-[2.55rem] sm:text-5xl lg:text-6xl font-600 text-ink-900 leading-[1.1] mb-4 sm:mb-6">
-            Turn any content into
+          <h1 className={`font-display text-[2.55rem] sm:text-5xl lg:text-6xl font-600 text-ink-900 leading-[1.1] mb-4 sm:mb-6 transition-opacity duration-400 ${visible ? 'opacity-100' : 'opacity-0'}`}>
+            {headline.top}
             <br />
-            <span className="italic font-500">perfect study notes</span>
+            <span className="italic font-500">{headline.bottom}</span>
           </h1>
 
           <p className="text-[15px] sm:text-xl text-ink-500 max-w-2xl mx-auto mb-7 sm:mb-8 leading-relaxed">
