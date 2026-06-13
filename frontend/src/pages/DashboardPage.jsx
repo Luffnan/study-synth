@@ -36,10 +36,10 @@ function TipBanner() {
       </p>
       <button
         onClick={e => { e.stopPropagation(); setIndex(i => (i + 1) % TIPS.length); }}
-        className="flex-shrink-0 text-ink-300 hover:text-ink-500 transition-colors mt-0.5"
+        className="flex-shrink-0 flex items-center gap-1 text-[10px] font-600 text-ink-500 hover:text-ink-800 bg-white hover:bg-ink-50 border border-ink-200 rounded-lg px-2 py-1 transition-colors mt-0.5"
         title="Next tip"
       >
-        <ChevronRight className="w-3.5 h-3.5" />
+        Next <ChevronRight className="w-3 h-3" />
       </button>
     </div>
   );
