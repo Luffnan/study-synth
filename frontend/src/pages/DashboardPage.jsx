@@ -28,24 +28,19 @@ function TipBanner() {
   const [index, setIndex] = useState(startIndex);
   const tip = TIPS[index];
   return (
-    <div className="relative overflow-hidden rounded-2xl border-2 border-ink-900 bg-accent-yellow shadow-hard">
-      <div className="px-4 py-3 flex items-center gap-3">
-        <div className="flex-shrink-0">
-          <Zap className="w-8 h-8 text-ink-900 fill-ink-900" strokeWidth={0} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-[11px] font-700 text-ink-900 uppercase tracking-wider mb-0.5">Big Brain Tip</p>
-          <p className="text-sm font-700 text-ink-900">{tip.lead}</p>
-          <p className="text-xs text-ink-700 mt-0.5">{tip.body}</p>
-        </div>
-        <button
-          onClick={e => { e.stopPropagation(); setIndex(i => (i + 1) % TIPS.length); }}
-          className="flex-shrink-0 w-7 h-7 rounded-full border-2 border-ink-900 bg-white/60 hover:bg-white flex items-center justify-center transition-colors"
-          title="Next tip"
-        >
-          <ChevronRight className="w-4 h-4 text-ink-900" />
-        </button>
-      </div>
+    <div className="flex items-center gap-2 px-1 py-1.5">
+      <Zap className="w-3.5 h-3.5 text-ink-400 flex-shrink-0" />
+      <p className="text-xs text-ink-400 flex-1 min-w-0">
+        <span className="font-600 text-ink-500">{tip.lead}.</span>{' '}
+        {tip.body}
+      </p>
+      <button
+        onClick={e => { e.stopPropagation(); setIndex(i => (i + 1) % TIPS.length); }}
+        className="flex-shrink-0 text-ink-300 hover:text-ink-500 transition-colors"
+        title="Next tip"
+      >
+        <ChevronRight className="w-3.5 h-3.5" />
+      </button>
     </div>
   );
 }
@@ -205,6 +200,7 @@ export default function DashboardPage({ onUpload, onOpenNote, onOpenNoteAtSource
           {/* ── Subjects grid ── */}
           {subjects.length > 0 && (
             <div className="space-y-3">
+              <TipBanner />
               <div className="grid gap-3 sm:grid-cols-2">
                 {subjects.map(subject => {
                   const topics = records.filter(r => r.subject_id === subject.id);
@@ -220,7 +216,6 @@ export default function DashboardPage({ onUpload, onOpenNote, onOpenNoteAtSource
                   );
                 })}
               </div>
-              <TipBanner />
             </div>
           )}
 
