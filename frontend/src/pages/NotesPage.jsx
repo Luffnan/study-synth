@@ -214,6 +214,7 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
     ...(activeNotes.topics || []).map((t, i) => ({ type: 'topic', index: i, label: t.name })),
     ...(activeNotes.keyTerms?.length ? [{ type: 'terms', label: 'Key Terms' }] : []),
     ...videoSources.map(v => ({ type: 'video', videoId: v.videoId, label: v.title })),
+    ...(noteId ? [{ type: 'sources', label: 'Source Files' }] : []),
   ];
 
   return (
