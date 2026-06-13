@@ -85,10 +85,8 @@ export default function LandingPage({ onGetStarted, onLogin }) {
               <span className="text-lg font-700 tracking-tight text-ink-900">Brain Buffet</span>
             </div>
 
-            <h1 className={`font-display text-[1.9rem] sm:text-5xl lg:text-[3.4rem] font-600 text-ink-900 leading-[1.12] mb-5 transition-opacity duration-400 ${visible ? 'opacity-100' : 'opacity-0'}`}>
-              {headline.top}
-              <br />
-              <span className="italic font-500 text-brand-500">{headline.bottom}</span>
+            <h1 className={`font-display text-[2.2rem] sm:text-5xl lg:text-[3.4rem] font-600 text-ink-900 leading-[1.12] mb-5 transition-opacity duration-400 ${visible ? 'opacity-100' : 'opacity-0'}`}>
+              {headline.top} <span className="italic font-500 text-brand-500">{headline.bottom}</span>
             </h1>
 
             <p className="text-base sm:text-lg text-ink-500 max-w-xl mb-8 leading-relaxed">
@@ -150,7 +148,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
           <div>
             <span className="text-[11px] font-700 text-ink-400 uppercase tracking-widest">01 /</span>
             <h2 className="font-display text-3xl sm:text-4xl font-600 text-ink-900 mt-1">
-              Why choose<br /><span className="italic font-500">Brain Buffet?</span>
+              Why choose <span className="italic font-500">Brain Buffet?</span>
             </h2>
           </div>
           <p className="hidden sm:block text-sm text-ink-400 max-w-xs text-right leading-relaxed">
@@ -181,7 +179,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
         <div className="mb-10">
           <span className="text-[11px] font-700 text-ink-400 uppercase tracking-widest">03 /</span>
           <h2 className="font-display text-3xl sm:text-4xl font-600 text-ink-900 mt-1">
-            Everything you need<br /><span className="italic font-500">to actually revise</span>
+            Everything you need <span className="italic font-500">to actually revise</span>
           </h2>
         </div>
         <div className="grid sm:grid-cols-2 gap-x-12 gap-y-1">
@@ -208,7 +206,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
         <div className="max-w-3xl mx-auto px-5 sm:px-8 text-center">
           <BrainLogo className="w-12 h-12 text-white mx-auto mb-6 opacity-80" />
           <h2 className="font-display text-3xl sm:text-5xl font-600 text-white leading-[1.1] mb-5">
-            Ready to feed<br /><span className="italic font-500">your brain?</span>
+            Ready to feed <span className="italic font-500">your brain?</span>
           </h2>
           <p className="text-white/70 mb-8 text-base max-w-md mx-auto leading-relaxed">
             Create your free account and turn your first set of notes into a full study spread in under a minute.
