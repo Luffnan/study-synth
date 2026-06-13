@@ -1134,7 +1134,7 @@ function SourceFilesPane({ files, loading, onView, onDelete }) {
           <div className="flex items-center gap-2 mt-4 px-1">
             <HardDrive className="w-3.5 h-3.5 text-ink-400" />
             <p className="text-xs text-ink-400">{formatBytes(FREE_STORAGE_LIMIT - totalBytes)} of {formatBytes(FREE_STORAGE_LIMIT)} remaining · Files auto-delete after 7 days</p>
-            <span className="ml-1 px-2 py-0.5 rounded-full bg-accent-yellow text-ink-900 text-[10px] font-700 cursor-pointer hover:opacity-80 transition-opacity flex-shrink-0">UPGRADE</span>
+            <span className="ml-1 text-xs font-600 text-accent-teal underline cursor-pointer flex-shrink-0">Upgrade storage</span>
           </div>
         </>
       )}
@@ -1236,7 +1236,7 @@ function SourceFilesModal({ files, loading, onView, onDelete, onClose }) {
           <div className="px-5 py-3 border-t border-ink-100 flex items-center gap-2">
             <HardDrive className="w-3.5 h-3.5 text-ink-400" />
             <p className="text-xs text-ink-400">{formatBytes(FREE_STORAGE_LIMIT - totalBytes)} of {formatBytes(FREE_STORAGE_LIMIT)} remaining · Files auto-delete after 7 days</p>
-            <span className="ml-1 px-2 py-0.5 rounded-full bg-accent-yellow text-ink-900 text-[10px] font-700 cursor-pointer hover:opacity-80 transition-opacity flex-shrink-0">UPGRADE</span>
+            <span className="ml-1 text-xs font-600 text-accent-teal underline cursor-pointer flex-shrink-0">Upgrade storage</span>
           </div>
         )}
       </div>
