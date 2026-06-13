@@ -85,10 +85,6 @@ export default function LandingPage({ onGetStarted, onLogin }) {
               <span className="text-lg font-700 tracking-tight text-ink-900">Brain Buffet</span>
             </div>
 
-            <div className="inline-flex items-center gap-2 bg-brand-50 border border-brand-200 text-brand-600 text-xs font-600 px-3 py-1.5 rounded-full mb-5">
-              <Zap className="w-3 h-3" /> Free during beta — no credit card needed
-            </div>
-
             <h1 className={`font-display text-[2.4rem] sm:text-5xl lg:text-[3.4rem] font-600 text-ink-900 leading-[1.08] mb-5 transition-opacity duration-400 ${visible ? 'opacity-100' : 'opacity-0'}`}>
               {headline.top}
               <br />
