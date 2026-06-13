@@ -59,11 +59,12 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
     return () => window.removeEventListener('keydown', onKey);
   }, [activeNotes, videoSources]);
 
-  // Build sidebar items: topics + key terms + videos
+  // Build sidebar items: topics + key terms + videos + source files
   const sidebarItems = [
     ...(activeNotes.topics || []).map((t, i) => ({ type: 'topic', index: i, label: t.name })),
     ...(activeNotes.keyTerms?.length ? [{ type: 'terms', label: 'Key Terms' }] : []),
     ...videoSources.map(v => ({ type: 'video', videoId: v.videoId, label: v.title })),
+    ...(noteId ? [{ type: 'sources', label: 'Source Files' }] : []),
   ];
 
   const [selected, setSelected] = useState(sidebarItems[0] ?? null);
@@ -71,7 +72,6 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
   const [downloadModalOpen, setDownloadModalOpen] = useState(false);
   const [addSourceOpen, setAddSourceOpen] = useState(false);
   const [topicMenuOpen, setTopicMenuOpen] = useState(false);
-  const [sourceFilesOpen, setSourceFilesOpen] = useState(false);
   const [sourceFiles, setSourceFiles] = useState(null); // null = not yet loaded
   const [sourceFilesLoading, setSourceFilesLoading] = useState(false);
 
@@ -81,6 +81,7 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
       ...(activeNotes.topics || []).map((t, i) => ({ type: 'topic', index: i, label: t.name })),
       ...(activeNotes.keyTerms?.length ? [{ type: 'terms', label: 'Key Terms' }] : []),
       ...videoSources.map(v => ({ type: 'video', videoId: v.videoId, label: v.title })),
+      ...(noteId ? [{ type: 'sources', label: 'Source Files' }] : []),
     ];
     setSelected(items[0] ?? null);
   }, [mode, conciseNotes]);
@@ -335,7 +336,7 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
                 return (
                   <div key={i}>
                     {showDivider && <div className="my-1.5 border-t border-ink-100" />}
-                    <button onClick={() => setSelected(item)}
+                    <button onClick={() => { setSelected(item); if (item.type === 'sources') loadSourceFiles(); }}
                       className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left transition-all duration-150 outline-none ${
                         isSelected
                           ? 'bg-ink-900/10'
@@ -356,6 +357,9 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
                       {item.type === 'terms' && (
                         <Hash className="w-3.5 h-3.5 flex-shrink-0 text-amber-400" />
                       )}
+                      {item.type === 'sources' && (
+                        <FileText className="w-3.5 h-3.5 flex-shrink-0 text-ink-400" />
+                      )}
                       {item.type === 'video' && (
                         <Youtube className="w-3.5 h-3.5 flex-shrink-0 text-red-400" />
                       )}
@@ -368,25 +372,6 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
                 );
               })}
             </nav>
-            {noteId && (
-              <>
-                <button
-                  onClick={() => { setSourceFilesOpen(true); loadSourceFiles(); }}
-                  className="flex items-center gap-1.5 w-full mt-4 px-3 py-2 rounded-xl text-xs font-600 text-ink-400 hover:text-ink-700 hover:bg-ink-100 transition-colors"
-                >
-                  <FileText className="w-3.5 h-3.5" /> Source Files
-                </button>
-                {sourceFilesOpen && (
-                  <SourceFilesModal
-                    files={sourceFiles}
-                    loading={sourceFilesLoading}
-                    onView={handleViewSourceFile}
-                    onDelete={handleDeleteSourceFile}
-                    onClose={() => setSourceFilesOpen(false)}
-                  />
-                )}
-              </>
-            )}
           </aside>
 
           {/* ── Content pane ── */}
@@ -402,6 +387,14 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
                 source={videoSources.find(v => v.videoId === selected.videoId)}
                 onToggleMerge={handleToggleVideoMerge}
                 merging={merging === selected.videoId}
+              />
+            )}
+            {selected?.type === 'sources' && (
+              <SourceFilesPane
+                files={sourceFiles}
+                loading={sourceFilesLoading}
+                onView={handleViewSourceFile}
+                onDelete={handleDeleteSourceFile}
               />
             )}
           </div>
@@ -1060,6 +1053,92 @@ function daysRemaining(expiresAt) {
 }
 
 const FREE_STORAGE_LIMIT = 1 * 1024 * 1024 * 1024; // 1 GB
+
+function SourceFilesPane({ files, loading, onView, onDelete }) {
+  const [deleting, setDeleting] = useState(null);
+  const [viewing, setViewing] = useState(null);
+  const totalBytes = (files || []).reduce((sum, f) => sum + (f.file_size || 0), 0);
+
+  async function handleDelete(f) {
+    setDeleting(f.id);
+    await onDelete(f.id);
+    setDeleting(null);
+  }
+
+  async function handleView(f) {
+    setViewing(f.id);
+    await onView(f.storage_path);
+    setViewing(null);
+  }
+
+  return (
+    <div className="animate-fade-in">
+      <div className="bg-white rounded-2xl border-2 border-ink-900 px-5 py-4 mb-3">
+        <h2 className="font-700 text-ink-900 text-lg leading-tight">Source Files</h2>
+      </div>
+
+      {loading ? (
+        <div className="flex items-center justify-center py-16">
+          <Loader2 className="w-5 h-5 animate-spin text-ink-400" />
+        </div>
+      ) : !files?.length ? (
+        <div className="bg-white rounded-2xl border-2 border-ink-900 px-5 py-12 text-center">
+          <FileText className="w-8 h-8 text-ink-300 mx-auto mb-2" />
+          <p className="text-sm font-600 text-ink-500">No source files stored</p>
+          <p className="text-xs text-ink-400 mt-1">Files from new uploads will appear here</p>
+        </div>
+      ) : (
+        <>
+          <ul className="space-y-2">
+            {files.map(f => {
+              const days = daysRemaining(f.expires_at);
+              const expiring = days !== null && days <= 2;
+              return (
+                <li key={f.id} className="bg-white border-2 border-ink-900 rounded-2xl px-5 py-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-baseline gap-2">
+                        <p className="text-sm font-600 text-ink-800 truncate">{f.file_name}</p>
+                        <span className="text-xs text-ink-400 flex-shrink-0">{formatBytes(f.file_size)}</span>
+                      </div>
+                      {days !== null && (
+                        <span className={`text-xs font-500 ${expiring ? 'text-red-500' : 'text-ink-400'}`}>
+                          {days === 0 ? 'Expires today' : `${days}d left`}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <button
+                        onClick={() => handleView(f)}
+                        disabled={viewing === f.id}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-600 bg-ink-100 hover:bg-ink-200 text-ink-700 transition-colors disabled:opacity-50"
+                      >
+                        {viewing === f.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Eye className="w-3.5 h-3.5" />}
+                        View
+                      </button>
+                      <button
+                        onClick={() => handleDelete(f)}
+                        disabled={deleting === f.id}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-600 bg-red-50 hover:bg-red-100 text-red-600 transition-colors disabled:opacity-50"
+                      >
+                        {deleting === f.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+          <div className="flex items-center gap-2 mt-4 px-1">
+            <HardDrive className="w-3.5 h-3.5 text-ink-400" />
+            <p className="text-xs text-ink-400">{formatBytes(FREE_STORAGE_LIMIT - totalBytes)} of {formatBytes(FREE_STORAGE_LIMIT)} remaining · Files auto-delete after 7 days</p>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
 function SourceFilesModal({ files, loading, onView, onDelete, onClose }) {
   const [deleting, setDeleting] = useState(null);
