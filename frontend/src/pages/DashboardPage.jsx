@@ -29,17 +29,19 @@ function TipBanner() {
   const tip = TIPS[index];
   return (
     <div className="flex items-start gap-2.5 bg-ink-100 rounded-xl px-3 py-2.5">
-      <Zap className="w-3.5 h-3.5 text-ink-400 flex-shrink-0 mt-0.5" />
-      <p className="text-xs text-ink-500 flex-1 leading-relaxed">
-        <span className="font-700 text-ink-700">HOT TIP: </span><span className="font-600 text-ink-600">{tip.lead}.</span>{' '}
-        {tip.body}
-      </p>
+      <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-ink-200 flex items-center justify-center self-center">
+        <Zap className="w-5 h-5 text-ink-500" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-xs font-700 text-ink-700">HOT TIP: <span className="font-600 text-ink-600">{tip.lead}</span></p>
+        <p className="text-xs text-ink-500 leading-relaxed mt-0.5">{tip.body}</p>
+      </div>
       <button
         onClick={e => { e.stopPropagation(); setIndex(i => (i + 1) % TIPS.length); }}
-        className="flex-shrink-0 flex items-center gap-1 text-[10px] font-600 text-ink-500 hover:text-ink-800 bg-white hover:bg-ink-50 border border-ink-200 rounded-lg px-2 py-1 transition-colors mt-0.5"
+        className="flex-shrink-0 w-5 h-5 rounded-full bg-white border border-ink-200 hover:bg-ink-50 flex items-center justify-center transition-colors mt-0.5"
         title="Next tip"
       >
-        Next <ChevronRight className="w-3 h-3" />
+        <ChevronRight className="w-3 h-3 text-ink-500" />
       </button>
     </div>
   );
