@@ -176,10 +176,10 @@ export default function LandingPage({ onGetStarted, onLogin }) {
             { color: 'bg-[#F2654E]',     icon: '⚡', title: 'Quizzes with guided marking', body: 'Varied question types with guided, incremental marking that teaches you how to write the perfect answer.', light: true },
             { color: 'bg-ink-900',       icon: '📚', title: 'Build a library of notes', body: 'Add sources across the term. By exam time every subject is consolidated in one place, nothing missing.', light: true },
           ].map(f => (
-            <div key={f.title} className={`${f.color} rounded-2xl p-6 flex flex-col gap-4`}>
-              <span className="text-3xl">{f.icon}</span>
+            <div key={f.title} className={`${f.color} rounded-2xl p-5 flex flex-col gap-3`}>
+              <span className="text-2xl">{f.icon}</span>
               <div>
-                <h3 className={`font-700 text-[15px] leading-tight mb-1.5 ${f.light ? 'text-white' : 'text-ink-900'}`}>{f.title}</h3>
+                <h3 className={`font-700 text-sm leading-snug mb-1 ${f.light ? 'text-white' : 'text-ink-900'}`}>{f.title}</h3>
                 <p className={`text-xs leading-relaxed ${f.light ? 'text-white/75' : 'text-ink-700'}`}>{f.body}</p>
               </div>
             </div>
@@ -205,12 +205,12 @@ export default function LandingPage({ onGetStarted, onLogin }) {
               { n: '03', color: 'bg-accent-yellow', title: 'Review your notes', body: 'Browse structured notes, switch between standard and concise views, download as Word or Markdown', icon: '📖', dark: false },
               { n: '04', color: 'bg-[#1DB870]',  title: 'Test yourself', body: 'Generate a custom quiz from your chosen topics and get instant feedback on your answers', icon: '⚡' },
             ].map(s => (
-              <div key={s.n} className={`${s.color} rounded-2xl p-6`}>
-                <div className="flex items-center justify-between mb-6">
-                  <span className={`text-2xl`}>{s.icon}</span>
+              <div key={s.n} className={`${s.color} rounded-2xl p-5`}>
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-xl">{s.icon}</span>
                   <span className={`text-xs font-800 ${s.n === '03' ? 'text-ink-400' : 'text-white/40'}`}>{s.n}</span>
                 </div>
-                <h3 className={`font-700 text-base mb-2 leading-tight ${s.n === '03' ? 'text-ink-900' : 'text-white'}`}>{s.title}</h3>
+                <h3 className={`font-700 text-sm mb-1.5 leading-snug ${s.n === '03' ? 'text-ink-900' : 'text-white'}`}>{s.title}</h3>
                 <p className={`text-xs leading-relaxed ${s.n === '03' ? 'text-ink-600' : 'text-white/75'}`}>{s.body}</p>
               </div>
             ))}
@@ -220,33 +220,28 @@ export default function LandingPage({ onGetStarted, onLogin }) {
 
       {/* ── Feature list ── */}
       <section className="py-16 sm:py-20 max-w-6xl mx-auto px-5 sm:px-8">
-        <div className="grid lg:grid-cols-[1fr_1fr] gap-12 items-start">
-          <div>
-            <span className="text-[11px] font-700 text-ink-400 uppercase tracking-widest">03 /</span>
-            <h2 className="font-display text-3xl sm:text-4xl font-600 text-ink-900 mt-1 mb-4">
-              Everything you need<br /><span className="italic font-500">to actually revise</span>
-            </h2>
-            <p className="text-ink-500 text-base leading-relaxed">
-              Brain Buffet is a full revision toolkit — structured notes, quizzes, YouTube integration, and colour-coded subjects, all in one place.
-            </p>
-          </div>
-          <div className="grid gap-3">
-            {[
-              { icon: '📝', text: 'Structured notes with topics, subtopics, and key terms' },
-              { icon: '⚡', text: 'Standard + concise note modes for different study phases' },
-              { icon: '🎬', text: 'YouTube panel with timecoded note navigation' },
-              { icon: '🔀', text: 'Merge video content into existing topic notes with one click' },
-              { icon: '🎯', text: 'Custom quiz generation — pick exactly which topics to test' },
-              { icon: '⬇️', text: 'Download as Word (.docx) or Markdown' },
-              { icon: '🗂️', text: 'Colour-coded subjects to organise your library' },
-              { icon: '📈', text: 'Quiz scores tracked over time per topic' },
-            ].map(f => (
-              <div key={f.text} className="flex items-start gap-3 py-3 border-b border-ink-100 last:border-0">
-                <span className="text-lg flex-shrink-0 mt-0.5">{f.icon}</span>
-                <span className="text-sm text-ink-700 leading-snug">{f.text}</span>
-              </div>
-            ))}
-          </div>
+        <div className="mb-10">
+          <span className="text-[11px] font-700 text-ink-400 uppercase tracking-widest">03 /</span>
+          <h2 className="font-display text-3xl sm:text-4xl font-600 text-ink-900 mt-1">
+            Everything you need<br /><span className="italic font-500">to actually revise</span>
+          </h2>
+        </div>
+        <div className="grid sm:grid-cols-2 gap-x-12 gap-y-1">
+          {[
+            'Structured notes with topics, subtopics, and key terms',
+            'Standard + concise note modes for different study phases',
+            'YouTube video panel with timecoded navigation',
+            'Merge video content into existing topic notes with one click',
+            'Custom quiz generation: pick exactly which topics to test',
+            'Download as Word (.docx) or Markdown',
+            'Organise topics into colour-coded subjects',
+            'Quiz scoring tracked over time per topic',
+          ].map(f => (
+            <div key={f} className="flex items-start gap-3 py-3 border-b border-ink-100">
+              <CheckCircle className="w-4 h-4 text-[#1DB870] flex-shrink-0 mt-0.5" />
+              <span className="text-sm text-ink-700">{f}</span>
+            </div>
+          ))}
         </div>
       </section>
 
