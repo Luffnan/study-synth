@@ -243,23 +243,6 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
               onClose={() => setDownloadModalOpen(false)}
             />
           )}
-          {noteId && (
-            <button
-              onClick={() => { setSourceFilesOpen(true); loadSourceFiles(); }}
-              className="flex items-center gap-1.5 bg-ink-100 hover:bg-ink-200 text-ink-700 px-3 py-2 rounded-xl text-sm font-medium transition-colors"
-            >
-              <FileText className="w-3.5 h-3.5" /> Source Files
-            </button>
-          )}
-          {sourceFilesOpen && (
-            <SourceFilesModal
-              files={sourceFiles}
-              loading={sourceFilesLoading}
-              onView={handleViewSourceFile}
-              onDelete={handleDeleteSourceFile}
-              onClose={() => setSourceFilesOpen(false)}
-            />
-          )}
           {addSourceOpen && (
             <AddSourceModal
               onIngestFiles={handleIngestFiles}
@@ -385,6 +368,25 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
                 );
               })}
             </nav>
+            {noteId && (
+              <>
+                <button
+                  onClick={() => { setSourceFilesOpen(true); loadSourceFiles(); }}
+                  className="flex items-center gap-1.5 w-full mt-4 px-3 py-2 rounded-xl text-xs font-600 text-ink-400 hover:text-ink-700 hover:bg-ink-100 transition-colors"
+                >
+                  <FileText className="w-3.5 h-3.5" /> Source Files
+                </button>
+                {sourceFilesOpen && (
+                  <SourceFilesModal
+                    files={sourceFiles}
+                    loading={sourceFilesLoading}
+                    onView={handleViewSourceFile}
+                    onDelete={handleDeleteSourceFile}
+                    onClose={() => setSourceFilesOpen(false)}
+                  />
+                )}
+              </>
+            )}
           </aside>
 
           {/* ── Content pane ── */}
