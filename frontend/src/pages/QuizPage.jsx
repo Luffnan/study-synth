@@ -269,7 +269,7 @@ export default function QuizPage({ noteId, noteTitle, notes, onBack, yearLevel }
 
         {isAnswered && q.type !== 'short_answer' && (
           <div className={`mt-4 rounded-xl px-4 py-3 text-sm ${thisAnswer.correct ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
-            <p className="font-medium mb-0.5">{thisAnswer.correct ? '✓ Correct' : `✗ Incorrect — the answer is: ${q.answer === true ? 'True' : q.answer === false ? 'False' : q.answer}`}</p>
+            <p className="font-medium mb-0.5">{thisAnswer.correct ? '✓ Correct' : `✗ Incorrect. The answer is: ${q.answer === true ? 'True' : q.answer === false ? 'False' : q.answer}`}</p>
             {q.explanation && <p className="text-sm opacity-80">{q.explanation}</p>}
           </div>
         )}
@@ -415,7 +415,7 @@ function ShortAnswerInput({ question, yearLevel, onAnswer }) {
       setVal('');
       onAnswer({ value: attempt.value, score: Math.max(...newAttempts.map(a => a.score)), feedback: attempt.feedback, modelAnswer: question.modelAnswer });
     } catch {
-      const attempt = { value: val.trim(), score: 0, feedback: 'Could not mark automatically — check the model answer below.' };
+      const attempt = { value: val.trim(), score: 0, feedback: 'Could not mark automatically. Check the model answer below.' };
       const newAttempts = [...attempts, attempt];
       setAttempts(newAttempts);
       setVal('');

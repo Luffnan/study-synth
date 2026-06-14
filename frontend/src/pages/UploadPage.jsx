@@ -138,7 +138,7 @@ function FilesPanel({ onNotes, yearLevel, onLoading, files, setFiles, error, set
         <p className="font-700 text-ink-900 text-sm mb-1">
           {dragging ? 'Drop to add' : 'Drag & drop or tap to browse'}
         </p>
-        <p className="text-ink-400 text-xs">PDF · JPG · PNG · WEBP — up to 50 MB each</p>
+        <p className="text-ink-400 text-xs">PDF · JPG · PNG · WEBP, up to 50 MB each</p>
       </div>
 
       {/* File list */}
@@ -202,7 +202,7 @@ const PROCESSING_STEPS = [
   'Structuring subtopics and bullet points…',
   'Checking coverage across all sections…',
   'Putting the finishing touches on your notes…',
-  'Almost there — just reviewing everything…',
+  'Almost there, just reviewing everything…',
 ];
 
 function ProcessingPanel() {

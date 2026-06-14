@@ -275,7 +275,7 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
           <h1 className="text-xl sm:text-2xl font-800 text-ink-900 leading-tight">{initialNotes.title || 'Study Notes'}</h1>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
-          {conciseError && <span className="text-xs text-red-500">Failed — try again</span>}
+          {conciseError && <span className="text-xs text-red-500">Failed. Try again</span>}
           {noteId && (
             <ModeToggle mode={mode} loading={conciseLoading} onToggle={handleToggleConcise} />
           )}
@@ -606,7 +606,7 @@ function VideoPane({ source, onToggleMerge, merging }) {
       {source.notes?.length > 0 && (
         <div className="bg-white rounded-2xl border border-ink-200 overflow-hidden">
           <div className="px-5 py-3.5 border-b border-ink-100">
-            <p className="text-xs font-600 text-ink-500 uppercase tracking-wider">Video Notes — click a timecode to jump</p>
+            <p className="text-xs font-600 text-ink-500 uppercase tracking-wider">Video Notes: click a timecode to jump</p>
           </div>
           <div className="p-3 space-y-1">
             {source.notes.map((section, si) => {
@@ -933,7 +933,7 @@ function AddSourceModal({ onIngestFiles, onIngestYouTube, onClose }) {
                 }
               </p>
               <p className="text-xs text-ink-400 mt-1">
-                {done ? 'Done — closing…' : tab === 'files' ? 'This may take 20–40 seconds' : 'Extracting transcript and building timecoded notes…'}
+                {done ? 'Done, closing…' : tab === 'files' ? 'This may take 20–40 seconds' : 'Extracting transcript and building timecoded notes…'}
               </p>
             </div>
           </div>
@@ -1037,7 +1037,7 @@ function AddSourceModal({ onIngestFiles, onIngestYouTube, onClose }) {
                     ${url.trim() ? 'bg-red-500 hover:bg-red-600 shadow-sm' : 'bg-ink-200 text-ink-400 cursor-not-allowed'}`}>
                   <Youtube className="w-4 h-4" /> Add video to topic
                 </button>
-                <p className="text-xs text-ink-400 text-center mt-2">Video appears in the sidebar — you choose when to merge its notes</p>
+                <p className="text-xs text-ink-400 text-center mt-2">Video appears in the sidebar. You choose when to merge its notes.</p>
               </>
             )}
           </div>

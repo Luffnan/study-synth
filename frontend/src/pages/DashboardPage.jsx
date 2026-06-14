@@ -12,15 +12,15 @@ import BrainLogo from '../components/BrainLogo.jsx';
 
 const TIPS = [
   { lead: 'Upload multiple files at once', body: 'Combine lecture slides, textbook pages and handwritten notes into one set of study notes in a single upload.' },
-  { lead: 'Switch to Concise mode', body: 'Get a compressed version of your notes when you\'re short on time — find the toggle above your notes.' },
+  { lead: 'Switch to Concise mode', body: 'Get a compressed version of your notes when you\'re short on time. Find the toggle above your notes.' },
   { lead: 'Add a YouTube video to existing notes', body: 'Open any topic, hit Add Source, and paste a YouTube URL to merge the transcript straight into your existing notes.' },
-  { lead: 'Generate a quiz from specific topics', body: 'Pick exactly which subtopics to test yourself on — you don\'t have to quiz the whole subject at once.' },
+  { lead: 'Generate a quiz from specific topics', body: 'Pick exactly which subtopics to test yourself on. You don\'t have to quiz the whole subject at once.' },
   { lead: 'Organise topics into colour-coded subjects', body: 'Create a subject and move any topic into it to keep History separate from Biology and everything easy to find.' },
-  { lead: 'Download your notes as Word or Markdown', body: 'Export any topic for offline study or to share with classmates — look for the download button inside your notes.' },
+  { lead: 'Download your notes as Word or Markdown', body: 'Export any topic for offline study or to share with classmates. Look for the download button inside your notes.' },
   { lead: 'Upload a photo of handwritten notes', body: 'Brain Buffet reads your handwriting and structures it into clean, organised notes automatically.' },
-  { lead: 'Add more sources to an existing topic', body: 'Open a topic and hit Add Source to bring in new material — your notes update without losing what\'s already there.' },
+  { lead: 'Add more sources to an existing topic', body: 'Open a topic and hit Add Source to bring in new material. Your notes update without losing what\'s already there.' },
   { lead: 'Your quiz scores are tracked over time', body: 'Revisit a topic\'s quiz to see whether your score improves across sessions as you study.' },
-  { lead: 'Standard and Concise views are always available', body: 'Both note modes are stored — switch between them any time without needing to re-generate anything.' },
+  { lead: 'Standard and Concise views are always available', body: 'Both note modes are stored. Switch between them any time without needing to re-generate anything.' },
 ];
 
 function TipBanner() {

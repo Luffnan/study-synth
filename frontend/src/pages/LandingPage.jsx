@@ -11,8 +11,8 @@ const HEADLINES = [
   { top: 'From handwritten scrawl',       bottom: 'to structured revision' },
   { top: 'Upload once.',                  bottom: 'Study all term.' },
   { top: 'Every subject. Colour-coded.',  bottom: 'Nothing gets lost.' },
-  { top: 'Concise or detailed —',         bottom: 'the notes adapt to you' },
-  { top: 'PDF, photo, slide deck,',       bottom: 'YouTube — all become notes' },
+  { top: 'Concise or detailed:',           bottom: 'the notes adapt to you' },
+  { top: 'PDF, photo, slide deck,',       bottom: 'YouTube. All become notes.' },
   { top: 'From any source',               bottom: 'to exam-ready in under a minute' },
   { top: 'Custom quizzes',                bottom: 'from your handwritten notes' },
   { top: 'Build your study library',      bottom: 'across the year' },
@@ -48,8 +48,8 @@ export default function LandingPage({ onGetStarted, onLogin }) {
   return (
     <div className="min-h-screen bg-white font-sans">
 
-      {/* ── Nav ── */}
-      <header className="sticky top-0 z-20 bg-white/95 backdrop-blur-md border-b border-black/8">
+      {/* ── Nav (desktop only) ── */}
+      <header className="hidden sm:block sticky top-0 z-20 bg-white/95 backdrop-blur-md border-b border-black/8">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 h-14 flex items-center gap-4">
           <div className="flex items-center gap-2 flex-shrink-0">
             <img src="/brain.png" alt="Brain Buffet" className="w-7 h-7" />
@@ -74,32 +74,38 @@ export default function LandingPage({ onGetStarted, onLogin }) {
       </header>
 
       {/* ── Hero ── */}
-      <section className="max-w-6xl mx-auto px-5 sm:px-8 pt-12 pb-10 sm:pt-16 sm:pb-14">
+      <section className="max-w-6xl mx-auto px-5 sm:px-8 pt-10 pb-8 sm:pt-16 sm:pb-14">
         <div className="grid lg:grid-cols-[1fr_420px] gap-10 lg:gap-16 items-center">
 
           {/* Left: headline + CTA */}
-          <div>
-            {/* Mobile logo */}
-            <div className="flex items-center gap-2 mb-6 sm:hidden">
-              <img src="/brain.png" alt="Brain Buffet" className="w-9 h-9" />
-              <span className="text-lg font-700 tracking-tight text-ink-900">Brain Buffet</span>
+          <div className="text-center sm:text-left">
+            {/* Mobile sign-in row */}
+            <div className="flex items-center justify-end mb-6 sm:hidden">
+              <button onClick={onLogin} className="text-sm font-600 text-ink-500">Sign in</button>
             </div>
 
-            <h1 className={`font-display text-[2.2rem] sm:text-5xl lg:text-[3.4rem] font-600 text-ink-900 leading-[1.12] mb-5 transition-opacity duration-400 ${visible ? 'opacity-100' : 'opacity-0'}`}>
+            {/* Mobile big brain */}
+            <div className="flex flex-col items-center mb-7 sm:hidden">
+              <img src="/brain.png" alt="Brain Buffet" className="w-16 h-16 mb-2" />
+              <span className="text-lg font-700 tracking-tight text-ink-900">Brain Buffet</span>
+              <span className="text-[9px] font-700 text-white bg-brand-500 px-2 py-0.5 rounded-full uppercase tracking-wider mt-1">beta</span>
+            </div>
+
+            <h1 className={`font-display text-[2rem] sm:text-5xl lg:text-[3.4rem] font-600 text-ink-900 leading-[1.12] mb-4 transition-opacity duration-400 ${visible ? 'opacity-100' : 'opacity-0'}`}>
               {headline.top} <span className="italic font-500 text-brand-500">{headline.bottom}</span>
             </h1>
 
-            <p className="text-base sm:text-lg text-ink-500 max-w-xl mb-8 leading-relaxed">
+            <p className="text-[15px] sm:text-lg text-ink-500 max-w-xl mb-7 leading-relaxed sm:mx-0">
               Upload anything: textbooks, lecture slides, handwritten notes, YouTube videos.
               Brain Buffet structures it into notes and quizzes built entirely from your material.
             </p>
 
-            <div className="flex flex-col items-start gap-2">
+            <div className="flex flex-col items-center sm:items-start gap-2">
               <button onClick={onGetStarted}
-                className="flex items-center gap-2 bg-ink-900 hover:bg-brand-600 text-white px-7 py-3.5 rounded-2xl text-base font-700 transition-colors">
+                className="w-full sm:w-auto flex items-center justify-center gap-2 bg-ink-900 hover:bg-brand-600 text-white px-7 py-4 rounded-2xl text-base font-700 transition-colors">
                 Create free account <ArrowRight className="w-4 h-4" />
               </button>
-              <p className="text-[11px] text-ink-400 font-500">Free during beta &nbsp;·&nbsp; No credit card needed &nbsp;·&nbsp; Year 7 to university</p>
+              <p className="text-[11px] text-ink-400 font-500 text-center sm:text-left">Free during beta &nbsp;·&nbsp; No credit card needed &nbsp;·&nbsp; Year 7 to university</p>
             </div>
           </div>
 
@@ -125,32 +131,49 @@ export default function LandingPage({ onGetStarted, onLogin }) {
       </section>
 
       {/* ── Works with ── */}
-      <div className="py-6">
-        <div className="max-w-6xl mx-auto px-5 sm:px-8 flex items-center gap-3 flex-wrap justify-center">
-          <span className="text-[10px] font-700 text-ink-400 uppercase tracking-widest mr-1">Works with</span>
-          {[
-            { icon: <FileText className="w-3.5 h-3.5" />, label: 'PDF Textbooks' },
-            { icon: <Image className="w-3.5 h-3.5" />,    label: 'Photos & Screenshots' },
-            { icon: <Monitor className="w-3.5 h-3.5" />,  label: 'Slide Decks' },
-            { icon: <Youtube className="w-3.5 h-3.5" />,  label: 'YouTube Videos' },
-          ].map(s => (
-            <div key={s.label} className="flex items-center gap-1.5 bg-ink-100 border border-ink-200 text-ink-700 text-xs font-600 px-3 py-1.5 rounded-full">
-              <span className="text-ink-500">{s.icon}</span>{s.label}
-            </div>
-          ))}
-          <span className="text-ink-400 text-xs font-500">…and more</span>
+      <div className="py-5 sm:py-6 border-t border-ink-100">
+        <div className="max-w-6xl mx-auto px-5 sm:px-8">
+          <p className="text-[10px] font-700 text-ink-400 uppercase tracking-widest text-center mb-3">Works with</p>
+          {/* Mobile: strict 2-per-row grid. Desktop: single flex row */}
+          <div className="grid grid-cols-2 gap-2 sm:hidden">
+            {[
+              { icon: <FileText className="w-3.5 h-3.5" />, label: 'PDF Textbooks' },
+              { icon: <Image className="w-3.5 h-3.5" />,    label: 'Screenshots' },
+              { icon: <Monitor className="w-3.5 h-3.5" />,  label: 'Slide Decks' },
+              { icon: <Youtube className="w-3.5 h-3.5" />,  label: 'YouTube Videos' },
+            ].map(s => (
+              <div key={s.label} className="flex items-center justify-center gap-1.5 bg-ink-100 border border-ink-200 text-ink-700 text-xs font-600 px-3 h-10 rounded-full">
+                <span className="text-ink-500 flex-shrink-0">{s.icon}</span>{s.label}
+              </div>
+            ))}
+          </div>
+          <p className="text-ink-400 text-xs font-500 text-center mt-2 sm:hidden">…and more</p>
+          {/* Desktop: single row */}
+          <div className="hidden sm:flex items-center gap-3 flex-wrap justify-center">
+            {[
+              { icon: <FileText className="w-3.5 h-3.5" />, label: 'PDF Textbooks' },
+              { icon: <Image className="w-3.5 h-3.5" />,    label: 'Photos & Screenshots' },
+              { icon: <Monitor className="w-3.5 h-3.5" />,  label: 'Slide Decks' },
+              { icon: <Youtube className="w-3.5 h-3.5" />,  label: 'YouTube Videos' },
+            ].map(s => (
+              <div key={s.label} className="flex items-center gap-1.5 bg-ink-100 border border-ink-200 text-ink-700 text-xs font-600 px-3 py-1.5 rounded-full">
+                <span className="text-ink-500">{s.icon}</span>{s.label}
+              </div>
+            ))}
+            <span className="text-ink-400 text-xs font-500">…and more</span>
+          </div>
         </div>
       </div>
 
       {/* ── Why different ── */}
-      <section className="py-16 sm:py-20 max-w-6xl mx-auto px-5 sm:px-8">
-        <div className="mb-10">
+      <section className="py-12 sm:py-20 max-w-6xl mx-auto px-5 sm:px-8">
+        <div className="mb-8 sm:mb-10 text-center sm:text-left">
           <h2 className="font-display text-3xl sm:text-4xl font-600 text-ink-900">
             Why choose <span className="italic font-500">Brain Buffet?</span>
           </h2>
         </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {[
             { color: 'bg-accent-yellow', icon: '🎯', title: 'Uses only your ingredients', body: "Every note comes directly from what you upload. If it's not in your source, it won't be in your notes." },
             { color: 'bg-brand-500',     icon: '🧠', title: 'Intelligent fact extraction', body: 'No more trawling through textbooks. Key facts, concepts, terms and formulas pulled out and ready to study.', light: true },
@@ -169,8 +192,8 @@ export default function LandingPage({ onGetStarted, onLogin }) {
       </section>
 
       {/* ── Feature list ── */}
-      <section className="py-16 sm:py-20 max-w-6xl mx-auto px-5 sm:px-8">
-        <div className="mb-10">
+      <section className="py-12 sm:py-20 max-w-6xl mx-auto px-5 sm:px-8">
+        <div className="mb-8 sm:mb-10 text-center sm:text-left">
           <h2 className="font-display text-3xl sm:text-4xl font-600 text-ink-900">
             Everything you need <span className="italic font-500">to study smarter</span>
           </h2>
@@ -219,7 +242,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
             <img src="/brain.png" alt="Brain Buffet" className="w-5 h-5" />
             <span className="text-sm font-700 text-ink-600">Brain Buffet</span>
           </div>
-          <p className="text-xs text-ink-400">Study notes, only from your source material</p>
+          <p className="hidden sm:block text-xs text-ink-400">Study notes, only from your source material</p>
         </div>
       </footer>
 

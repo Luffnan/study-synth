@@ -192,7 +192,7 @@ function RegisterForm({ onSwitch }) {
   return (
     <>
       <h1 className="font-display text-xl font-600 text-ink-900 mb-1">Create account</h1>
-      <p className="text-ink-400 text-sm mb-6">Start studying smarter — it's free</p>
+      <p className="text-ink-400 text-sm mb-6">Start studying smarter. It's free</p>
 
       <GoogleButton loading={googleLoading} onClick={handleGoogleLogin} />
       <Divider />
