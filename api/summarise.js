@@ -75,9 +75,19 @@ Key terms rules:
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  // Auth check on headers before body is parsed
+  // Auth check before starting SSE so errors can still return plain JSON
   const { userId, err: authErr } = await tryGetUserId(req);
   if (authErr) return res.status(401).json({ error: 'Unauthorized' });
+
+  // Open SSE stream immediately — Vercel sees TTFB and won't 504 mid-generation
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive',
+    'X-Accel-Buffering': 'no',
+  });
+
+  const send = (obj) => res.write(`data: ${JSON.stringify(obj)}\n\n`);
 
   try {
     const { contentBlocks, fileNames, yearLevel, sourceFileMeta, rawFileBuffers } = await parseFilesFromRequest(req, { userId });
@@ -91,10 +101,14 @@ export default async function handler(req, res) {
       messages: [{ role: 'user', content: contentBlocks }]
     });
 
+    // Forward chunks to client so the connection stays warm during long generations
+    stream.on('text', (text) => send({ chunk: text }));
+
     const response = await stream.finalMessage();
 
     if (response.stop_reason === 'max_tokens') {
-      return res.status(422).json({ error: 'This document is too large to process in one pass. Try splitting it into smaller sections.' });
+      send({ error: 'This document is too large to process in one pass. Try splitting it into smaller sections.' });
+      return res.end();
     }
 
     const raw = response.content[0].text;
@@ -105,35 +119,29 @@ export default async function handler(req, res) {
 
     // Large-file path: metadata already prepared by parse-files
     if (sourceFileMeta?.length) {
-      console.log('[source-files] large-file path, files:', sourceFileMeta.length);
       await saveSourceFiles(record.id, sourceFileMeta, userId).catch(e => console.error('[source-files] saveSourceFiles error:', e.message));
     }
 
     // Small-file path: upload buffers now that we have a record ID
-    console.log('[source-files] rawFileBuffers:', rawFileBuffers?.length ?? 0);
     if (rawFileBuffers?.length) {
       const smallFileMeta = [];
       for (const { fileName, buffer, mimeType, fileSize } of rawFileBuffers) {
         const safeName = fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
         const destPath = `${userId}/${Date.now()}-${safeName}`;
-        console.log('[source-files] uploading to storage:', destPath);
         const blob = new Blob([buffer], { type: mimeType });
         const { error } = await supabaseAdmin.storage
           .from('source-files')
           .upload(destPath, blob, { contentType: mimeType, upsert: false });
-        if (error) {
-          console.error('[source-files] storage upload error:', error.message);
-        } else {
-          smallFileMeta.push({ fileName, fileSize, mimeType, storagePath: destPath });
-        }
+        if (!error) smallFileMeta.push({ fileName, fileSize, mimeType, storagePath: destPath });
       }
-      console.log('[source-files] smallFileMeta:', smallFileMeta.length);
       if (smallFileMeta.length) await saveSourceFiles(record.id, smallFileMeta, userId).catch(e => console.error('[source-files] saveSourceFiles error:', e.message));
     }
 
-    res.status(200).json({ notes, id: record.id });
+    send({ done: true, notes, id: record.id });
+    res.end();
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: err.message });
+    send({ error: err.message });
+    res.end();
   }
 }

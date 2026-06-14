@@ -105,9 +105,33 @@ function FilesPanel({ onNotes, yearLevel, onLoading, files, setFiles, error, set
     onLoading(true); setError(null);
     try {
       const res = await submitFiles(files, '/api/summarise', yearLevel ? { yearLevel } : {});
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Server error');
-      onNotes(data);
+
+      // Auth/method errors return plain JSON before SSE starts
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Server error');
+      }
+
+      // Read SSE stream — chunks keep the connection alive, done event carries the result
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const parts = buffer.split('\n\n');
+        buffer = parts.pop();
+        for (const part of parts) {
+          if (!part.startsWith('data: ')) continue;
+          const payload = JSON.parse(part.slice(6));
+          if (payload.error) throw new Error(payload.error);
+          if (payload.done) { onNotes({ notes: payload.notes, id: payload.id }); return; }
+        }
+      }
+
+      throw new Error('Generation ended unexpectedly. Please try again.');
     } catch (err) {
       onLoading(false);
       setError(err.message);
