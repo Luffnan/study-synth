@@ -86,6 +86,7 @@ export default async function handler(req, res) {
     'Connection': 'keep-alive',
     'X-Accel-Buffering': 'no',
   });
+  res.flushHeaders();
 
   const send = (obj) => res.write(`data: ${JSON.stringify(obj)}\n\n`);
 
@@ -96,7 +97,7 @@ export default async function handler(req, res) {
 
     const stream = client.messages.stream({
       model: 'claude-opus-4-7',
-      max_tokens: 32000,
+      max_tokens: 16000,
       system: yearLevelModifier(yearLevel) + SUMMARISE_PROMPT,
       messages: [{ role: 'user', content: contentBlocks }]
     });
