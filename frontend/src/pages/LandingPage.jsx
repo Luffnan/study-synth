@@ -4,15 +4,15 @@ import BrainLogo from '../components/BrainLogo.jsx';
 
 const HEADLINES = [
   { top: 'Turn any content into',         bottom: 'perfect study notes' },
-  { top: 'Quizzes that teach you',        bottom: 'how to write the perfect answer' },
+  { top: 'Quizzes that teach you how to',  bottom: 'write the perfect answer' },
   { top: 'Your YouTube lecture,',         bottom: 'with notes at every timestamp' },
   { top: 'From handwritten scrawl',       bottom: 'to structured revision' },
-  { top: 'Upload once.',                  bottom: 'Study all term.' },
+  { top: 'Upload once.',                  bottom: 'Study all term.', break: true },
   { top: 'Flexibility to generate', bottom: 'detailed or concise notes' },
-  { top: 'From any source',               bottom: 'to exam-ready in under a minute' },
+  { top: 'From any source to exam-ready',  bottom: 'in under a minute' },
   { top: 'Custom quizzes',                bottom: 'from your handwritten notes' },
   { top: 'Build your study library',      bottom: 'across the year' },
-  { top: 'Upload textbooks, photos, screenshots,', bottom: 'slide decks or written notes' },
+  { top: 'Upload whatever.', bottom: 'Textbooks, photos, screenshots, slide decks or written notes' },
 ];
 
 function buildOrder() {
@@ -89,7 +89,7 @@ export default function LandingPage({ onGetStarted, onLogin }) {
             </div>
 
             <h1 className={`font-display text-[2rem] sm:text-5xl lg:text-[3.4rem] font-600 text-ink-900 leading-[1.12] mb-4 transition-opacity duration-400 ${visible ? 'opacity-100' : 'opacity-0'}`}>
-              {headline.top} <span className="italic font-500 text-brand-500">{headline.bottom}</span>
+              {headline.top}{headline.break ? <br /> : ' '}<span className="italic font-500 text-brand-500">{headline.bottom}</span>
             </h1>
 
             <p className="text-[15px] sm:text-lg text-ink-500 max-w-xl mb-7 leading-relaxed sm:mx-0">
