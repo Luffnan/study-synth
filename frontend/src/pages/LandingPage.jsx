@@ -4,18 +4,15 @@ import BrainLogo from '../components/BrainLogo.jsx';
 
 const HEADLINES = [
   { top: 'Turn any content into',         bottom: 'perfect study notes' },
-  { top: 'Not flashcards.',               bottom: 'Structured curriculum notes.' },
-  { top: 'Only facts from your source',   bottom: 'never adding extra information' },
   { top: 'Quizzes that teach you',        bottom: 'how to write the perfect answer' },
   { top: 'Your YouTube lecture,',         bottom: 'with notes at every timestamp' },
   { top: 'From handwritten scrawl',       bottom: 'to structured revision' },
   { top: 'Upload once.',                  bottom: 'Study all term.' },
-  { top: 'Every subject. Colour-coded.',  bottom: 'Nothing gets lost.' },
   { top: 'Concise or detailed:',           bottom: 'the notes adapt to you' },
-  { top: 'PDF, photo, slide deck,',       bottom: 'YouTube. All become notes.' },
   { top: 'From any source',               bottom: 'to exam-ready in under a minute' },
   { top: 'Custom quizzes',                bottom: 'from your handwritten notes' },
   { top: 'Build your study library',      bottom: 'across the year' },
+  { top: 'Upload textbooks, photos, screenshots,', bottom: 'slide decks or written notes' },
 ];
 
 function buildOrder() {
