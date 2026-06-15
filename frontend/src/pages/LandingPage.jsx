@@ -8,7 +8,7 @@ const HEADLINES = [
   { top: 'Your YouTube lecture,',         bottom: 'with notes at every timestamp' },
   { top: 'From handwritten scrawl',       bottom: 'to structured revision' },
   { top: 'Upload once.',                  bottom: 'Study all term.' },
-  { top: 'Concise or detailed:',           bottom: 'the notes adapt to you' },
+  { top: 'Flexibility to generate', bottom: 'detailed or concise notes' },
   { top: 'From any source',               bottom: 'to exam-ready in under a minute' },
   { top: 'Custom quizzes',                bottom: 'from your handwritten notes' },
   { top: 'Build your study library',      bottom: 'across the year' },
