@@ -1,11 +1,30 @@
 # Proposed Summarisation Prompt
 
-Proposed alternative to the existing prompt. Key differences:
-- Explicit "source first, context second" principle
-- Allows minimal gap-filling for comprehension (e.g. poor student notetakers)
-- Removes the 30-35% target (coverage over compression)
-- Explicitly handles diagram/model content
-- Strips narrative worked examples (e.g. "Vanessa was struggling...") but extracts the concept
+**Status: ADOPTED — now live in `api/summarise.js`**
+
+## Changes from existing prompt
+
+- Added "source first, context second" core principle — allows minimal gap-filling for comprehension but anchors notes in the source
+- Removed the 30–35% word count target — replaced with "coverage over compression"
+- Replaced "write complete, informative sentences — include context" with "rephrase for clarity but do not add meaning"
+- Added diagram/model content to INCLUDE list
+- Added to EXCLUDE list:
+  - Chapter introductions, overviews, scene-setting paragraphs
+  - Learning objectives and content focus boxes
+  - Narrative story-based worked examples (e.g. "Vanessa was struggling...")
+  - References to external resources (videos, worksheets)
+- Tightened key terms rules — only define terms that appear in the source; minimal one-liner only if not defined there
+
+## Why adopted
+
+Comparison test against a Jacaranda Commerce textbook chapter showed:
+- Better structure for multi-part concepts (e.g. business cycle phases combined into one subtopic)
+- Tighter, more source-faithful key terms
+- Equal knowledge coverage, no meaningful difference in word count once filter issue was fixed
+
+## Decision context
+
+The product debate was whether to clamp down fully on contextual knowledge (strict source fidelity) or allow Claude to add background. Decision: neither extreme. The prompt positions the product as "source as the spine, context only to bridge comprehension gaps." This preserves value for poor notetakers while keeping the USP honest.
 
 ---
 
@@ -31,8 +50,10 @@ INCLUDE:
 - Diagram and model content — extract labels, relationships, and descriptions shown in diagrams as note points
 
 EXCLUDE — do not summarise or include:
+- Chapter introductions, overviews, or scene-setting paragraphs that don't contain curriculum knowledge
+- Learning objectives, content focus boxes, or "on completion you will have..." sections
 - Exam technique advice, study tips, or learning strategies
-- Instructions about how to use the material
+- Instructions about how to use the material or references to external resources (videos, worksheets, digital documents)
 - Activity and exercise instructions framed as student tasks
 - Worked examples or practice problems the student must complete
 - Source documents included purely as exercise inputs
