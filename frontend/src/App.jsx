@@ -55,10 +55,10 @@ export default function App() {
       else setProfile(null);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
       if (session) {
-        setView('dashboard');
+        if (event === 'SIGNED_IN') setView('dashboard');
         loadProfile(session.user.id);
       } else {
         setProfile(null);
