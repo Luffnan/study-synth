@@ -56,9 +56,14 @@ export default function App() {
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setSession(session);
+      // Use functional update so we can check the previous session value.
+      // Only redirect to dashboard when transitioning from logged-out → logged-in,
+      // not on TOKEN_REFRESHED or SIGNED_IN re-emitted when the tab regains focus.
+      setSession(prev => {
+        if (session && prev === null) setView('dashboard');
+        return session;
+      });
       if (session) {
-        if (event === 'SIGNED_IN') setView('dashboard');
         loadProfile(session.user.id);
       } else {
         setProfile(null);

@@ -1,5 +1,24 @@
 import { apiFetch } from '../lib/api.js';
 import { useState, useEffect } from 'react';
+
+// Flexible answer matching — handles number formatting and incidental unit differences
+function flexMatch(userRaw, expectedRaw) {
+  const norm = s => s.trim().toLowerCase().replace(/,/g, '').replace(/\s+/g, ' ');
+  const user = norm(userRaw);
+  const expected = norm(expectedRaw);
+  if (user === expected) return true;
+
+  // Try stripping units from either side — accept if the numeric cores match
+  const stripUnits = s => s.replace(/[a-z%°]+/g, '').trim();
+  if (stripUnits(user) !== '' && stripUnits(user) === stripUnits(expected)) return true;
+
+  // If expected is purely numeric, also accept user answer that contains that number
+  const numExpected = parseFloat(expected.replace(/[^0-9.]/g, ''));
+  const numUser = parseFloat(user.replace(/[^0-9.]/g, ''));
+  if (!isNaN(numExpected) && !isNaN(numUser) && numExpected === numUser) return true;
+
+  return false;
+}
 import { ArrowLeft, ArrowRight, CheckCircle, XCircle, Loader2, RotateCcw, Trophy, ChevronDown, ChevronUp, Hash, Youtube, Zap } from 'lucide-react';
 
 export default function QuizPage({ noteId, noteTitle, notes, onBack, yearLevel }) {
@@ -373,7 +392,7 @@ function FillBlankInput({ question, answered, thisAnswer, onAnswer }) {
   const [val, setVal] = useState('');
   function submit() {
     if (!val.trim()) return;
-    onAnswer({ value: val.trim(), correct: val.trim().toLowerCase() === question.answer.trim().toLowerCase() });
+    onAnswer({ value: val.trim(), correct: flexMatch(val, question.answer) });
   }
   return (
     <div className="space-y-3">
