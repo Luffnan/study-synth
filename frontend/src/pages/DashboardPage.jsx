@@ -235,7 +235,7 @@ export default function DashboardPage({ onUpload, onOpenNote, onOpenNoteAtSource
                     onClick={() => handleOpen(r)}
                     onOpenSources={() => handleOpenAtSources(r)}
                     onDelete={e => handleDelete(e, r.id)}
-                    onQuiz={onQuiz ? e => { e.stopPropagation(); onQuiz(r.id, r.title); } : null}
+                    onQuiz={onQuiz ? e => { e.stopPropagation(); onQuiz(r.id, r.title, r.latest_quiz_pct ?? null); } : null}
                     onSaveEdit={updates => handleSaveEdit(r.id, updates)}
                     onAddSource={e => { e.stopPropagation(); setIngestTarget({ id: r.id, title: r.title }); }}
                     onMoveToSubject={subjects.length > 0 ? subjectId => handleMoveToSubject(r.id, subjectId) : null}

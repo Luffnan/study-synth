@@ -18,6 +18,7 @@ export default function App() {
   const [notes, setNotes] = useState(null);
   const [noteId, setNoteId] = useState(null);
   const [noteTitle, setNoteTitle] = useState(null);
+  const [latestQuizPct, setLatestQuizPct] = useState(null);
   const [conciseNotes, setConciseNotes] = useState(null);
   const [initialPane, setInitialPane] = useState(null);
   const [view, setView] = useState('dashboard');
@@ -105,9 +106,10 @@ export default function App() {
     handleOpenNote(record, fromSubject, 'sources');
   }
 
-  function handleStartQuiz(id, title) {
+  function handleStartQuiz(id, title, prevPct = null) {
     setNoteId(id);
     setNoteTitle(title);
+    setLatestQuizPct(prevPct);
     setView('quiz');
   }
 
@@ -196,7 +198,7 @@ export default function App() {
         )}
         {view === 'upload'   && <UploadPage onNotes={handleNotes} onBack={handleReset} yearLevel={yearLevel} />}
         {view === 'notes'    && <NotesPage notes={notes} noteId={noteId} conciseNotesProp={conciseNotes} onConciseNotes={setConciseNotes} onBack={handleReset} fromSubject={noteFromSubject} onBackToSubject={() => { setView('subject'); }} onQuiz={() => handleStartQuiz(noteId, noteTitle)} initialPane={initialPane} />}
-        {view === 'quiz'     && <QuizPage noteId={noteId} noteTitle={noteTitle} notes={notes} yearLevel={yearLevel} onBack={() => setView(notes ? 'notes' : 'dashboard')} />}
+        {view === 'quiz'     && <QuizPage noteId={noteId} noteTitle={noteTitle} notes={notes} yearLevel={yearLevel} latestQuizPct={latestQuizPct} onBack={() => setView(notes ? 'notes' : 'dashboard')} />}
         {view === 'profile'  && (
           <ProfilePage
             user={session.user}

@@ -21,7 +21,7 @@ function flexMatch(userRaw, expectedRaw) {
 }
 import { ArrowLeft, ArrowRight, CheckCircle, XCircle, Loader2, RotateCcw, Trophy, ChevronDown, ChevronUp, Hash, Youtube, Zap } from 'lucide-react';
 
-export default function QuizPage({ noteId, noteTitle, notes, onBack, yearLevel }) {
+export default function QuizPage({ noteId, noteTitle, notes, onBack, yearLevel, latestQuizPct }) {
   // If no notes were passed (launched from dashboard), skip straight to generating
   const [state, setState] = useState(() => (!notes || !notes.topics?.length) ? 'loading' : 'pick');
   const [questions, setQuestions] = useState([]);
@@ -93,7 +93,7 @@ export default function QuizPage({ noteId, noteTitle, notes, onBack, yearLevel }
       );
       setAnswers({});
       setCurrent(0);
-      setState('quiz');
+      setState('briefing');
     } catch (err) {
       setError(err.message);
       setState('error');
@@ -210,6 +210,105 @@ export default function QuizPage({ noteId, noteTitle, notes, onBack, yearLevel }
             >
               <Zap className="w-4 h-4" />
               Generate quiz{selected.size < allItems.length ? ` · ${selected.size} topic${selected.size !== 1 ? 's' : ''}` : ''}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Briefing ───────────────────────────────────────────────────────────────
+
+  if (state === 'briefing') {
+    const mcqCount = questions.filter(q => q.type === 'mcq').length;
+    const tfCount = questions.filter(q => q.type === 'true_false').length;
+    const fillCount = questions.filter(q => q.type === 'fill_blank').length;
+    const saCount = questions.filter(q => q.type === 'short_answer').length;
+    const typeLines = [
+      mcqCount  && `${mcqCount} multiple choice`,
+      tfCount   && `${tfCount} true / false`,
+      fillCount && `${fillCount} fill in the blank`,
+      saCount   && `${saCount} short answer`,
+    ].filter(Boolean);
+
+    const encouragements = [
+      "You've got this. Trust your notes.",
+      "Time to see what you know.",
+      "Focus up — let's go.",
+      "Your notes did the hard work. Now it's your turn.",
+      "Every question is a chance to lock it in.",
+    ];
+    const encouragement = encouragements[Math.floor(Math.random() * encouragements.length)];
+
+    const scoreColour = latestQuizPct >= 80 ? 'text-green-600' : latestQuizPct >= 50 ? 'text-amber-600' : 'text-red-500';
+
+    return (
+      <div className="max-w-lg mx-auto px-4 sm:px-6 py-8 animate-fade-in">
+        <button onClick={onBack} className="flex items-center gap-1.5 text-ink-400 hover:text-ink-700 text-sm font-medium transition-colors mb-8">
+          <ArrowLeft className="w-4 h-4" /> Back
+        </button>
+
+        <div className="bg-white rounded-2xl border border-ink-200 overflow-hidden">
+          {/* Header */}
+          <div className="px-6 py-6 border-b border-ink-100">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-9 h-9 rounded-xl bg-ink-900 flex items-center justify-center flex-shrink-0">
+                <Zap className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h1 className="text-lg font-700 text-ink-900 leading-tight">{noteTitle || 'Quiz'}</h1>
+                <p className="text-sm text-ink-400">{questions.length} question{questions.length !== 1 ? 's' : ''} · {totalMarks} mark{totalMarks !== 1 ? 's' : ''} total</p>
+              </div>
+            </div>
+            <p className="text-sm text-ink-500 italic mt-1">{encouragement}</p>
+          </div>
+
+          {/* Question breakdown */}
+          <div className="px-6 py-4 border-b border-ink-100">
+            <p className="text-[10px] font-700 text-ink-400 uppercase tracking-wider mb-3">What to expect</p>
+            <ul className="space-y-1.5">
+              {typeLines.map(line => (
+                <li key={line} className="flex items-center gap-2 text-sm text-ink-700">
+                  <span className="w-1.5 h-1.5 rounded-full bg-brand-500 flex-shrink-0" />
+                  {line}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Rules */}
+          <div className="px-6 py-4 border-b border-ink-100">
+            <p className="text-[10px] font-700 text-ink-400 uppercase tracking-wider mb-3">Rules</p>
+            <ul className="space-y-2">
+              {[
+                'Multiple choice, true/false, and fill-in-the-blank are marked instantly.',
+                saCount > 0 && 'Short answer questions are marked by AI against a model answer.',
+                saCount > 0 && 'Only your first attempt counts toward your score — use the model answer to learn, not to cheat.',
+                'You can navigate back to review previous answers before finishing.',
+              ].filter(Boolean).map(rule => (
+                <li key={rule} className="flex items-start gap-2 text-sm text-ink-600">
+                  <CheckCircle className="w-3.5 h-3.5 text-brand-500 flex-shrink-0 mt-0.5" />
+                  {rule}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Previous score */}
+          {latestQuizPct != null && (
+            <div className="px-6 py-4 border-b border-ink-100 flex items-center justify-between">
+              <p className="text-sm text-ink-500">Your last score</p>
+              <span className={`text-lg font-700 ${scoreColour}`}>{latestQuizPct}%</span>
+            </div>
+          )}
+
+          {/* CTA */}
+          <div className="px-6 py-5">
+            <button
+              onClick={() => setState('quiz')}
+              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-ink-900 hover:bg-brand-600 text-white text-sm font-600 transition-all shadow-sm"
+            >
+              <Zap className="w-4 h-4" /> Start quiz
             </button>
           </div>
         </div>
