@@ -432,7 +432,9 @@ function ShortAnswerInput({ question, yearLevel, onAnswer }) {
       const newAttempts = [...attempts, attempt];
       setAttempts(newAttempts);
       setVal('');
-      onAnswer({ value: attempt.value, score: Math.max(...newAttempts.map(a => a.score)), feedback: attempt.feedback, modelAnswer: question.modelAnswer });
+      // Only the first attempt counts toward the score; subsequent attempts are practice
+      const firstScore = newAttempts[0].score;
+      onAnswer({ value: attempt.value, score: firstScore, feedback: attempt.feedback, modelAnswer: question.modelAnswer });
     } catch {
       const attempt = { value: val.trim(), score: 0, feedback: 'Could not mark automatically. Check the model answer below.' };
       const newAttempts = [...attempts, attempt];
