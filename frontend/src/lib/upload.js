@@ -60,11 +60,19 @@ export async function submitFiles(files, apiPath, extraBody = {}) {
       body: JSON.stringify({ storageFiles, ...extraBody }),
     });
 
+    // Clean up temp files after a delay — the API needs to download them first.
+    // The signed URL is valid for 10 min; we wait 5 min as a safe buffer, then
+    // remove regardless of whether the API already cleaned up server-side.
+    setTimeout(() => {
+      supabase.storage.from('temp-uploads').remove(uploadedPaths).catch(() => {});
+    }, 5 * 60 * 1000);
+
     return res;
-  } finally {
-    // Always clean up temp storage files, even on error
+  } catch (err) {
+    // On upload/URL errors (before the API call), clean up immediately
     if (uploadedPaths.length) {
       await supabase.storage.from('temp-uploads').remove(uploadedPaths).catch(() => {});
     }
+    throw err;
   }
 }
