@@ -89,12 +89,19 @@ function FilesPanel({ onNotes, yearLevel, onLoading, files, setFiles, error, set
   const inputRef = useRef(null);
 
   const addFiles = useCallback((incoming) => {
-    const valid = Array.from(incoming).filter(f => Object.keys(ACCEPTED).includes(f.type));
+    // Base64 encoding adds ~33% overhead; Anthropic API limit is 32 MB encoded.
+    // Safe raw file limit is ~24 MB per file.
+    const MAX_RAW = 24 * 1024 * 1024;
+    const tooBig = Array.from(incoming).filter(f => Object.keys(ACCEPTED).includes(f.type) && f.size > MAX_RAW);
+    if (tooBig.length) {
+      setError(`${tooBig.map(f => f.name).join(', ')} ${tooBig.length === 1 ? 'is' : 'are'} too large (max 24 MB per file). Try compressing the PDF or splitting it into smaller sections.`);
+    }
+    const valid = Array.from(incoming).filter(f => Object.keys(ACCEPTED).includes(f.type) && f.size <= MAX_RAW);
     setFiles(prev => {
       const names = new Set(prev.map(f => f.name));
       return [...prev, ...valid.filter(f => !names.has(f.name))];
     });
-  }, []);
+  }, [setError]);
 
   const onDrop = useCallback((e) => {
     e.preventDefault(); setDragging(false); addFiles(e.dataTransfer.files);
@@ -162,7 +169,7 @@ function FilesPanel({ onNotes, yearLevel, onLoading, files, setFiles, error, set
         <p className="font-700 text-ink-900 text-sm mb-1">
           {dragging ? 'Drop to add' : 'Drag & drop or tap to browse'}
         </p>
-        <p className="text-ink-400 text-xs">PDF · JPG · PNG · WEBP, up to 50 MB each</p>
+        <p className="text-ink-400 text-xs">PDF · JPG · PNG · WEBP, up to 24 MB each</p>
       </div>
 
       {/* File list */}

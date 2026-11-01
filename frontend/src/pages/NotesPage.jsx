@@ -862,12 +862,17 @@ function AddSourceModal({ onIngestFiles, onIngestYouTube, onClose }) {
   const inputRef = useRef(null);
 
   const addFiles = useCallback((incoming) => {
-    const valid = Array.from(incoming).filter(f => Object.keys(ACCEPTED).includes(f.type));
+    const MAX_RAW = 24 * 1024 * 1024;
+    const tooBig = Array.from(incoming).filter(f => Object.keys(ACCEPTED).includes(f.type) && f.size > MAX_RAW);
+    if (tooBig.length) {
+      setError(`${tooBig.map(f => f.name).join(', ')} ${tooBig.length === 1 ? 'is' : 'are'} too large (max 24 MB per file). Try compressing the PDF or splitting it into smaller sections.`);
+    }
+    const valid = Array.from(incoming).filter(f => Object.keys(ACCEPTED).includes(f.type) && f.size <= MAX_RAW);
     setFiles(prev => {
       const names = new Set(prev.map(f => f.name));
       return [...prev, ...valid.filter(f => !names.has(f.name))];
     });
-  }, []);
+  }, [setError]);
 
   const onDrop = useCallback((e) => {
     e.preventDefault(); setDragging(false); addFiles(e.dataTransfer.files);
@@ -881,7 +886,10 @@ function AddSourceModal({ onIngestFiles, onIngestYouTube, onClose }) {
       setDone(true);
       setTimeout(onClose, 800);
     } catch (err) {
-      setError(err.message);
+      const msg = err.message || '';
+      setError(msg.includes('invalid_request_error') || msg.startsWith('400')
+        ? 'The file could not be processed. Try a smaller or compressed version.'
+        : msg);
       setLoading(false);
     }
   }
