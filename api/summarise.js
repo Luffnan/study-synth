@@ -147,7 +147,16 @@ export default async function handler(req, res) {
     res.end();
   } catch (err) {
     console.error(err);
-    send({ error: err.message });
+    const msg = err.message || '';
+    let userMessage;
+    if (msg.includes('PDF exceeds') || msg.includes('32 MB') || msg.includes('file size')) {
+      userMessage = 'This PDF is too large to process (max 32 MB). Try compressing it or splitting it into smaller sections.';
+    } else if (msg.includes('invalid_request_error') || msg.startsWith('400')) {
+      userMessage = 'The file could not be processed. Try a smaller file or a different format.';
+    } else {
+      userMessage = msg;
+    }
+    send({ error: userMessage });
     res.end();
   }
 }
