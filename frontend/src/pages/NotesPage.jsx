@@ -1,7 +1,7 @@
 import { apiFetch } from '../lib/api.js';
 import { submitFiles } from '../lib/upload.js';
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { ArrowLeft, ChevronDown, ChevronRight, Download, BookOpen, Hash, FileText, Zap, Layers, Youtube, CheckCircle, Loader2, FileDown, Plus, ArrowUp, X, Link, AlertCircle, Image, Menu, Trash2, Eye, HardDrive } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronRight, Download, BookOpen, Hash, FileText, Zap, Layers, Youtube, CheckCircle, Loader2, FileDown, Plus, ArrowUp, X, Link, AlertCircle, Image, Menu, Trash2, Eye, HardDrive, ClipboardPaste } from 'lucide-react';
 import { generateDocx } from '../utils/generateDocx.js';
 
 const ACCEPTED = {
@@ -171,6 +171,20 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
     conciseFetchedRef.current = false;
   }
 
+  async function handleIngestText(text) {
+    const res = await apiFetch(`/api/notes/${noteId}/ingest`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pastedText: text }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Server error');
+    setLiveNotes(data.notes);
+    setVideoSources(data.notes.videoSources || []);
+    setConciseNotes(null);
+    conciseFetchedRef.current = false;
+  }
+
   async function handleIngestYouTube(url) {
     const res = await apiFetch('/api/youtube', {
       method: 'POST',
@@ -258,6 +272,7 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
             <AddSourceModal
               onIngestFiles={handleIngestFiles}
               onIngestYouTube={handleIngestYouTube}
+              onIngestText={handleIngestText}
               onClose={() => setAddSourceOpen(false)}
             />
           )}
@@ -851,11 +866,14 @@ function ConciseLoadingState({ onSwitchBack }) {
 
 // ── Add Source modal ──────────────────────────────────────────────────────────
 
-function AddSourceModal({ onIngestFiles, onIngestYouTube, onClose }) {
+const PASTE_MAX_CHARS = 800_000;
+
+function AddSourceModal({ onIngestFiles, onIngestYouTube, onIngestText, onClose }) {
   const [tab, setTab] = useState('files');
   const [files, setFiles] = useState([]);
   const [dragging, setDragging] = useState(false);
   const [url, setUrl] = useState('');
+  const [pastedText, setPastedText] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [done, setDone] = useState(false);
@@ -890,6 +908,19 @@ function AddSourceModal({ onIngestFiles, onIngestYouTube, onClose }) {
       setError(msg.includes('invalid_request_error') || msg.startsWith('400')
         ? 'The file could not be processed. Try a smaller or compressed version.'
         : msg);
+      setLoading(false);
+    }
+  }
+
+  async function handleSubmitText() {
+    if (!pastedText.trim()) return;
+    setLoading(true); setError(null);
+    try {
+      await onIngestText(pastedText);
+      setDone(true);
+      setTimeout(onClose, 800);
+    } catch (err) {
+      setError(err.message);
       setLoading(false);
     }
   }
@@ -936,12 +967,12 @@ function AddSourceModal({ onIngestFiles, onIngestYouTube, onClose }) {
             <div>
               <p className="font-700 text-ink-900 text-sm">
                 {done
-                  ? tab === 'files' ? 'Notes updated!' : 'Video added!'
-                  : tab === 'files' ? 'Merging into your notes…' : 'Processing video…'
+                  ? tab === 'youtube' ? 'Video added!' : 'Notes updated!'
+                  : tab === 'youtube' ? 'Processing video…' : 'Merging into your notes…'
                 }
               </p>
               <p className="text-xs text-ink-400 mt-1">
-                {done ? 'Done, closing…' : tab === 'files' ? 'This may take 20–40 seconds' : 'Extracting transcript and building timecoded notes…'}
+                {done ? 'Done, closing…' : tab === 'youtube' ? 'Extracting transcript and building timecoded notes…' : 'This may take 20–40 seconds'}
               </p>
             </div>
           </div>
@@ -951,6 +982,7 @@ function AddSourceModal({ onIngestFiles, onIngestYouTube, onClose }) {
             <div className="flex gap-1 bg-ink-100 rounded-xl p-1 mb-4">
               {[
                 { id: 'files', label: 'Files', icon: <ArrowUp className="w-3.5 h-3.5" /> },
+                { id: 'text', label: 'Paste Text', icon: <ClipboardPaste className="w-3.5 h-3.5" /> },
                 { id: 'youtube', label: 'YouTube', icon: <Youtube className="w-3.5 h-3.5" /> },
               ].map(t => (
                 <button key={t.id} onClick={() => { setTab(t.id); setError(null); }}
@@ -962,7 +994,44 @@ function AddSourceModal({ onIngestFiles, onIngestYouTube, onClose }) {
               ))}
             </div>
 
-            {tab === 'files' ? (
+            {tab === 'text' ? (
+              <>
+                <div className="bg-white border-2 border-ink-200 rounded-2xl overflow-hidden focus-within:border-brand-400 transition-colors">
+                  <textarea
+                    value={pastedText}
+                    onChange={e => { setPastedText(e.target.value); setError(null); }}
+                    placeholder="Paste your textbook content, lecture notes, or any study material here…"
+                    rows={8}
+                    className="w-full px-4 pt-4 pb-2 text-sm text-ink-800 placeholder-ink-400 bg-transparent focus:outline-none resize-none leading-relaxed"
+                  />
+                  <div className="flex items-center justify-between px-4 pb-3">
+                    <p className={`text-xs ${pastedText.length > PASTE_MAX_CHARS ? 'text-red-500 font-600' : 'text-ink-400'}`}>
+                      {pastedText.length.toLocaleString()} / {PASTE_MAX_CHARS.toLocaleString()} characters
+                    </p>
+                    {pastedText && (
+                      <button onClick={() => { setPastedText(''); setError(null); }}
+                        className="text-xs text-ink-400 hover:text-ink-700 transition-colors">
+                        Clear
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {error && (
+                  <div className="mt-3 flex items-start gap-3 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <p>{error}</p>
+                  </div>
+                )}
+
+                <button onClick={handleSubmitText} disabled={!pastedText.trim() || pastedText.length > PASTE_MAX_CHARS}
+                  className={`mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl text-white font-600 text-sm transition-all duration-200
+                    ${pastedText.trim() && pastedText.length <= PASTE_MAX_CHARS ? 'bg-ink-900 hover:bg-brand-600 shadow-sm' : 'bg-ink-200 text-ink-400 cursor-not-allowed'}`}>
+                  <Plus className="w-4 h-4" /> Merge into notes
+                </button>
+                <p className="text-xs text-ink-400 text-center mt-2">New content will be merged into your existing topics</p>
+              </>
+            ) : tab === 'files' ? (
               <>
                 {/* Drop zone */}
                 <div

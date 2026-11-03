@@ -1,7 +1,7 @@
 import { apiFetch } from '../lib/api.js';
 import { submitFiles } from '../lib/upload.js';
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { FileText, Image, X, Loader2, AlertCircle, ArrowLeft, ArrowUp, Youtube, Link } from 'lucide-react';
+import { FileText, Image, X, Loader2, AlertCircle, ArrowLeft, ArrowUp, Youtube, Link, ClipboardPaste } from 'lucide-react';
 import BrainLogo from '../components/BrainLogo.jsx';
 
 const ACCEPTED = {
@@ -14,7 +14,7 @@ const ACCEPTED = {
 const ACCEPTED_EXTS = Object.values(ACCEPTED).flat().join(',');
 
 export default function UploadPage({ onNotes, onBack, yearLevel }) {
-  const [tab, setTab] = useState('files'); // 'files' | 'youtube'
+  const [tab, setTab] = useState('files'); // 'files' | 'youtube' | 'text'
   const [loading, setLoading] = useState(false);
   // Lifted so state survives the ProcessingPanel swap (FilesPanel would remount otherwise)
   const [files, setFiles] = useState([]);
@@ -45,7 +45,7 @@ export default function UploadPage({ onNotes, onBack, yearLevel }) {
           Create study notes
         </h1>
         <p className="text-ink-400 text-sm max-w-xs mx-auto">
-          Upload documents or add a YouTube video
+          Upload documents, paste text, or add a YouTube video
         </p>
       </div>
 
@@ -62,6 +62,16 @@ export default function UploadPage({ onNotes, onBack, yearLevel }) {
           <ArrowUp className="w-4 h-4" /> Files
         </button>
         <button
+          onClick={() => setTab('text')}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-600 border transition-all duration-200 ${
+            tab === 'text'
+              ? 'bg-ink-900 border-ink-900 text-white'
+              : 'bg-white border-ink-200 text-ink-600 hover:bg-ink-50'
+          }`}
+        >
+          <ClipboardPaste className="w-4 h-4" /> Paste Text
+        </button>
+        <button
           onClick={() => setTab('youtube')}
           className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-600 border transition-all duration-200 ${
             tab === 'youtube'
@@ -76,6 +86,8 @@ export default function UploadPage({ onNotes, onBack, yearLevel }) {
       {tab === 'files'
         ? <FilesPanel onNotes={onNotes} yearLevel={yearLevel} onLoading={setLoading}
             files={files} setFiles={setFiles} error={fileError} setError={setFileError} />
+        : tab === 'text'
+        ? <TextPanel onNotes={onNotes} yearLevel={yearLevel} onLoading={setLoading} />
         : <YouTubePanel onNotes={onNotes} onLoading={setLoading} />
       }
     </div>
@@ -216,6 +228,106 @@ function FilesPanel({ onNotes, yearLevel, onLoading, files, setFiles, error, set
           }`}
       >
         <><BrainLogo className="w-4 h-4" /> Generate Study Notes</>
+      </button>
+    </>
+  );
+}
+
+// ── Text paste panel ──────────────────────────────────────────────────────────
+
+const MAX_CHARS = 800_000;
+
+function TextPanel({ onNotes, yearLevel, onLoading }) {
+  const [text, setText] = useState('');
+  const [error, setError] = useState(null);
+
+  async function handleSubmit() {
+    if (!text.trim()) return;
+    onLoading(true); setError(null);
+    try {
+      const res = await apiFetch('/api/summarise', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pastedText: text, ...(yearLevel ? { yearLevel } : {}) }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Server error');
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const parts = buffer.split('\n\n');
+        buffer = parts.pop();
+        for (const part of parts) {
+          if (!part.startsWith('data: ')) continue;
+          const payload = JSON.parse(part.slice(6));
+          if (payload.error) throw new Error(payload.error);
+          if (payload.done) { onNotes({ notes: payload.notes, id: payload.id }); return; }
+        }
+      }
+
+      throw new Error('Generation ended unexpectedly. Please try again.');
+    } catch (err) {
+      onLoading(false);
+      setError(err.message);
+    }
+  }
+
+  const charCount = text.length;
+  const overLimit = charCount > MAX_CHARS;
+
+  return (
+    <>
+      <div className="bg-white border-2 border-ink-200 rounded-2xl overflow-hidden focus-within:border-brand-400 transition-colors">
+        <textarea
+          value={text}
+          onChange={e => { setText(e.target.value); setError(null); }}
+          placeholder="Paste your textbook content, lecture notes, or any study material here…"
+          rows={12}
+          className="w-full px-4 pt-4 pb-2 text-sm text-ink-800 placeholder-ink-400 bg-transparent focus:outline-none resize-none leading-relaxed"
+        />
+        <div className="flex items-center justify-between px-4 pb-3">
+          <p className={`text-xs ${overLimit ? 'text-red-500 font-600' : 'text-ink-400'}`}>
+            {charCount.toLocaleString()} / {MAX_CHARS.toLocaleString()} characters
+          </p>
+          {text && (
+            <button onClick={() => { setText(''); setError(null); }}
+              className="text-xs text-ink-400 hover:text-ink-700 transition-colors">
+              Clear
+            </button>
+          )}
+        </div>
+      </div>
+
+      <p className="text-xs text-ink-400 mt-2 ml-1">
+        Paste from online textbooks, PDFs you can copy, or anywhere else you can select text
+      </p>
+
+      {error && (
+        <div className="mt-4 flex items-start gap-3 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
+          <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+          <div><p className="font-medium">Something went wrong</p><p className="text-red-600">{error}</p></div>
+        </div>
+      )}
+
+      <button
+        onClick={handleSubmit}
+        disabled={!text.trim() || overLimit}
+        className={`mt-4 w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-700 text-sm border-2 transition-all duration-200
+          ${text.trim() && !overLimit
+            ? 'bg-ink-900 border-ink-900 text-white hover:bg-brand-600 hover:border-brand-600 active:scale-[0.98]'
+            : 'bg-ink-100 border-ink-200 text-ink-400 cursor-not-allowed'
+          }`}
+      >
+        <BrainLogo className="w-4 h-4" /> Generate Study Notes
       </button>
     </>
   );
