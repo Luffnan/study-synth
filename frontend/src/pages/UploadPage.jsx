@@ -291,7 +291,7 @@ function TextPanel({ onNotes, yearLevel, onLoading }) {
           value={text}
           onChange={e => { setText(e.target.value); setError(null); }}
           placeholder="Paste your textbook content, lecture notes, or any study material here…"
-          rows={12}
+          rows={7}
           className="w-full px-4 pt-4 pb-2 text-sm text-ink-800 placeholder-ink-400 bg-transparent focus:outline-none resize-none leading-relaxed"
         />
         <div className="flex items-center justify-between px-4 pb-3">
