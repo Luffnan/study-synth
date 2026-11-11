@@ -1,10 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { X, ChevronRight, ChevronLeft, Loader2, CheckCircle, AlertCircle, Crop, Image } from 'lucide-react';
-import * as pdfjsLib from 'pdfjs-dist';
 import { apiFetch } from '../lib/api.js';
-
-pdfjsLib.GlobalWorkerOptions.workerSrc =
-  `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+import { loadPdfjs } from '../lib/pdf.js';
 
 // ── Main component ────────────────────────────────────────────────────────────
 
@@ -19,6 +16,7 @@ export default function DiagramTool({ noteId, sourceFiles, onSave, onClose }) {
   const [crops, setCrops] = useState([]); // { base64, pageNum } per kept crop
   const [placements, setPlacements] = useState([]); // { base64, topic, caption } after placing
   const [savingError, setSavingError] = useState(null);
+  const pdfDocRef = useRef(null); // parsed PDF, shared by the scan and crop phases
 
   // Pick a PDF source file (use first PDF found)
   useEffect(() => {
@@ -39,9 +37,11 @@ export default function DiagramTool({ noteId, sourceFiles, onSave, onClose }) {
       const res = await apiFetch(proxyUrl);
       if (!res.ok) throw new Error('Could not load PDF');
       const buffer = await res.arrayBuffer();
+      const pdfjsLib = await loadPdfjs();
       pdfDoc = await pdfjsLib.getDocument({ data: buffer }).promise;
+      pdfDocRef.current = pdfDoc;
     } catch (err) {
-      setScanError(err.message);
+      setScanError(err.message || 'Could not load PDF');
       return;
     }
 
@@ -202,8 +202,7 @@ export default function DiagramTool({ noteId, sourceFiles, onSave, onClose }) {
           )}
           {phase === 'cropping' && (
             <CropPhase
-              noteId={noteId}
-              storagePath={pdfFile.storage_path}
+              pdfDoc={pdfDocRef.current}
               pageNum={diagramPages[currentPageIdx]}
               pageIndex={currentPageIdx}
               totalPages={diagramPages.length}
@@ -304,7 +303,8 @@ function ScanPhase({ pdfFile, sourceFiles, onSelectFile, onStart, progress, erro
 
 // ── Crop phase ────────────────────────────────────────────────────────────────
 
-function CropPhase({ noteId, storagePath, pageNum, pageIndex, totalPages, onKeep, onSkip, cropsKept }) {
+function CropPhase({ pdfDoc, pageNum, pageIndex, totalPages, onKeep, onSkip, cropsKept }) {
+  const outerRef = useRef(null);
   const canvasRef = useRef(null);
   const overlayRef = useRef(null);
   const [rendered, setRendered] = useState(false);
@@ -312,47 +312,43 @@ function CropPhase({ noteId, storagePath, pageNum, pageIndex, totalPages, onKeep
   const [error, setError] = useState(null);
   const [selection, setSelection] = useState(null); // { x, y, w, h } in canvas coords
   const dragStart = useRef(null);
-  const pdfPageRef = useRef(null);
-  const viewportRef = useRef(null);
 
   useEffect(() => {
+    let cancelled = false;
     setRendered(false);
     setLoading(true);
     setError(null);
     setSelection(null);
-    renderPage();
-  }, [pageNum]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  async function renderPage() {
-    try {
-      const proxyUrl = `/api/notes/${noteId}/source-files?action=proxy&path=${encodeURIComponent(storagePath)}`;
-      const res = await apiFetch(proxyUrl);
-      if (!res.ok) throw new Error('Could not load PDF');
-      const buffer = await res.arrayBuffer();
-      const pdfDoc = await pdfjsLib.getDocument({ data: buffer }).promise;
-      const page = await pdfDoc.getPage(pageNum);
+    (async () => {
+      try {
+        if (!pdfDoc) throw new Error('PDF is no longer loaded. Close this panel and try again.');
+        const page = await pdfDoc.getPage(pageNum);
+        if (cancelled) return;
 
-      const container = canvasRef.current?.parentElement;
-      const maxWidth = container?.clientWidth || 600;
-      const baseVp = page.getViewport({ scale: 1 });
-      const scale = Math.min(maxWidth / baseVp.width, 1.5);
-      const viewport = page.getViewport({ scale });
+        // The canvas is always mounted, so measure the outer wrapper rather than the canvas
+        const maxWidth = Math.max((outerRef.current?.clientWidth || 640) - 32, 200);
+        const baseVp = page.getViewport({ scale: 1 });
+        const scale = Math.min(maxWidth / baseVp.width, 1.5);
+        const viewport = page.getViewport({ scale });
 
-      const canvas = canvasRef.current;
-      canvas.width = viewport.width;
-      canvas.height = viewport.height;
-      const ctx = canvas.getContext('2d');
-      await page.render({ canvasContext: ctx, viewport }).promise;
+        const canvas = canvasRef.current;
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const ctx = canvas.getContext('2d');
+        await page.render({ canvasContext: ctx, viewport }).promise;
+        if (cancelled) return;
 
-      pdfPageRef.current = page;
-      viewportRef.current = viewport;
-      setRendered(true);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }
+        setRendered(true);
+      } catch (err) {
+        if (!cancelled) setError(err.message || 'Could not render page');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [pdfDoc, pageNum]);
 
   function getCanvasCoords(e) {
     const rect = canvasRef.current.getBoundingClientRect();
@@ -417,7 +413,7 @@ function CropPhase({ noteId, storagePath, pageNum, pageIndex, totalPages, onKeep
   } : {};
 
   return (
-    <div className="p-4 space-y-3">
+    <div ref={outerRef} className="p-4 space-y-3">
       <div className="flex items-center justify-between">
         <p className="text-sm text-ink-600">
           Draw a box around the diagram you want to keep. Skip if this page doesn't have one you need.
@@ -442,8 +438,8 @@ function CropPhase({ noteId, storagePath, pageNum, pageIndex, totalPages, onKeep
         </div>
       )}
 
-      {rendered && (
-        <div className="relative select-none" style={{ lineHeight: 0 }}
+      {!error && (
+        <div className="relative select-none" style={{ lineHeight: 0, display: rendered ? 'block' : 'none' }}
           onMouseDown={onMouseDown}
           onMouseMove={onMouseMove}
           onMouseUp={onMouseUp}
@@ -466,7 +462,7 @@ function CropPhase({ noteId, storagePath, pageNum, pageIndex, totalPages, onKeep
           className="flex-1 py-2.5 rounded-xl border-2 border-ink-200 text-ink-600 hover:border-ink-400 font-600 text-sm transition-colors flex items-center justify-center gap-1.5"
         >
           <ChevronRight className="w-4 h-4" />
-          {currentPageIdx === totalPages - 1 ? (cropsKept > 0 ? 'Skip, finish' : 'Skip') : 'Skip page'}
+          {pageIndex === totalPages - 1 ? (cropsKept > 0 ? 'Skip, finish' : 'Skip') : 'Skip page'}
         </button>
         <button
           onClick={handleKeep}
