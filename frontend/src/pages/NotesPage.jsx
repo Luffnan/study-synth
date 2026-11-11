@@ -1,8 +1,9 @@
 import { apiFetch } from '../lib/api.js';
 import { submitFiles } from '../lib/upload.js';
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { ArrowLeft, ChevronDown, ChevronRight, Download, BookOpen, Hash, FileText, Zap, Layers, Youtube, CheckCircle, Loader2, FileDown, Plus, ArrowUp, X, Link, AlertCircle, Image, Menu, Trash2, Eye, HardDrive, ClipboardPaste } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronRight, Download, BookOpen, Hash, FileText, Zap, Layers, Youtube, CheckCircle, Loader2, FileDown, Plus, ArrowUp, X, Link, AlertCircle, Image, Menu, Trash2, Eye, HardDrive, ClipboardPaste, Crop } from 'lucide-react';
 import { generateDocx } from '../utils/generateDocx.js';
+import DiagramTool from '../components/DiagramTool.jsx';
 
 const ACCEPTED = {
   'application/pdf': ['.pdf'],
@@ -78,6 +79,7 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
   const [downloadModalOpen, setDownloadModalOpen] = useState(false);
   const [addSourceOpen, setAddSourceOpen] = useState(false);
   const [topicMenuOpen, setTopicMenuOpen] = useState(false);
+  const [diagramToolOpen, setDiagramToolOpen] = useState(false);
 
   // Load source files on mount so we know whether to show the nav item
   useEffect(() => {
@@ -185,6 +187,12 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
     conciseFetchedRef.current = false;
   }
 
+  function handleDiagramSave(updatedNotes) {
+    setLiveNotes(updatedNotes);
+    setConciseNotes(null);
+    conciseFetchedRef.current = false;
+  }
+
   async function handleIngestYouTube(url) {
     const res = await apiFetch('/api/youtube', {
       method: 'POST',
@@ -276,6 +284,14 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
               onClose={() => setAddSourceOpen(false)}
             />
           )}
+          {diagramToolOpen && (
+            <DiagramTool
+              noteId={noteId}
+              sourceFiles={sourceFiles || []}
+              onSave={handleDiagramSave}
+              onClose={() => setDiagramToolOpen(false)}
+            />
+          )}
           {noteId && onQuiz && (
             <button onClick={onQuiz} className="flex items-center gap-1.5 bg-ink-900 hover:bg-brand-600 text-white px-3 py-2 rounded-xl text-sm font-medium transition-colors shadow-sm">
               <Zap className="w-3.5 h-3.5" /> Quiz me!
@@ -341,12 +357,22 @@ export default function NotesPage({ notes: initialNotes, noteId, conciseNotesPro
           {/* ── Sidebar ── */}
           <aside className="hidden sm:flex flex-col w-48 flex-shrink-0 sticky top-20">
             {noteId && (
-              <button
-                onClick={() => setAddSourceOpen(true)}
-                className="flex items-center justify-center gap-1.5 w-full mb-3 px-3 py-2 rounded-xl border-2 border-dashed border-ink-200 text-ink-400 hover:border-brand-400 hover:text-brand-600 text-xs font-600 transition-colors"
-              >
-                <Plus className="w-3.5 h-3.5" /> Add source
-              </button>
+              <div className="flex flex-col gap-1.5 mb-3">
+                <button
+                  onClick={() => setAddSourceOpen(true)}
+                  className="flex items-center justify-center gap-1.5 w-full px-3 py-2 rounded-xl border-2 border-dashed border-ink-200 text-ink-400 hover:border-brand-400 hover:text-brand-600 text-xs font-600 transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Add source
+                </button>
+                {sourceFiles?.some(f => f.mime_type === 'application/pdf' || f.file_name?.endsWith('.pdf')) && (
+                  <button
+                    onClick={() => setDiagramToolOpen(true)}
+                    className="flex items-center justify-center gap-1.5 w-full px-3 py-2 rounded-xl border-2 border-dashed border-ink-200 text-ink-400 hover:border-brand-400 hover:text-brand-600 text-xs font-600 transition-colors"
+                  >
+                    <Crop className="w-3.5 h-3.5" /> Add diagrams
+                  </button>
+                )}
+              </div>
             )}
             <nav className="flex flex-col gap-0.5">
               {currentSidebarItems.map((item, i) => {
@@ -523,6 +549,27 @@ function TopicPane({ topic, mode, onOpenMenu }) {
           </div>
         );
       })}
+
+      {/* Diagrams */}
+      {topic.diagrams?.length > 0 && (
+        <div className="bg-white rounded-2xl border border-ink-200 overflow-hidden">
+          <div className="flex items-center gap-3 px-5 py-3.5 border-b border-ink-100">
+            <Image className="w-3.5 h-3.5 text-ink-400" />
+            <span className="text-sm font-600 text-ink-700">Diagrams</span>
+            <span className="text-xs text-ink-400 ml-auto">{topic.diagrams.length}</span>
+          </div>
+          <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {topic.diagrams.map((d, di) => (
+              <div key={di} className="rounded-xl border border-ink-200 overflow-hidden">
+                <img src={d.url} alt={d.caption || 'Diagram'} className="w-full object-contain bg-ink-50 max-h-64" />
+                {d.caption && (
+                  <p className="px-3 py-2 text-xs text-ink-500 border-t border-ink-100">{d.caption}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

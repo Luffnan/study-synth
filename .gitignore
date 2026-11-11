@@ -8,6 +8,9 @@ backend/node_modules/
 .env.local
 backend/.env
 
+# Setup docs containing secrets
+specs/erik-local-setup.md
+
 # Data (local notes storage)
 backend/data/
 
