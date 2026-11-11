@@ -67,7 +67,7 @@ export default function DiagramTool({ noteId, sourceFiles, onSave, onClose }) {
           await page.render({ canvasContext: ctx, viewport }).promise;
           const base64 = canvas.toDataURL('image/png').replace(/^data:image\/png;base64,/, '');
 
-          const scanRes = await apiFetch(`/api/notes/${noteId}/diagram-scan`, {
+          const scanRes = await apiFetch(`/api/notes/${noteId}/diagram?action=scan`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ pageImage: base64 }),
@@ -124,7 +124,7 @@ export default function DiagramTool({ noteId, sourceFiles, onSave, onClose }) {
   async function runPlacements() {
     const results = await Promise.all(crops.map(async (crop) => {
       try {
-        const res = await apiFetch(`/api/notes/${noteId}/diagram-place`, {
+        const res = await apiFetch(`/api/notes/${noteId}/diagram?action=place`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ cropImage: crop.base64 }),
@@ -145,7 +145,7 @@ export default function DiagramTool({ noteId, sourceFiles, onSave, onClose }) {
     setPhase('saving');
     setSavingError(null);
     try {
-      const res = await apiFetch(`/api/notes/${noteId}/diagram-save`, {
+      const res = await apiFetch(`/api/notes/${noteId}/diagram?action=save`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ placements: confirmedPlacements }),
