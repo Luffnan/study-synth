@@ -527,7 +527,7 @@ function ShortAnswerInput({ question, yearLevel, onAnswer }) {
         body: JSON.stringify({ question: question.question, modelAnswer: question.modelAnswer, studentAnswer: val.trim(), yearLevel }),
       });
       const data = await res.json();
-      const attempt = { value: val.trim(), score: data.score, feedback: data.feedback };
+      const attempt = { value: val.trim(), score: data.score, feedback: data.feedback, spellingNote: data.spellingNote || null };
       const newAttempts = [...attempts, attempt];
       setAttempts(newAttempts);
       setVal('');
@@ -560,6 +560,12 @@ function ShortAnswerInput({ question, yearLevel, onAnswer }) {
             </div>
             <p>{attempt.feedback}</p>
           </div>
+          {attempt.spellingNote && (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm text-amber-800 flex items-start gap-2">
+              <span className="text-base leading-none mt-0.5">✏️</span>
+              <p>{attempt.spellingNote}</p>
+            </div>
+          )}
         </div>
       ))}
       {attempts.length > 0 && (

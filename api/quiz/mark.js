@@ -18,7 +18,7 @@ Marking guidelines:
 - 0 marks: Response is incorrect, irrelevant, or shows no understanding of the concept.
 
 Be FAIR and GENEROUS — if the student clearly understands the concept but expresses it differently, give full marks.
-Do NOT penalise for spelling, grammar, or informal language.
+Do NOT penalise for spelling, grammar, or informal language — award marks based on understanding only.
 DO penalise for factually wrong information.
 
 FEEDBACK RULES — very important:
@@ -27,10 +27,16 @@ FEEDBACK RULES — very important:
   "Think about: How did soldiers move through the countryside? What formations did they use? What equipment helped them stay hidden? Please expand your answer with specific details."
   The guiding questions should be specific to the subject content that was missing — not generic study advice.
 
+SPELLING RULE:
+- If the student misspelled one or more words, set spellingNote to a short friendly message listing the correct spellings. Example: "Just a spelling note: it's 'photosynthesis', not 'fotosinthesis'."
+- If spelling is fine, set spellingNote to null.
+- Never let spelling affect the score.
+
 Return ONLY valid JSON (no markdown):
 {
   "score": 2,
-  "feedback": "..."
+  "feedback": "...",
+  "spellingNote": null
 }`;
 
 export default async function handler(req, res) {
