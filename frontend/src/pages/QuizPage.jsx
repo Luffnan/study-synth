@@ -1,7 +1,7 @@
 import { apiFetch } from '../lib/api.js';
 import { useState, useEffect } from 'react';
 
-// Flexible answer matching — handles number formatting and incidental unit differences
+// Flexible answer matching — handles number formatting, units, and partial completions
 function flexMatch(userRaw, expectedRaw) {
   const norm = s => s.trim().toLowerCase().replace(/,/g, '').replace(/\s+/g, ' ');
   const user = norm(userRaw);
@@ -16,6 +16,15 @@ function flexMatch(userRaw, expectedRaw) {
   const numExpected = parseFloat(expected.replace(/[^0-9.]/g, ''));
   const numUser = parseFloat(user.replace(/[^0-9.]/g, ''));
   if (!isNaN(numExpected) && !isNaN(numUser) && numExpected === numUser) return true;
+
+  // Partial completion: student's answer is a meaningful substring of the expected answer.
+  // Handles cases where the question stem already contains the first word(s) of the answer
+  // e.g. stem "India's _____", answer "Indian Premier League", student writes "Premier League"
+  if (expected.includes(user)) {
+    const userWords = user.split(' ').filter(Boolean).length;
+    const expectedWords = expected.split(' ').filter(Boolean).length;
+    if (userWords >= Math.ceil(expectedWords / 2)) return true;
+  }
 
   return false;
 }

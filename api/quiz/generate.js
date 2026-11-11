@@ -26,7 +26,7 @@ Rules:
 - Questions must test FACTUAL KNOWLEDGE from the notes — not exam technique or study tips
 - Vary difficulty: some straightforward recall, some requiring understanding
 - Short answer questions should require synthesis, not just one-word answers
-- For fill-in-blank: the blank should be a meaningful term, date, name, or concept — not a filler word
+- For fill-in-blank: the blank should replace a meaningful term, date, name, or concept — not a filler word. IMPORTANT: do not include words in the question stem that are already part of the answer. For example, if the answer is "Indian Premier League", the stem must NOT contain "India's" or "Indian" — write the stem so the full answer makes sense in the gap.
 - For MCQ: make distractors plausible but clearly wrong to someone who knows the material
 - Cover a broad range of topics from the notes, not just one section
 - modelAnswer for short answer should be 2-3 sentences explaining a complete correct response
