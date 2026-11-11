@@ -88,7 +88,7 @@ export default function QuizPage({ noteId, noteTitle, notes, onBack, yearLevel, 
     setError(null);
     try {
       const filteredNotes = buildFilteredNotes();
-      const res = await apiFetch('/api/quiz/generate', {
+      const res = await apiFetch('/api/quiz?action=generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ noteId, filteredNotes, yearLevel }),
@@ -530,7 +530,7 @@ function ShortAnswerInput({ question, yearLevel, onAnswer }) {
     if (!val.trim() || marking) return;
     setMarking(true);
     try {
-      const res = await apiFetch('/api/quiz/mark', {
+      const res = await apiFetch('/api/quiz?action=mark', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question: question.question, modelAnswer: question.modelAnswer, studentAnswer: val.trim(), yearLevel }),
